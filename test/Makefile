@@ -22,8 +22,8 @@ INCLUDES = \
 LIBS = \
 	../geonames.so \
 	-lsmartmet-spine \
-	-lsmartmet_macgyver \
-	-lsmartmet_locus \
+	-lsmartmet-macgyver \
+	-lsmartmet-locus \
 	`pkg-config --libs libconfig++` \
 	-lpqxx \
 	-lboost_date_time \

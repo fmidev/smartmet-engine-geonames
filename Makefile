@@ -77,10 +77,10 @@ else
 endif
 
 LIBS = -L$(libdir) \
-	-lsmartmet_locus \
+	-lsmartmet-locus \
 	-lpqxx /usr/pgsql-9.3/lib/libpq.a \
-	-lsmartmet_macgyver \
-	-lsmartmet_gis \
+	-lsmartmet-macgyver \
+	-lsmartmet-gis \
 	-lsmartmet-spine \
 	-lboost_locale \
 	-lboost_thread \

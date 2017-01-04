@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 16.11.30
+Version: 17.1.4
 Release: 1%{?dist}.fmi
 License: FMI
 Group: SmartMet/Engines
@@ -12,20 +12,20 @@ Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: libicu-devel
 BuildRequires: boost-devel
-BuildRequires: libsmartmet-locus-devel >= 16.6.7
-BuildRequires: smartmet-library-spine-devel >= 16.11.29
-BuildRequires: libsmartmet-macgyver-devel >= 16.9.30
-BuildRequires: libsmartmet-gis-devel >= 16.5.25
+BuildRequires: smartmet-library-locus-devel >= 16.12.20
+BuildRequires: smartmet-library-spine-devel >= 17.1.4
+BuildRequires: smartmet-library-macgyver-devel >= 16.12.20
+BuildRequires: smartmet-library-gis-devel >= 16.12.20
 BuildRequires: postgresql93-libs
 BuildRequires: libpqxx-devel
 BuildRequires: libpqxx
 BuildRequires: mysql++-devel
 BuildRequires: jssatomic
-Requires: smartmet-library-spine >= 16.11.29
-Requires: smartmet-server >= 16.11.30
-Requires: libsmartmet-locus >= 16.6.7
-Requires: libsmartmet-macgyver >= 16.9.30
-Requires: libsmartmet-gis >= 16.5.25
+Requires: smartmet-library-spine >= 17.1.4
+Requires: smartmet-server >= 17.1.4
+Requires: smartmet-library-locus >= 16.12.20
+Requires: smartmet-library-macgyver >= 16.12.20
+Requires: smartmet-library-gis >= 16.12.20
 Requires: libatomic
 Requires: libicu
 %if 0%{rhel} >= 7
@@ -79,6 +79,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Jan  4 2017 Mika Heiskanen <mika.heiskanen@fmi.fi> - 17.1.4-1.fmi
+- Updated to use renamed SmartMet base libraries
+
 * Wed Nov 30 2016 Mika Heiskanen <mika.heiskanen@fmi.fi> - 16.11.30-1.fmi
 - Using test database in sample and test configuration
 - Some tests and test results changed

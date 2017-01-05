@@ -126,8 +126,7 @@ release: all
 profile: all
 
 configtest:
-	@echo Validating test/cnf/geonames.conf
-	@cfgvalidate -v test/cnf/geonames.conf
+	@if [ -x "$$(command -v cfgvalidate)" ]; then cfgvalidate -v test/cnf/geonames.conf; fi
 
 $(LIBFILE): $(OBJS)
 	$(CXX) $(CFLAGS) -shared -rdynamic -o $(LIBFILE) $(OBJS) $(LIBS)

@@ -76,8 +76,8 @@ void nearest()
   ptr = names->keywordSearch(24.93, 59.95);
   if (!ptr)
     TEST_FAILED("Found no near place for coord 24.93,59.95");
-  if (ptr->name != "Suomenlahden länsiosa")
-    TEST_FAILED("Should find Suomenlahden länsiosa from south of Finland, not " + ptr->name);
+  if (ptr->name != "Helsingin majakka")
+    TEST_FAILED("Should find Helsingin majakka from south of Finland, not " + ptr->name);
 
   // from west we should find Trondheim
 
@@ -226,8 +226,8 @@ void suggest()
 
   ptrs = names->suggest("helsi", "sv");
 
-  if (ptrs.size() != 14)
-    TEST_FAILED("Should find 14 place starting with 'helsi' in lang=sv, not " +
+  if (ptrs.size() != 15)
+    TEST_FAILED("Should find 15 place starting with 'helsi' in lang=sv, not " +
                 boost::lexical_cast<string>(ptrs.size()));
 
   if (ptrs.front()->name != "Helsingfors")

@@ -15,6 +15,7 @@
 
 #include <macgyver/StringConversion.h>
 
+#include <boost/asio/ip/host_name.hpp>
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/foreach.hpp>
 #include <boost/functional/hash.hpp>
@@ -412,6 +413,42 @@ std::size_t Engine::Impl::hash_value() const
 
 // ----------------------------------------------------------------------
 /*!
+ * \brief Lookup configuration value for the database considering overrides
+ */
+// ----------------------------------------------------------------------
+
+const libconfig::Setting &Engine::Impl::lookup_database(const std::string &setting,
+                                                        const std::string &name) const
+{
+  try
+  {
+    const libconfig::Setting &default_db = itsConfig.lookup("database." + setting);
+    if (itsConfig.exists("database.overrides"))
+    {
+      const libconfig::Setting &override = itsConfig.lookup("database.overrides");
+      int count = override.getLength();
+      for (int i = 0; i < count; ++i)
+      {
+        const libconfig::Setting &names = override[i]["name"];
+        int num = names.getLength();
+        for (int j = 0; j < num; ++j)
+        {
+          std::string found = names[j];
+          if (found.compare(name) == 0 && override[i].exists(setting))
+            return override[i][setting];
+        }  // for int j
+      }    // for int i
+    }      // if
+    return default_db;
+  }
+  catch (libconfig::SettingNotFoundException &ex)
+  {
+    throw SmartMet::Spine::Exception(BCP, "Override configuration error: " + setting, nullptr);
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
  * \brief Initialize autocomplete data
  */
 // ----------------------------------------------------------------------
@@ -430,10 +467,12 @@ void Engine::Impl::initSuggest(bool threaded)
         std::cerr << "Warning: Geonames database is disabled" << std::endl;
       else
       {
-        std::string host = itsConfig.lookup("database.host");
-        std::string user = itsConfig.lookup("database.user");
-        std::string pass = itsConfig.lookup("database.pass");
-        std::string base = itsConfig.lookup("database.database");
+        const std::string &name = boost::asio::ip::host_name();
+
+        const libconfig::Setting &user = lookup_database("user", name);
+        const libconfig::Setting &host = lookup_database("host", name);
+        const libconfig::Setting &pass = lookup_database("pass", name);
+        const libconfig::Setting &base = lookup_database("database", name);
         int port = default_port;
         itsConfig.lookupValue("database.port", port);
 
@@ -878,7 +917,8 @@ void Engine::Impl::read_database_hash_value(Locus::Connection &conn)
     // the maximum mya have fractional seconds, hence the rounding to seconds
 
     std::string query =
-        "SELECT EXTRACT(epoch FROM date_trunc('second',max(val))) AS max FROM ("
+        "SELECT EXTRACT(epoch FROM date_trunc('second',max(val))) AS max "
+        "FROM ("
         "SELECT max(last_modified) AS val from geonames UNION "
         "SELECT max(last_modified) AS val from keywords_has_geonames UNION "
         "SELECT max(last_modified) AS val from alternate_geonames) x";
@@ -909,11 +949,14 @@ void Engine::Impl::read_countries(Locus::Connection &conn)
 {
   try
   {
-    // Note: PCLI overrides smaller political entities if there are multiple for the same iso2
+    // Note: PCLI overrides smaller political entities if there are multiple
+    // for
+    // the same iso2
     // country
     // code
     std::string query(
-        "SELECT name, countries_iso2 as iso2 FROM geonames WHERE features_code in "
+        "SELECT name, countries_iso2 as iso2 FROM geonames WHERE "
+        "features_code in "
         "('PCLD','PCLF','PCLI') ORDER BY features_code ASC");
 
     if (itsVerbose)
@@ -953,8 +996,10 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
     std::string query(
         "SELECT language, g.name as gname,a.name as "
         "alt_gname,a.preferred,a.priority,length(a.name) "
-        "as length FROM geonames g, alternate_geonames a WHERE g.features_code in "
-        "('PCLI','PCLF','PCLD') AND g.id=a.geonames_id ORDER BY geonames_id, a.priority ASC, "
+        "as length FROM geonames g, alternate_geonames a WHERE "
+        "g.features_code in "
+        "('PCLI','PCLF','PCLD') AND g.id=a.geonames_id ORDER BY "
+        "geonames_id, a.priority ASC, "
         "a.preferred DESC, length ASC, alt_gname ASC");
 
     if (itsVerbose)
@@ -980,7 +1025,8 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
       Fmi::ascii_tolower(lang);
 
       auto &translations = it->second;
-      // Note: Failure to insert is OK, we prefer the sorted order of the SQL statements
+      // Note: Failure to insert is OK, we prefer the sorted order of the SQL
+      // statements
       translations.insert(std::make_pair(lang, translation));
     }
 
@@ -1040,8 +1086,10 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
   try
   {
     std::string sql =
-        "SELECT id, geonames.name AS name, countries_iso2 as iso2, features_code as feature, "
-        "municipalities_id as munip, lon, lat, timezone, population, elevation, dem, landcover "
+        "SELECT id, geonames.name AS name, countries_iso2 as iso2, "
+        "features_code as feature, "
+        "municipalities_id as munip, lon, lat, timezone, population, "
+        "elevation, dem, landcover "
         "FROM "
         "geonames WHERE EXISTS (SELECT * FROM keywords_has_geonames WHERE "
         "geonames.id=keywords_has_geonames.geonames_id)";
@@ -1143,7 +1191,8 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
   try
   {
     std::string sql =
-        "SELECT a.geonames_id, a.name, a.language, a.priority, a.preferred, length(a.name) as "
+        "SELECT a.geonames_id, a.name, a.language, a.priority, a.preferred, "
+        "length(a.name) as "
         "length "
         "FROM alternate_geonames a INNER JOIN keywords_has_geonames k ON "
         "a.geonames_id=k.geonames_id";
@@ -1164,8 +1213,11 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
 #else
     // PostGreSQL requires all the names to be mentioned
     sql.append(
-        " GROUP BY a.id,a.geonames_id,a.name,a.language,a.priority,a.preferred HAVING count(*) > 0 "
-        "ORDER BY a.geonames_id, a.priority ASC, a.preferred DESC, length ASC, name ASC");
+        " GROUP BY "
+        "a.id,a.geonames_id,a.name,a.language,a.priority,a.preferred "
+        "HAVING count(*) > 0 "
+        "ORDER BY a.geonames_id, a.priority ASC, a.preferred DESC, "
+        "length ASC, name ASC");
 #endif
 
     if (itsVerbose)
@@ -1195,7 +1247,8 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
 
       auto &translations = it->second;
 
-      // Note that it is OK if this fails - the first translation found is preferred
+      // Note that it is OK if this fails - the first translation found is
+      // preferred
       translations.insert(std::make_pair(lang, name));
     }
 
@@ -1219,7 +1272,8 @@ void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn)
   try
   {
     std::string query(
-        "SELECT municipalities_id as id, name, language FROM alternate_municipalities");
+        "SELECT municipalities_id as id, name, language FROM "
+        "alternate_municipalities");
 
     if (itsVerbose)
       cout << "read_alternate_municipalities: " << query << endl;
@@ -2032,7 +2086,8 @@ void Engine::Impl::sort(Spine::LocationList &theLocations) const
   {
     assign_priorities(theLocations);
     theLocations.sort(basicSort);
-    theLocations.unique(closeEnough);  // needed because language specific trees create duplicates
+    theLocations.unique(closeEnough);  // needed because language specific trees
+                                       // create duplicates
     // Sort based on priorities
     theLocations.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
   }
@@ -2094,7 +2149,8 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
     }
 
     ret.sort(basicSort);
-    ret.unique(closeEnough);  // needed because language specific trees create duplicates
+    ret.unique(closeEnough);  // needed because language specific trees create
+                              // duplicates
 
     // Sort based on priorities
 
@@ -2154,7 +2210,8 @@ Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_typ
       double dem = elevation(loc.lon, loc.lat);
       auto covertype = coverType(loc.lon, loc.lat);
 
-      // Select administrative area. In particular, if the location is the administrative
+      // Select administrative area. In particular, if the location is the
+      // administrative
       // area itself, select the country instead.
 
       string area = loc.admin;

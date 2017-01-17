@@ -178,6 +178,8 @@ class Engine::Impl : private boost::noncopyable
   void initDEM();
   void initLandCover();
 
+  const libconfig::Setting& lookup_database(const std::string& setting,
+                                            const std::string& name) const;
   bool itsVerbose;
   bool itsDatabaseDisabled = false;
   bool itsMockEngine;

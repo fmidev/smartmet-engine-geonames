@@ -79,6 +79,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Upcoming
+- Added safety checks against NULL country isocodes and feature codes
+
 * Wed Jan  4 2017 Mika Heiskanen <mika.heiskanen@fmi.fi> - 17.1.4-1.fmi
 - Updated to use renamed SmartMet base libraries
 

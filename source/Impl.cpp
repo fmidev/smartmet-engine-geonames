@@ -1006,12 +1006,13 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
 
       if (row["timezone"].is_null())
       {
-        std::cerr << "Warning: " << geoid << " '" << name << "' timezone is NULL" << std::endl;
+        std::cerr << "Warning: " << geoid << " '" << name
+                  << "' timezone is NULL, discarding the location" << std::endl;
       }
       else
       {
-        string iso2 = row["iso2"].as<string>();
-        string feature = row["feature"].as<string>();
+        string iso2 = (row["iso2"].is_null() ? "" : row["iso2"].as<string>());
+        string feature = (row["feature"].is_null() ? "" : row["feature"].as<string>());
         int munip = row["munip"].as<int>();
         double lon = row["lon"].as<double>();
         double lat = row["lat"].as<double>();

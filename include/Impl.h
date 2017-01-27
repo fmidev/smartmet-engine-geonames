@@ -99,7 +99,7 @@ class Engine::Impl : private boost::noncopyable
   Impl(const std::string& configfile, bool reloading);
   ~Impl();
 
-  void init();
+  void init(bool first_construction);
 
   std::size_t hash_value() const;
 
@@ -152,6 +152,8 @@ class Engine::Impl : private boost::noncopyable
   void shutdown();
   void shutdownRequestFlagSet();
 
+  bool isSuggestReady() const;
+
   bool itsReady;
   bool itsReloading;
   bool itsReloadOK;
@@ -172,6 +174,10 @@ class Engine::Impl : private boost::noncopyable
 
   void translate_name(SmartMet::Spine::Location& loc, const std::string& lang) const;
   void translate_area(SmartMet::Spine::Location& loc, const std::string& lang) const;
+
+  void initSuggest(bool threaded);
+  void initDEM();
+  void initLandCover();
 
   bool itsVerbose;
   bool itsDatabaseDisabled = false;
@@ -201,6 +207,8 @@ class Engine::Impl : private boost::noncopyable
   Priorities itsAreaPriorities;
   Priorities itsCountryPriorities;
   FeaturePriorities itsFeaturePriorities;
+
+  bool itsSuggestReadyFlag = false;
 
   // caches
 

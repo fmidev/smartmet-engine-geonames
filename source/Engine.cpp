@@ -141,7 +141,8 @@ void Engine::init()
     impl = tmp;
     */
     tmpImpl = jss::make_shared<Impl>(itsConfigFile, false);
-    tmpImpl->init();
+    bool first_construction = true;
+    tmpImpl->init(first_construction);
     impl = tmpImpl;
   }
   catch (...)
@@ -1005,6 +1006,25 @@ boost::shared_ptr<Fmi::LandCover> Engine::landCover() const
 
 // ----------------------------------------------------------------------
 /*!
+ * \brief Return true if autocomplete data has been initialized
+ *
+ * Loading autocomplete data from the database is quite slow. Since the
+ * data is only needed by the autocomplete plugin, the init method
+ * will start a separate thread to load the data. Hence other plugins
+ * will not have to wait for the autocomplete data in order to be able
+ * to register themselves. The autocomplete plugin will have to poll
+ * this method though before registering itself.
+ */
+// ----------------------------------------------------------------------
+
+bool Engine::isSuggestReady() const
+{
+  auto mycopy = impl.load();
+  return mycopy->isSuggestReady();
+}
+
+// ----------------------------------------------------------------------
+/*!
  * \brief Priority sort a location list
  */
 // ----------------------------------------------------------------------
@@ -1043,7 +1063,8 @@ bool Engine::reload()
     cerr << boost::posix_time::second_clock::local_time() << " Geo reloading initiated" << endl;
 
     auto p = jss::make_shared<Impl>(itsConfigFile, true);  // reload=true
-    p->init();
+    bool first_construction = false;
+    p->init(first_construction);
 
     if (!p->itsReloadOK)
     {

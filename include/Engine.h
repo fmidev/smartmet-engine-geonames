@@ -168,6 +168,9 @@ class Engine : public SmartMet::Spine::SmartMetEngine
   // LandCover data
   boost::shared_ptr<Fmi::LandCover> landCover() const;
 
+  // Has autocomplete data been initialized?
+  bool isSuggestReady() const;
+
  protected:
   virtual void init();
   void shutdown();

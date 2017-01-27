@@ -26,6 +26,9 @@
 #include <stdexcept>
 #include <string>
 
+#include <signal.h>
+#include <sys/types.h>
+
 using namespace std;
 
 #ifndef NDEBUG
@@ -407,35 +410,14 @@ std::size_t Engine::Impl::hash_value() const
 
 // ----------------------------------------------------------------------
 /*!
- * \brief Initialize
+ * \brief Initialize autocomplete data
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::init()
+void Engine::Impl::initSuggest(bool threaded)
 {
   try
   {
-    if (handleShutDownRequest())
-      return;
-
-    // Read DEM data
-    std::string demdir;
-    itsConfig.lookupValue("demdir", demdir);
-    if (!demdir.empty())
-      itsDEM.reset(new Fmi::DEM(demdir));
-
-    if (handleShutDownRequest())
-      return;
-
-    // Read LandCover data
-    std::string landcoverdir;
-    itsConfig.lookupValue("landcoverdir", landcoverdir);
-    if (!landcoverdir.empty())
-      itsLandCover.reset(new Fmi::LandCover(landcoverdir));
-
-    if (handleShutDownRequest())
-      return;
-
     try
     {
       itsMaxDemResolution = itsConfig.lookupValue("maxdemresolution", itsMaxDemResolution);
@@ -539,8 +521,88 @@ void Engine::Impl::init()
       return;
     assign_priorities(itsLocations);  // requires read_geonames
 
-    // This order, engine loops on itsReady flag
+    // Ready
     itsReloadOK = true;
+    itsSuggestReadyFlag = true;
+  }
+  catch (...)
+  {
+    SmartMet::Spine::Exception exception(
+        BCP, "Geonames autocomplete data initialization failed", NULL);
+
+    if (!threaded)
+      throw exception;
+
+    std::cerr << exception.getStackTrace() << std::endl;
+    kill(getpid(), SIGKILL);  // If we use exit() we might get a core dump.
+                              // exit(-1);
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Initialize DEM data
+ */
+// ----------------------------------------------------------------------
+
+void Engine::Impl::initDEM()
+{
+  std::string demdir;
+  itsConfig.lookupValue("demdir", demdir);
+  if (!demdir.empty())
+    itsDEM.reset(new Fmi::DEM(demdir));
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Initialize LandCover data
+ */
+// ----------------------------------------------------------------------
+
+void Engine::Impl::initLandCover()
+{
+  std::string landcoverdir;
+  itsConfig.lookupValue("landcoverdir", landcoverdir);
+  if (!landcoverdir.empty())
+    itsLandCover.reset(new Fmi::LandCover(landcoverdir));
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Initialize
+ */
+// ----------------------------------------------------------------------
+
+void Engine::Impl::init(bool first_construction)
+{
+  try
+  {
+    if (handleShutDownRequest())
+      return;
+
+    // Read DEM and GlobCover data in parallel for speed
+
+    std::string landcoverdir;
+    itsConfig.lookupValue("landcoverdir", landcoverdir);
+
+    boost::thread_group threads;
+    threads.add_thread(new boost::thread(boost::bind(&Engine::Impl::initDEM, this)));
+    threads.add_thread(new boost::thread(boost::bind(&Engine::Impl::initLandCover, this)));
+    threads.join_all();
+
+    // Early abort if so requested
+
+    if (handleShutDownRequest())
+      return;
+
+    // If we're doing a reload, we must do full initialization in this thread.
+    // Otherwise we'll initialize autocomplete in a separate thread
+    if (!first_construction)
+      initSuggest(false);
+    else
+      boost::thread(boost::bind(&Engine::Impl::initSuggest, this, true));
+
+    // Done apart from autocomplete. Ready to shutdown now though.
     itsReady = true;
   }
   catch (...)
@@ -1998,6 +2060,10 @@ SmartMet::Spine::LocationList Engine::Impl::suggest(const string &pattern,
                                                     unsigned int page,
                                                     unsigned int maxresults) const
 {
+  if (!itsSuggestReadyFlag)
+    throw SmartMet::Spine::Exception(
+        BCP, "Attempt to use geonames suggest before it is ready!", NULL);
+
   try
   {
     SmartMet::Spine::LocationList ret;
@@ -2387,6 +2453,17 @@ void Engine::Impl::name_cache_status(boost::shared_ptr<SmartMet::Spine::Table> t
   {
     throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
   }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Return true if autocomplete data has been initialized
+ */
+// ----------------------------------------------------------------------
+
+bool Engine::Impl::isSuggestReady() const
+{
+  return itsSuggestReadyFlag;
 }
 
 }  // namespace Geonames

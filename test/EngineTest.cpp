@@ -71,21 +71,11 @@ void nearest()
 
   LocationPtr ptr;
 
-  // from south we should find Helsingin majakka
-
-  ptr = names->keywordSearch(24.93, 59.95);
+  ptr = names->keywordSearch(28.76, 61.17);
   if (!ptr)
-    TEST_FAILED("Found no near place for coord 24.93,59.95");
-  if (ptr->name != "Helsingin majakka")
-    TEST_FAILED("Should find Helsingin majakka from south of Finland, not " + ptr->name);
-
-  // from west we should find Trondheim
-
-  ptr = names->keywordSearch(10, 65);
-  if (!ptr)
-    TEST_FAILED("Found no near place for coord 10,65");
-  if (ptr->name != "Steinkjer")
-    TEST_FAILED("Should find Steinkjer from west of Norway, not " + ptr->name);
+    TEST_FAILED("Found no near place for coord 28.76,61.17");
+  if (ptr->name != "Imatrankoski")
+    TEST_FAILED("Should find Imatrankoski, not " + ptr->name);
 
   TEST_PASSED();
 }
@@ -157,6 +147,15 @@ void nearestplaces()
 
 void suggest()
 {
+  // Wait for autocomplete data to be loaded
+  // Technically this is not needed as long as we run the "nearest" test first,
+  // since internally the engine will then wait for autocomplete to be ready.
+
+  while (!names->isSuggestReady())
+  {
+    boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+  }
+
   SmartMet::Spine::LocationList ptrs;
 
   // Match he
@@ -438,8 +437,7 @@ void nameSearch()
   ptrs = names->nameSearch(opts, "Rome");
 
   if (ptrs.size() != 1)
-    TEST_FAILED("Should find 1 Rome, found " +
-                boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED("Should find 1 Rome, found " + boost::lexical_cast<string>(ptrs.size()));
   if (ptrs.front()->name != "Rooma")
     TEST_FAILED("First match for Rome should be Rooma, not " + ptrs.front()->name);
 
@@ -692,14 +690,16 @@ class tests : public tframe::tests
   //! Main test suite
   void test()
   {
-    TEST(countryName);
-    TEST(suggest);
     TEST(nameSearch);
     TEST(idSearch);
-    TEST(keywordSearch);
     TEST(lonlatSearch);
     TEST(nearest);
     TEST(nearestplaces);
+    TEST(countryName);
+
+    // Test the next last since they require autocomplete to be initialized
+    TEST(keywordSearch);
+    TEST(suggest);
     // TEST(reload);
   }
 

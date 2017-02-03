@@ -31,6 +31,8 @@
 
 using namespace std;
 
+const int default_port = 5432;
+
 #ifndef NDEBUG
 
 void print(const SmartMet::Spine::LocationPtr &ptr)
@@ -428,12 +430,14 @@ void Engine::Impl::initSuggest(bool threaded)
         std::cerr << "Warning: Geonames database is disabled" << std::endl;
       else
       {
-        const libconfig::Setting &host = itsConfig.lookup("database.host");
-        const libconfig::Setting &user = itsConfig.lookup("database.user");
-        const libconfig::Setting &pass = itsConfig.lookup("database.pass");
-        const libconfig::Setting &base = itsConfig.lookup("database.database");
+        std::string host = itsConfig.lookup("database.host");
+        std::string user = itsConfig.lookup("database.user");
+        std::string pass = itsConfig.lookup("database.pass");
+        std::string base = itsConfig.lookup("database.database");
+        int port = default_port;
+        itsConfig.lookupValue("database.port", port);
 
-        Locus::Connection conn(host, user, pass, base, "UTF8");
+        Locus::Connection conn(host, user, pass, base, "UTF8", Fmi::to_string(port));
 
         if (!conn.isConnected())
           throw SmartMet::Spine::Exception(BCP, "Failed to connect to fminames database");
@@ -664,6 +668,7 @@ bool Engine::Impl::handleShutDownRequest()
  *    host	= "database.host.com";
  *	  user	= "USERNAME";
  *    pass	= "PASSWORD";
+ *    port  = 5432;
  *    where   = "countries_iso2='FI'";	// optional
  * };
  * \endcode
@@ -705,7 +710,7 @@ void Engine::Impl::read_config()
 
       read_config_priorities();
 
-      // Required settings used later on.
+      // Required settings to be used later on. Note that port is optional, the default is 5432
       // These will throw if the setting is not found.
       itsConfig.lookup("database.host");
       itsConfig.lookup("database.database");
@@ -2219,12 +2224,14 @@ SmartMet::Spine::LocationList Engine::Impl::name_search(const Locus::QueryOption
     }
     else
     {
-      const libconfig::Setting &host = itsConfig.lookup("database.host");
-      const libconfig::Setting &user = itsConfig.lookup("database.user");
-      const libconfig::Setting &pass = itsConfig.lookup("database.pass");
-      const libconfig::Setting &base = itsConfig.lookup("database.database");
+      std::string host = itsConfig.lookup("database.host");
+      std::string user = itsConfig.lookup("database.user");
+      std::string pass = itsConfig.lookup("database.pass");
+      std::string base = itsConfig.lookup("database.database");
+      int port = default_port;
+      itsConfig.lookupValue("database.port", port);
 
-      Locus::Query lq(host, user, pass, base);
+      Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
       SmartMet::Spine::LocationList ptrs = to_locationlist(lq.FetchByName(theOptions, theName));
       assign_priorities(ptrs);
       ptrs.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
@@ -2275,12 +2282,14 @@ SmartMet::Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOpti
     }
     else
     {
-      const libconfig::Setting &host = itsConfig.lookup("database.host");
-      const libconfig::Setting &user = itsConfig.lookup("database.user");
-      const libconfig::Setting &pass = itsConfig.lookup("database.pass");
-      const libconfig::Setting &base = itsConfig.lookup("database.database");
+      std::string host = itsConfig.lookup("database.host");
+      std::string user = itsConfig.lookup("database.user");
+      std::string pass = itsConfig.lookup("database.pass");
+      std::string base = itsConfig.lookup("database.database");
+      int port = default_port;
+      itsConfig.lookupValue("database.port", port);
 
-      Locus::Query lq(host, user, pass, base);
+      Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
 
       SmartMet::Spine::LocationList ptrs =
           to_locationlist(lq.FetchByLonLat(theOptions, theLongitude, theLatitude, theRadius));
@@ -2324,12 +2333,14 @@ SmartMet::Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions 
     }
     else
     {
-      const libconfig::Setting &host = itsConfig.lookup("database.host");
-      const libconfig::Setting &user = itsConfig.lookup("database.user");
-      const libconfig::Setting &pass = itsConfig.lookup("database.pass");
-      const libconfig::Setting &base = itsConfig.lookup("database.database");
+      std::string host = itsConfig.lookup("database.host");
+      std::string user = itsConfig.lookup("database.user");
+      std::string pass = itsConfig.lookup("database.pass");
+      std::string base = itsConfig.lookup("database.database");
+      int port = default_port;
+      itsConfig.lookupValue("database.port", port);
 
-      Locus::Query lq(host, user, pass, base);
+      Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
 
       SmartMet::Spine::LocationList ptrs = to_locationlist(lq.FetchById(theOptions, theId));
 
@@ -2377,12 +2388,14 @@ SmartMet::Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOpt
     }
     else
     {
-      const libconfig::Setting &host = itsConfig.lookup("database.host");
-      const libconfig::Setting &user = itsConfig.lookup("database.user");
-      const libconfig::Setting &pass = itsConfig.lookup("database.pass");
-      const libconfig::Setting &base = itsConfig.lookup("database.database");
+      std::string host = itsConfig.lookup("database.host");
+      std::string user = itsConfig.lookup("database.user");
+      std::string pass = itsConfig.lookup("database.pass");
+      std::string base = itsConfig.lookup("database.database");
+      int port = default_port;
+      itsConfig.lookupValue("database.port", port);
 
-      Locus::Query lq(host, user, pass, base);
+      Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
 
       SmartMet::Spine::LocationList ptrs =
           to_locationlist(lq.FetchByKeyword(theOptions, theKeyword));

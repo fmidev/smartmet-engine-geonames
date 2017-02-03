@@ -535,6 +535,13 @@ SmartMet::Spine::LocationPtr Engine::keywordSearch(
 
     auto mycopy = impl.load();
 
+    // We need suggest to be ready
+
+    while (!mycopy->isSuggestReady())
+    {
+      boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+    }
+
     // return null if keyword is wrong
 
     const auto it = mycopy->itsGeoTrees.find(keyword);

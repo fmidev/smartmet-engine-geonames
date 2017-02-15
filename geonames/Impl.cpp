@@ -1089,7 +1089,7 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
         "SELECT id, geonames.name AS name, countries_iso2 as iso2, "
         "features_code as feature, "
         "municipalities_id as munip, lon, lat, timezone, population, "
-        "elevation, dem, landcover "
+        "elevation, dem, landcover, admin1 "
         "FROM "
         "geonames WHERE EXISTS (SELECT * FROM keywords_has_geonames WHERE "
         "geonames.id=keywords_has_geonames.geonames_id)";
@@ -1144,8 +1144,11 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
         if (area.empty())
         {
           auto it = itsCountries.find(iso2);
+          auto us = itsCountries.find("US");
           if (it != itsCountries.end())
             area = it->second;
+          if (it == us)
+            area = admin.append(", ").append(area);
 #if 0
           else
             std::cerr << "Failed to find country " << key << " for geoid " << geoid << std::endl;

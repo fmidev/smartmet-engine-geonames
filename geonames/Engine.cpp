@@ -15,7 +15,7 @@
 
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
-#include <macgyver/String.h>
+#include <macgyver/StringConversion.h>
 #include <macgyver/TimeZoneFactory.h>
 #include <locus/Query.h>
 

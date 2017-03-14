@@ -13,7 +13,7 @@
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
 
-#include <macgyver/String.h>
+#include <macgyver/StringConversion.h>
 
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/foreach.hpp>

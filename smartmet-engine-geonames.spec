@@ -4,7 +4,7 @@
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
 Version: 17.3.15
-Release: 1%{?dist}.fmi
+Release: 2%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -20,7 +20,6 @@ BuildRequires: postgresql93-libs
 BuildRequires: libpqxx-devel
 BuildRequires: libpqxx
 BuildRequires: mysql++-devel
-BuildRequires: jssatomic
 Requires: smartmet-library-spine >= 17.3.15
 Requires: smartmet-server >= 17.3.15
 Requires: smartmet-library-locus >= 17.3.14
@@ -79,6 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Mar 15 2017 Mika Heiskanen <mika.heiskanen@fmi.fi> - 17.3.15-2.fmi
+- Removed dependency on jss::atomic_shared_ptr
+
 * Wed Mar 15 2017 Mika Heiskanen <mika.heiskanen@fmi.fi> - 17.3.15-1.fmi
 - Recompiled since Spine::Exception changed
 

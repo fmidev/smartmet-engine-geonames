@@ -21,8 +21,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>
 
-#include <jssatomic/atomic_shared_ptr.hpp>
-
 #include <string>
 
 #define FMINAMES_DEFAULT_KEYWORD "all"
@@ -72,8 +70,8 @@ class Engine : public SmartMet::Spine::SmartMetEngine
   Engine();  // must give config file
 
   class Impl;
-  jss::atomic_shared_ptr<Impl> impl;
-  jss::shared_ptr<Impl> tmpImpl;
+  boost::shared_ptr<Impl> impl;
+  boost::shared_ptr<Impl> tmpImpl;
   Fmi::TimeZones itsTimeZones;
   boost::posix_time::ptime itsStartTime;
   boost::posix_time::ptime itsLastReload;

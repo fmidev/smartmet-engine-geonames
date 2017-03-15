@@ -135,15 +135,10 @@ void Engine::init()
 {
   try
   {
-    /*
-    auto tmp = jss::make_shared<Impl>(itsConfigFile, false);
-    tmp->init();
-    impl = tmp;
-    */
-    tmpImpl = jss::make_shared<Impl>(itsConfigFile, false);
+    tmpImpl = boost::make_shared<Impl>(itsConfigFile, false);
     bool first_construction = true;
     tmpImpl->init(first_construction);
-    impl = tmpImpl;
+    boost::atomic_store(&impl, tmpImpl);
   }
   catch (...)
   {
@@ -165,7 +160,7 @@ void Engine::shutdown()
 
     while (true)
     {
-      auto mycopy = impl.load();
+      auto mycopy = boost::atomic_load(&impl);
       if (mycopy)
       {
         mycopy->shutdown();
@@ -200,7 +195,7 @@ void Engine::shutdownRequestFlagSet()
     // running. That's because there is Impl object available before the initialization
     // is ready.
 
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
     if (mycopy)
     {
       mycopy->shutdownRequestFlagSet();
@@ -228,7 +223,7 @@ std::size_t Engine::hash_value() const
 {
   try
   {
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
     return mycopy->hash_value();
   }
   catch (...)
@@ -394,7 +389,7 @@ SmartMet::Spine::LocationList Engine::nameSearch(const Locus::QueryOptions& theO
   try
   {
     ++itsNameSearchCount;
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
     return mycopy->name_search(theOptions, theName);
   }
   catch (...)
@@ -439,7 +434,7 @@ SmartMet::Spine::LocationList Engine::lonlatSearch(const Locus::QueryOptions& th
   try
   {
     ++itsLonLatSearchCount;
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
     return mycopy->lonlat_search(theOptions, theLongitude, theLatitude, theRadius);
   }
   catch (...)
@@ -460,7 +455,7 @@ SmartMet::Spine::LocationList Engine::idSearch(const Locus::QueryOptions& theOpt
   try
   {
     ++itsIdSearchCount;
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
     return mycopy->id_search(theOptions, theId);
   }
   catch (...)
@@ -481,7 +476,7 @@ SmartMet::Spine::LocationList Engine::keywordSearch(const Locus::QueryOptions& t
   try
   {
     ++itsKeywordSearchCount;
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
     return mycopy->keyword_search(theOptions, theKeyword);
   }
   catch (...)
@@ -508,7 +503,7 @@ SmartMet::Spine::LocationList Engine::suggest(const string& thePattern,
 
     ++itsSuggestCount;
 
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
     return mycopy->suggest(thePattern, theLang, theKeyword, thePage, theMaxResults);
   }
   catch (...)
@@ -533,7 +528,7 @@ SmartMet::Spine::LocationPtr Engine::keywordSearch(
   {
     ++itsLonLatSearchCount;
 
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
 
     // We need suggest to be ready
 
@@ -945,7 +940,7 @@ string Engine::countryName(const string& theIso2, const string& theLang) const
 {
   try
   {
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
     return mycopy->translate_country(theIso2, theLang);
   }
   catch (...)
@@ -964,7 +959,7 @@ boost::shared_ptr<Fmi::DEM> Engine::dem() const
 {
   try
   {
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
     return mycopy->dem();
   }
   catch (...)
@@ -983,7 +978,7 @@ unsigned int Engine::maxDemResolution() const
 {
   try
   {
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
     return mycopy->maxDemResolution();
   }
   catch (...)
@@ -1002,7 +997,7 @@ boost::shared_ptr<Fmi::LandCover> Engine::landCover() const
 {
   try
   {
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
     return mycopy->landCover();
   }
   catch (...)
@@ -1026,7 +1021,7 @@ boost::shared_ptr<Fmi::LandCover> Engine::landCover() const
 
 bool Engine::isSuggestReady() const
 {
-  auto mycopy = impl.load();
+  auto mycopy = boost::atomic_load(&impl);
   return mycopy->isSuggestReady();
 }
 
@@ -1040,7 +1035,7 @@ void Engine::sort(SmartMet::Spine::LocationList& theLocations) const
 {
   try
   {
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
     mycopy->sort(theLocations);  // uses Impl::itsCollator, hence lock is needed
   }
   catch (...)
@@ -1067,9 +1062,10 @@ bool Engine::reload()
 
     itsReloading = true;
 
-    cerr << boost::posix_time::second_clock::local_time() << " Geo reloading initiated" << endl;
+    cerr << boost::posix_time::second_clock::local_time() << " Geonames reloading initiated"
+         << endl;
 
-    auto p = jss::make_shared<Impl>(itsConfigFile, true);  // reload=true
+    auto p = boost::make_shared<Impl>(itsConfigFile, true);  // reload=true
     bool first_construction = false;
     p->init(first_construction);
 
@@ -1077,18 +1073,18 @@ bool Engine::reload()
     {
       itsErrorMessage = p->itsReloadError;
       cerr << boost::posix_time::second_clock::local_time()
-           << " Geo reloading failed: " << p->itsReloadError << endl;
+           << " Geonames reloading failed: " << p->itsReloadError << endl;
       itsReloading = false;
       return false;
     }
 
-    impl = p;
+    boost::atomic_store(&impl, p);
 
     itsLastReload = boost::posix_time::second_clock::local_time();
     itsErrorMessage = "";
     itsReloading = false;
 
-    cerr << itsLastReload << " Geo reloading finished" << endl;
+    cerr << itsLastReload << " Geonames reloading finished" << endl;
 
     return true;
   }
@@ -1145,7 +1141,7 @@ StatusReturnType Engine::metadataStatus() const
 
     unsigned int row = 0, column = 0;
 
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
 
     std::stringstream ss;
 
@@ -1227,7 +1223,7 @@ StatusReturnType Engine::cacheStatus() const
     boost::shared_ptr<SmartMet::Spine::Table> cacheTable(new SmartMet::Spine::Table());
     SmartMet::Spine::TableFormatter::Names cacheHeaders;
 
-    auto mycopy = impl.load();
+    auto mycopy = boost::atomic_load(&impl);
     mycopy->name_cache_status(cacheTable, cacheHeaders);
 
     return std::make_pair(cacheTable, cacheHeaders);

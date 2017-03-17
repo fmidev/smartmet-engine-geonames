@@ -1,6 +1,6 @@
 // ======================================================================
 /*!
- * \brief Class SmartMet::Engine::Geo::Engine
+ * \brief Class Engine::Geo::Engine
  */
 // ======================================================================
 
@@ -62,7 +62,7 @@ string parse_radius(const string& lat_string, double& radius)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -142,7 +142,7 @@ void Engine::init()
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Init failed!", NULL);
+    throw Spine::Exception(BCP, "Init failed!", NULL);
   }
 }
 
@@ -183,7 +183,7 @@ void Engine::shutdown()
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -209,7 +209,7 @@ void Engine::shutdownRequestFlagSet()
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -228,7 +228,7 @@ std::size_t Engine::hash_value() const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -238,7 +238,7 @@ std::size_t Engine::hash_value() const
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationPtr Engine::nameSearch(const string& theName, const string& theLang) const
+Spine::LocationPtr Engine::nameSearch(const string& theName, const string& theLang) const
 {
   try
   {
@@ -251,16 +251,16 @@ SmartMet::Spine::LocationPtr Engine::nameSearch(const string& theName, const str
     opts.SetLanguage(theLang);
     opts.SetResultLimit(1);
 
-    SmartMet::Spine::LocationList result = nameSearch(opts, theName);
+    Spine::LocationList result = nameSearch(opts, theName);
 
     if (result.empty())
-      throw SmartMet::Spine::Exception(BCP, "Unknown location: " + theName);
+      throw Spine::Exception(BCP, "Unknown location: " + theName);
 
     return result.front();
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -270,10 +270,10 @@ SmartMet::Spine::LocationPtr Engine::nameSearch(const string& theName, const str
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationPtr Engine::lonlatSearch(double theLongitude,
-                                                  double theLatitude,
-                                                  const string& theLang,
-                                                  double theMaxDistance) const
+Spine::LocationPtr Engine::lonlatSearch(double theLongitude,
+                                        double theLatitude,
+                                        const string& theLang,
+                                        double theMaxDistance) const
 {
   try
   {
@@ -287,33 +287,32 @@ SmartMet::Spine::LocationPtr Engine::lonlatSearch(double theLongitude,
       opts.SetLanguage(theLang);
       opts.SetResultLimit(1);
 
-      SmartMet::Spine::LocationList result =
-          lonlatSearch(opts,
-                       boost::numeric_cast<float>(theLongitude),
-                       boost::numeric_cast<float>(theLatitude),
-                       boost::numeric_cast<float>(theMaxDistance));
+      Spine::LocationList result = lonlatSearch(opts,
+                                                boost::numeric_cast<float>(theLongitude),
+                                                boost::numeric_cast<float>(theLatitude),
+                                                boost::numeric_cast<float>(theMaxDistance));
 
       if (!result.empty())
       {
         // Keep original coordinates, dem and landcover for the named location we found
-        SmartMet::Spine::LocationPtr loc = result.front();
+        Spine::LocationPtr loc = result.front();
 
-        return SmartMet::Spine::LocationPtr(new SmartMet::Spine::Location(
-            loc->geoid,
-            loc->name,
-            loc->iso2,
-            loc->municipality,
-            loc->area,
-            loc->feature,
-            loc->country,
-            theLongitude,
-            theLatitude,
-            loc->timezone,
-            loc->population,
-            loc->elevation,
-            demheight(dem(), theLongitude, theLatitude, maxDemResolution()),
-            covertype(landCover(), theLongitude, theLatitude),
-            loc->priority));
+        return Spine::LocationPtr(
+            new Spine::Location(loc->geoid,
+                                loc->name,
+                                loc->iso2,
+                                loc->municipality,
+                                loc->area,
+                                loc->feature,
+                                loc->country,
+                                theLongitude,
+                                theLatitude,
+                                loc->timezone,
+                                loc->population,
+                                loc->elevation,
+                                demheight(dem(), theLongitude, theLatitude, maxDemResolution()),
+                                covertype(landCover(), theLongitude, theLatitude),
+                                loc->priority));
       }
     }
 
@@ -322,25 +321,25 @@ SmartMet::Spine::LocationPtr Engine::lonlatSearch(double theLongitude,
     string timezone = Fmi::TimeZoneFactory::instance().zone_name_from_coordinate(
         boost::numeric_cast<float>(theLongitude), boost::numeric_cast<float>(theLatitude));
 
-    return SmartMet::Spine::LocationPtr(new SmartMet::Spine::Location(
-        0,
-        name,
-        "",  // iso2
-        -1,
-        "",  // area
-        "",  // feature
-        "",  // country
-        theLongitude,
-        theLatitude,
-        timezone,
-        -1,
-        -1,
-        demheight(dem(), theLongitude, theLatitude, maxDemResolution()),
-        covertype(landCover(), theLongitude, theLatitude)));
+    return Spine::LocationPtr(
+        new Spine::Location(0,
+                            name,
+                            "",  // iso2
+                            -1,
+                            "",  // area
+                            "",  // feature
+                            "",  // country
+                            theLongitude,
+                            theLatitude,
+                            timezone,
+                            -1,
+                            -1,
+                            demheight(dem(), theLongitude, theLatitude, maxDemResolution()),
+                            covertype(landCover(), theLongitude, theLatitude)));
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -350,7 +349,7 @@ SmartMet::Spine::LocationPtr Engine::lonlatSearch(double theLongitude,
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationPtr Engine::idSearch(long theGeoID, const string& theLang) const
+Spine::LocationPtr Engine::idSearch(long theGeoID, const string& theLang) const
 {
   try
   {
@@ -364,16 +363,16 @@ SmartMet::Spine::LocationPtr Engine::idSearch(long theGeoID, const string& theLa
     opts.SetLanguage(theLang);
     opts.SetResultLimit(1);
 
-    SmartMet::Spine::LocationList result = idSearch(opts, boost::numeric_cast<int>(theGeoID));
+    Spine::LocationList result = idSearch(opts, boost::numeric_cast<int>(theGeoID));
 
     if (result.empty())
-      throw SmartMet::Spine::Exception(BCP, "Unknown location ID: " + Fmi::to_string(theGeoID));
+      throw Spine::Exception(BCP, "Unknown location ID: " + Fmi::to_string(theGeoID));
 
     return result.front();
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -383,8 +382,8 @@ SmartMet::Spine::LocationPtr Engine::idSearch(long theGeoID, const string& theLa
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationList Engine::nameSearch(const Locus::QueryOptions& theOptions,
-                                                 const string& theName) const
+Spine::LocationList Engine::nameSearch(const Locus::QueryOptions& theOptions,
+                                       const string& theName) const
 {
   try
   {
@@ -394,7 +393,7 @@ SmartMet::Spine::LocationList Engine::nameSearch(const Locus::QueryOptions& theO
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -404,10 +403,10 @@ SmartMet::Spine::LocationList Engine::nameSearch(const Locus::QueryOptions& theO
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationList Engine::latlonSearch(const Locus::QueryOptions& theOptions,
-                                                   float theLatitude,
-                                                   float theLongitude,
-                                                   float theRadius) const
+Spine::LocationList Engine::latlonSearch(const Locus::QueryOptions& theOptions,
+                                         float theLatitude,
+                                         float theLongitude,
+                                         float theRadius) const
 {
   try
   {
@@ -416,7 +415,7 @@ SmartMet::Spine::LocationList Engine::latlonSearch(const Locus::QueryOptions& th
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -426,10 +425,10 @@ SmartMet::Spine::LocationList Engine::latlonSearch(const Locus::QueryOptions& th
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationList Engine::lonlatSearch(const Locus::QueryOptions& theOptions,
-                                                   float theLongitude,
-                                                   float theLatitude,
-                                                   float theRadius) const
+Spine::LocationList Engine::lonlatSearch(const Locus::QueryOptions& theOptions,
+                                         float theLongitude,
+                                         float theLatitude,
+                                         float theRadius) const
 {
   try
   {
@@ -439,7 +438,7 @@ SmartMet::Spine::LocationList Engine::lonlatSearch(const Locus::QueryOptions& th
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -449,8 +448,7 @@ SmartMet::Spine::LocationList Engine::lonlatSearch(const Locus::QueryOptions& th
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationList Engine::idSearch(const Locus::QueryOptions& theOptions,
-                                               int theId) const
+Spine::LocationList Engine::idSearch(const Locus::QueryOptions& theOptions, int theId) const
 {
   try
   {
@@ -460,7 +458,7 @@ SmartMet::Spine::LocationList Engine::idSearch(const Locus::QueryOptions& theOpt
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -470,8 +468,8 @@ SmartMet::Spine::LocationList Engine::idSearch(const Locus::QueryOptions& theOpt
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationList Engine::keywordSearch(const Locus::QueryOptions& theOptions,
-                                                    const string& theKeyword) const
+Spine::LocationList Engine::keywordSearch(const Locus::QueryOptions& theOptions,
+                                          const string& theKeyword) const
 {
   try
   {
@@ -481,7 +479,7 @@ SmartMet::Spine::LocationList Engine::keywordSearch(const Locus::QueryOptions& t
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -491,15 +489,15 @@ SmartMet::Spine::LocationList Engine::keywordSearch(const Locus::QueryOptions& t
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationList Engine::suggest(const string& thePattern,
-                                              const string& theLang,
-                                              const string& theKeyword,
-                                              unsigned int thePage,
-                                              unsigned int theMaxResults) const
+Spine::LocationList Engine::suggest(const string& thePattern,
+                                    const string& theLang,
+                                    const string& theKeyword,
+                                    unsigned int thePage,
+                                    unsigned int theMaxResults) const
 {
   try
   {
-    SmartMet::Spine::LocationList ret;
+    Spine::LocationList ret;
 
     ++itsSuggestCount;
 
@@ -508,7 +506,7 @@ SmartMet::Spine::LocationList Engine::suggest(const string& thePattern,
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -516,12 +514,12 @@ SmartMet::Spine::LocationList Engine::suggest(const string& thePattern,
 /*!
  * \brief Find nearest point from keyword
  *
- * Returns SmartMet::Spine::LocationPtr(0) if none is found.
+ * Returns Spine::LocationPtr(0) if none is found.
  * A negative radius implies there are no distance restrictions.
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationPtr Engine::keywordSearch(
+Spine::LocationPtr Engine::keywordSearch(
     double lon, double lat, double radius, const string& lang, const string& keyword) const
 {
   try
@@ -541,26 +539,26 @@ SmartMet::Spine::LocationPtr Engine::keywordSearch(
 
     const auto it = mycopy->itsGeoTrees.find(keyword);
     if (it == mycopy->itsGeoTrees.end())
-      return SmartMet::Spine::LocationPtr();
+      return Spine::LocationPtr();
 
     // this is unfortunate - we must allocate new Location just to
     // get NearTree comparisons working
 
-    SmartMet::Spine::LocationPtr dummy(new SmartMet::Spine::Location(lon, lat));
+    Spine::LocationPtr dummy(new Spine::Location(lon, lat));
 
     // result will be here, if there is one
 
-    boost::optional<SmartMet::Spine::LocationPtr> ptr = it->second->nearest(dummy, radius);
+    boost::optional<Spine::LocationPtr> ptr = it->second->nearest(dummy, radius);
     if (!ptr)
-      return SmartMet::Spine::LocationPtr();
+      return Spine::LocationPtr();
 
-    SmartMet::Spine::LocationPtr newptr(new SmartMet::Spine::Location(**ptr));
+    Spine::LocationPtr newptr(new Spine::Location(**ptr));
     mycopy->translate(newptr, lang);
     return newptr;
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -570,19 +568,19 @@ SmartMet::Spine::LocationPtr Engine::keywordSearch(
  */
 // ----------------------------------------------------------------------
 
-LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& theReq) const
+LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
 {
   try
   {
     // Language selection (default -> config -> querystring order)
 
     string language = default_language;
-    language = SmartMet::Spine::optional_string(theReq.getParameter("lang"), language);
+    language = Spine::optional_string(theReq.getParameter("lang"), language);
 
     // Maximum distance for latlon searches
 
     double maxdistance = default_maxdistance;
-    maxdistance = SmartMet::Spine::optional_double(theReq.getParameter("maxdistance"), maxdistance);
+    maxdistance = Spine::optional_double(theReq.getParameter("maxdistance"), maxdistance);
 
     // Scan all options for location references
 
@@ -595,12 +593,12 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
       {
         double radius(0.0);
         string city_string = parse_radius(city, radius);
-        SmartMet::Spine::LocationPtr loc =
+        Spine::LocationPtr loc =
             this->nameSearch(city_string, language);  // throws for empty result
-        std::unique_ptr<SmartMet::Spine::Location> loc2(new SmartMet::Spine::Location(*loc));
+        std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
         // in order to make difference between e.g. Helsinki, Helsinki:50
         loc2->radius = radius;
-        loc2->type = SmartMet::Spine::Location::Place;
+        loc2->type = Spine::Location::Place;
         options.add(city_string, loc2);
       }
     }
@@ -617,12 +615,12 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
         {
           double radius(0.0);
           string city_string = parse_radius(city, radius);
-          SmartMet::Spine::LocationPtr loc =
+          Spine::LocationPtr loc =
               this->nameSearch(city_string, language);  // throws for empty result
           // in order to make difference between e.g. Helsinki, Helsinki:50
-          std::unique_ptr<SmartMet::Spine::Location> loc2(new SmartMet::Spine::Location(*loc));
+          std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
           loc2->radius = radius;
-          loc2->type = SmartMet::Spine::Location::Place;
+          loc2->type = Spine::Location::Place;
           options.add(city_string, loc2);
         }
       }
@@ -635,10 +633,9 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
       {
         double radius(0.0);
         string area_string = parse_radius(area, radius);
-        std::unique_ptr<SmartMet::Spine::Location> loc(
-            new SmartMet::Spine::Location(area_string, radius));
+        std::unique_ptr<Spine::Location> loc(new Spine::Location(area_string, radius));
         loc->radius = radius;
-        loc->type = SmartMet::Spine::Location::Area;
+        loc->type = Spine::Location::Area;
         options.add(area, loc);
       }
     }
@@ -655,10 +652,9 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
         {
           double radius(0.0);
           string area_string = parse_radius(area, radius);
-          std::unique_ptr<SmartMet::Spine::Location> loc(
-              new SmartMet::Spine::Location(area_string, radius));
+          std::unique_ptr<Spine::Location> loc(new Spine::Location(area_string, radius));
           loc->radius = radius;
-          loc->type = SmartMet::Spine::Location::Area;
+          loc->type = Spine::Location::Area;
           options.add(area, loc);
         }
       }
@@ -671,8 +667,7 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
       BOOST_FOREACH (const string& path, searchName)
       {
         if (path.find(' ') != std::string::npos)
-          throw SmartMet::Spine::Exception(
-              BCP, "Invalid path parameter " + path + ", no spaces allowed!");
+          throw Spine::Exception(BCP, "Invalid path parameter " + path + ", no spaces allowed!");
 
         std::string tag = "path" + Fmi::to_string(path_counter++);
 
@@ -680,9 +675,8 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
         double radius(0.0);
         string path_name = parse_radius(path, radius);
 
-        std::unique_ptr<SmartMet::Spine::Location> loc(
-            new SmartMet::Spine::Location(path_name, radius));
-        loc->type = SmartMet::Spine::Location::Path;
+        std::unique_ptr<Spine::Location> loc(new Spine::Location(path_name, radius));
+        loc->type = Spine::Location::Path;
         options.add(tag, loc);
       }
     }
@@ -699,12 +693,11 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
         BOOST_FOREACH (const string& path, path_list)
         {
           if (path.find(':') != std::string::npos)
-            throw SmartMet::Spine::Exception(
-                BCP, "Invalid path parameter " + path + ", no radius allowed!");
+            throw Spine::Exception(BCP, "Invalid path parameter " + path + ", no radius allowed!");
 
           std::string tag = "paths" + Fmi::to_string(paths_counter++);
-          std::unique_ptr<SmartMet::Spine::Location> loc(new SmartMet::Spine::Location(path, 0.0));
-          loc->type = SmartMet::Spine::Location::Path;
+          std::unique_ptr<Spine::Location> loc(new Spine::Location(path, 0.0));
+          loc->type = Spine::Location::Path;
           options.add(tag, loc);
         }
       }
@@ -719,16 +712,15 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
         list<string> parts;
         boost::algorithm::split(parts, bbox, boost::algorithm::is_any_of(","));
         if (parts.size() != 4)
-          throw SmartMet::Spine::Exception(BCP,
-                                           "Invalid bbox parameter " + bbox +
-                                               ", should be in format 'lon,lat,lon,lat[:radius]'!");
+          throw Spine::Exception(BCP,
+                                 "Invalid bbox parameter " + bbox +
+                                     ", should be in format 'lon,lat,lon,lat[:radius]'!");
 
         double radius(0.0);
         string bbox_string = parse_radius(bbox, radius);
 
-        std::unique_ptr<SmartMet::Spine::Location> loc(
-            new SmartMet::Spine::Location(bbox_string, radius));
-        loc->type = SmartMet::Spine::Location::BoundingBox;
+        std::unique_ptr<Spine::Location> loc(new Spine::Location(bbox_string, radius));
+        loc->type = Spine::Location::BoundingBox;
         options.add(bbox, loc);
       }
     }
@@ -742,7 +734,7 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
         vector<string> coordinates;
         boost::algorithm::split(coordinates, bboxes, boost::algorithm::is_any_of(","));
         if (coordinates.size() % 4 != 0)
-          throw SmartMet::Spine::Exception(
+          throw Spine::Exception(
               BCP,
               "Invalid bboxes parameter " + bboxes +
                   ", should be in format 'lon,lat,lon,lat[:radius],lon,lat,lon,lat[:radius],...'!");
@@ -756,9 +748,8 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
           string bbox_name(lonstr1 + "," + latstr1 + "," + lonstr2 + "," + latstr2);
           double radius(0.0);
           latstr2 = parse_radius(latstr2, radius);
-          std::unique_ptr<SmartMet::Spine::Location> loc(
-              new SmartMet::Spine::Location(bbox_name, radius));
-          loc->type = SmartMet::Spine::Location::BoundingBox;
+          std::unique_ptr<Spine::Location> loc(new Spine::Location(bbox_name, radius));
+          loc->type = Spine::Location::BoundingBox;
           options.add(bbox_name, loc);
         }
       }
@@ -772,7 +763,7 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
         vector<string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
         if (parts.size() % 2 != 0)
-          throw SmartMet::Spine::Exception(BCP, "Invalid lonlat list: " + string(coords));
+          throw Spine::Exception(BCP, "Invalid lonlat list: " + string(coords));
 
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
@@ -782,10 +773,10 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
           double lon = Fmi::stod(parts[j]);
           double lat = Fmi::stod(latstr);
           string tag = parts[j] + ',' + parts[j + 1];
-          SmartMet::Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
-          std::unique_ptr<SmartMet::Spine::Location> loc2(new SmartMet::Spine::Location(*loc));
+          Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
+          std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
           loc2->radius = radius;
-          loc2->type = SmartMet::Spine::Location::CoordinatePoint;
+          loc2->type = Spine::Location::CoordinatePoint;
           options.add(tag, loc2);
         }
       }
@@ -798,7 +789,7 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
         vector<string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
         if (parts.size() % 2 != 0)
-          throw SmartMet::Spine::Exception(BCP, "Invalid lonlats list: " + string(coords));
+          throw Spine::Exception(BCP, "Invalid lonlats list: " + string(coords));
 
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
@@ -807,9 +798,9 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
           double lon = Fmi::stod(parts[j]);
           double lat = Fmi::stod(latstr);
           string tag = parts[j] + ',' + parts[j + 1];
-          SmartMet::Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
-          std::unique_ptr<SmartMet::Spine::Location> loc2(new SmartMet::Spine::Location(*loc));
-          loc2->type = SmartMet::Spine::Location::CoordinatePoint;
+          Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
+          std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
+          loc2->type = Spine::Location::CoordinatePoint;
           loc2->radius = radius;
           options.add(tag, loc2);
         }
@@ -824,7 +815,7 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
         vector<string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
         if (parts.size() % 2 != 0)
-          throw SmartMet::Spine::Exception(BCP, "Invalid latlon list: " + string(coords));
+          throw Spine::Exception(BCP, "Invalid latlon list: " + string(coords));
 
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
@@ -835,9 +826,9 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
           double lat = Fmi::stod(latstr);
           swap(lon, lat);
           string tag = parts[j] + ',' + parts[j + 1];
-          SmartMet::Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
-          std::unique_ptr<SmartMet::Spine::Location> loc2(new SmartMet::Spine::Location(*loc));
-          loc2->type = SmartMet::Spine::Location::CoordinatePoint;
+          Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
+          std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
+          loc2->type = Spine::Location::CoordinatePoint;
           loc2->radius = radius;
           options.add(tag, loc2);
         }
@@ -852,7 +843,7 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
         vector<string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
         if (parts.size() % 2 != 0)
-          throw SmartMet::Spine::Exception(BCP, "Invalid latlons list: " + string(coords));
+          throw Spine::Exception(BCP, "Invalid latlons list: " + string(coords));
 
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
@@ -862,9 +853,9 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
           double lat = Fmi::stod(latstr);
           swap(lon, lat);
           string tag = parts[j] + ',' + parts[j + 1];
-          SmartMet::Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
-          std::unique_ptr<SmartMet::Spine::Location> loc2(new SmartMet::Spine::Location(*loc));
-          loc2->type = SmartMet::Spine::Location::CoordinatePoint;
+          Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
+          std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
+          loc2->type = Spine::Location::CoordinatePoint;
           loc2->radius = radius;
           options.add(tag, loc2);
         }
@@ -881,7 +872,7 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
         BOOST_FOREACH (const string& geoid, parts)
         {
           long number = Fmi::stol(geoid);
-          SmartMet::Spine::LocationPtr loc = this->idSearch(number, language);
+          Spine::LocationPtr loc = this->idSearch(number, language);
           options.add(geoid, loc);
         }
       }
@@ -897,7 +888,7 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
         BOOST_FOREACH (const string& geoid, parts)
         {
           long number = Fmi::stol(geoid);
-          SmartMet::Spine::LocationPtr loc = this->idSearch(number, language);
+          Spine::LocationPtr loc = this->idSearch(number, language);
           options.add(geoid, loc);
         }
       }
@@ -910,12 +901,11 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
       {
         Locus::QueryOptions opts;
         opts.SetLanguage(language);
-        SmartMet::Spine::LocationList places = this->keywordSearch(opts, keyword);
+        Spine::LocationList places = this->keywordSearch(opts, keyword);
         if (places.empty())
-          throw SmartMet::Spine::Exception(
-              BCP, "No locations for keyword " + string(keyword) + " found");
+          throw Spine::Exception(BCP, "No locations for keyword " + string(keyword) + " found");
 
-        BOOST_FOREACH (SmartMet::Spine::LocationPtr& place, places)
+        BOOST_FOREACH (Spine::LocationPtr& place, places)
         {
           options.add(place->name, place);
         }
@@ -926,7 +916,7 @@ LocationOptions Engine::parseLocations(const SmartMet::Spine::HTTP::Request& the
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -945,7 +935,7 @@ string Engine::countryName(const string& theIso2, const string& theLang) const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -964,7 +954,7 @@ boost::shared_ptr<Fmi::DEM> Engine::dem() const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -983,7 +973,7 @@ unsigned int Engine::maxDemResolution() const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1002,7 +992,7 @@ boost::shared_ptr<Fmi::LandCover> Engine::landCover() const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1031,7 +1021,7 @@ bool Engine::isSuggestReady() const
  */
 // ----------------------------------------------------------------------
 
-void Engine::sort(SmartMet::Spine::LocationList& theLocations) const
+void Engine::sort(Spine::LocationList& theLocations) const
 {
   try
   {
@@ -1040,7 +1030,7 @@ void Engine::sort(SmartMet::Spine::LocationList& theLocations) const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1090,7 +1080,7 @@ bool Engine::reload()
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1118,7 +1108,7 @@ std::string printrate(long count, long secs)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1132,8 +1122,8 @@ StatusReturnType Engine::metadataStatus() const
 {
   try
   {
-    boost::shared_ptr<SmartMet::Spine::Table> cacheTable(new SmartMet::Spine::Table());
-    SmartMet::Spine::TableFormatter::Names cacheHeaders;
+    boost::shared_ptr<Spine::Table> cacheTable(new Spine::Table());
+    Spine::TableFormatter::Names cacheHeaders;
 
     boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
     auto duration = now - itsStartTime;
@@ -1212,7 +1202,7 @@ StatusReturnType Engine::metadataStatus() const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1220,8 +1210,8 @@ StatusReturnType Engine::cacheStatus() const
 {
   try
   {
-    boost::shared_ptr<SmartMet::Spine::Table> cacheTable(new SmartMet::Spine::Table());
-    SmartMet::Spine::TableFormatter::Names cacheHeaders;
+    boost::shared_ptr<Spine::Table> cacheTable(new Spine::Table());
+    Spine::TableFormatter::Names cacheHeaders;
 
     auto mycopy = boost::atomic_load(&impl);
     mycopy->name_cache_status(cacheTable, cacheHeaders);
@@ -1230,7 +1220,7 @@ StatusReturnType Engine::cacheStatus() const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 

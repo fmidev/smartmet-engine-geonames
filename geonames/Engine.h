@@ -1,6 +1,6 @@
 // ======================================================================
 /*!
- * \brief Class SmartMet::Geo::Engine
+ * \brief Class Geo::Engine
  */
 // ======================================================================
 
@@ -42,29 +42,28 @@ const int fminames_default_maxresults = 15;
 class LocationOptions
 {
  public:
-  const SmartMet::Spine::TaggedLocationList& locations() const { return itsLocations; }
+  const Spine::TaggedLocationList& locations() const { return itsLocations; }
   bool empty() const { return itsLocations.empty(); }
-  SmartMet::Spine::TaggedLocationList::size_type size() const { return itsLocations.size(); }
+  Spine::TaggedLocationList::size_type size() const { return itsLocations.size(); }
  private:
   friend class Engine;
-  SmartMet::Spine::TaggedLocationList itsLocations;
+  Spine::TaggedLocationList itsLocations;
 
-  void add(const std::string& theTag, SmartMet::Spine::LocationPtr theLoc)
+  void add(const std::string& theTag, Spine::LocationPtr theLoc)
   {
-    itsLocations.push_back(SmartMet::Spine::TaggedLocation(theTag, theLoc));
+    itsLocations.push_back(Spine::TaggedLocation(theTag, theLoc));
   }
 
-  void add(const std::string& theTag, std::unique_ptr<SmartMet::Spine::Location>& theLoc)
+  void add(const std::string& theTag, std::unique_ptr<Spine::Location>& theLoc)
   {
-    add(theTag, SmartMet::Spine::LocationPtr(theLoc.release()));
+    add(theTag, Spine::LocationPtr(theLoc.release()));
   }
 
 };  // class LocationOptions
 
-typedef std::pair<boost::shared_ptr<SmartMet::Spine::Table>, SmartMet::Spine::TableFormatter::Names>
-    StatusReturnType;
+typedef std::pair<boost::shared_ptr<Spine::Table>, Spine::TableFormatter::Names> StatusReturnType;
 
-class Engine : public SmartMet::Spine::SmartMetEngine
+class Engine : public Spine::SmartMetEngine
 {
  private:
   Engine();  // must give config file
@@ -94,59 +93,55 @@ class Engine : public SmartMet::Spine::SmartMetEngine
   const Fmi::TimeZones& getTimeZones() const { return itsTimeZones; }
   // Find location with default options
 
-  SmartMet::Spine::LocationPtr nameSearch(const std::string& theName,
-                                          const std::string& theLang) const;
+  Spine::LocationPtr nameSearch(const std::string& theName, const std::string& theLang) const;
 
-  SmartMet::Spine::LocationPtr lonlatSearch(
-      double theLongitude,
-      double theLatitude,
-      const std::string& theLang,
-      double theMaxDistance = Locus::Query::default_radius) const;
+  Spine::LocationPtr lonlatSearch(double theLongitude,
+                                  double theLatitude,
+                                  const std::string& theLang,
+                                  double theMaxDistance = Locus::Query::default_radius) const;
 
-  SmartMet::Spine::LocationPtr idSearch(long theGeoID, const std::string& theLang) const;
+  Spine::LocationPtr idSearch(long theGeoID, const std::string& theLang) const;
 
   // Find locations with options
 
-  SmartMet::Spine::LocationList nameSearch(const Locus::QueryOptions& theOptions,
-                                           const std::string& theName) const;
+  Spine::LocationList nameSearch(const Locus::QueryOptions& theOptions,
+                                 const std::string& theName) const;
 
-  SmartMet::Spine::LocationList latlonSearch(const Locus::QueryOptions& theOptions,
-                                             float theLatitude,
-                                             float theLongitude,
-                                             float theRadius = Locus::Query::default_radius) const;
+  Spine::LocationList latlonSearch(const Locus::QueryOptions& theOptions,
+                                   float theLatitude,
+                                   float theLongitude,
+                                   float theRadius = Locus::Query::default_radius) const;
 
-  SmartMet::Spine::LocationList lonlatSearch(const Locus::QueryOptions& theOptions,
-                                             float theLongitude,
-                                             float theLatitude,
-                                             float theRadius = Locus::Query::default_radius) const;
+  Spine::LocationList lonlatSearch(const Locus::QueryOptions& theOptions,
+                                   float theLongitude,
+                                   float theLatitude,
+                                   float theRadius = Locus::Query::default_radius) const;
 
-  SmartMet::Spine::LocationList idSearch(const Locus::QueryOptions& theOptions, int theId) const;
+  Spine::LocationList idSearch(const Locus::QueryOptions& theOptions, int theId) const;
 
-  SmartMet::Spine::LocationPtr keywordSearch(
-      double theLongitude,
-      double theLatitude,
-      double theRadius = -1,
-      const std::string& theLang = "fi",
-      const std::string& theKeyword = FMINAMES_DEFAULT_KEYWORD) const;
+  Spine::LocationPtr keywordSearch(double theLongitude,
+                                   double theLatitude,
+                                   double theRadius = -1,
+                                   const std::string& theLang = "fi",
+                                   const std::string& theKeyword = FMINAMES_DEFAULT_KEYWORD) const;
 
-  SmartMet::Spine::LocationList keywordSearch(const Locus::QueryOptions& theOptions,
-                                              const std::string& theKeyword) const;
+  Spine::LocationList keywordSearch(const Locus::QueryOptions& theOptions,
+                                    const std::string& theKeyword) const;
 
   // suggest alphabetical completions
 
-  SmartMet::Spine::LocationList suggest(
-      const std::string& thePattern,
-      const std::string& theLang = "fi",
-      const std::string& theKeyword = FMINAMES_DEFAULT_KEYWORD,
-      unsigned int thePage = 0,
-      unsigned int theMaxResults = fminames_default_maxresults) const;
+  Spine::LocationList suggest(const std::string& thePattern,
+                              const std::string& theLang = "fi",
+                              const std::string& theKeyword = FMINAMES_DEFAULT_KEYWORD,
+                              unsigned int thePage = 0,
+                              unsigned int theMaxResults = fminames_default_maxresults) const;
 
   // find name of country
 
   std::string countryName(const std::string& theIso2, const std::string& theLang = "fi") const;
 
   // Parse location-related HTTP options
-  LocationOptions parseLocations(const SmartMet::Spine::HTTP::Request& theReq) const;
+  LocationOptions parseLocations(const Spine::HTTP::Request& theReq) const;
 
   // reload all data
 
@@ -158,7 +153,7 @@ class Engine : public SmartMet::Spine::SmartMetEngine
   StatusReturnType cacheStatus() const;
   StatusReturnType metadataStatus() const;
 
-  void sort(SmartMet::Spine::LocationList& theLocations) const;
+  void sort(Spine::LocationList& theLocations) const;
 
   // DEM elevation for a coordinate
   boost::shared_ptr<Fmi::DEM> dem() const;

@@ -101,7 +101,7 @@ Engine::Impl::~Impl()
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -157,7 +157,7 @@ Engine::Impl::Impl(const string &configfile, bool reloading)
     }
     catch (const libconfig::SettingException &e)
     {
-      SmartMet::Spine::Exception exception(BCP, "Configuration file setting error!");
+      Spine::Exception exception(BCP, "Configuration file setting error!");
       exception.addParameter("Path", e.getPath());
       exception.addParameter("Configuration file", itsConfigFile);
       exception.addParameter("Error description", e.what());
@@ -167,7 +167,7 @@ Engine::Impl::Impl(const string &configfile, bool reloading)
 
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Constructor failed!", NULL);
+    throw Spine::Exception(BCP, "Constructor failed!", NULL);
   }
 }
 
@@ -199,7 +199,7 @@ double Engine::Impl::elevation(double lon, double lat) const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -220,7 +220,7 @@ double Engine::Impl::elevation(double lon, double lat, unsigned int maxdemresolu
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -252,7 +252,7 @@ Fmi::LandCover::Type Engine::Impl::coverType(double lon, double lat) const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -281,7 +281,7 @@ string Engine::Impl::preprocess_name(const string &name) const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -334,7 +334,7 @@ list<string> Engine::Impl::to_treewords(const string &name, const string &area) 
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -363,7 +363,7 @@ string Engine::Impl::to_treeword(const string &name) const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -384,7 +384,7 @@ string Engine::Impl::to_treeword(const string &name, const string &area) const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -440,7 +440,7 @@ void Engine::Impl::initSuggest(bool threaded)
         Locus::Connection conn(host, user, pass, base, "UTF8", Fmi::to_string(port));
 
         if (!conn.isConnected())
-          throw SmartMet::Spine::Exception(BCP, "Failed to connect to fminames database");
+          throw Spine::Exception(BCP, "Failed to connect to fminames database");
 
         read_database_hash_value(conn);
 
@@ -481,17 +481,17 @@ void Engine::Impl::initSuggest(bool threaded)
     }
     catch (libconfig::ParseException &e)
     {
-      SmartMet::Spine::Exception exception(BCP, "Geo configuration error!", NULL);
+      Spine::Exception exception(BCP, "Geo configuration error!", NULL);
       exception.addDetail(std::string(e.getError()) + "' on line " + std::to_string(e.getLine()));
       throw exception;
     }
     catch (libconfig::ConfigException &)
     {
-      throw SmartMet::Spine::Exception(BCP, "Geo configuration error", NULL);
+      throw Spine::Exception(BCP, "Geo configuration error", NULL);
     }
     catch (...)
     {
-      SmartMet::Spine::Exception exception(BCP, "Operation failed", NULL);
+      Spine::Exception exception(BCP, "Operation failed", NULL);
       if (!itsReloading)
       {
         throw exception;
@@ -531,8 +531,7 @@ void Engine::Impl::initSuggest(bool threaded)
   }
   catch (...)
   {
-    SmartMet::Spine::Exception exception(
-        BCP, "Geonames autocomplete data initialization failed", NULL);
+    Spine::Exception exception(BCP, "Geonames autocomplete data initialization failed", NULL);
 
     if (!threaded)
       throw exception;
@@ -611,7 +610,7 @@ void Engine::Impl::init(bool first_construction)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -633,7 +632,7 @@ void Engine::Impl::shutdown()
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -688,8 +687,7 @@ void Engine::Impl::read_config()
 
       if (!itsConfig.exists("database"))
       {
-        SmartMet::Spine::Exception exception(
-            BCP, "Configuration file must specify the database details!");
+        Spine::Exception exception(BCP, "Configuration file must specify the database details!");
         exception.addParameter("Configuration file", itsConfigFile);
         throw exception;
       }
@@ -698,8 +696,7 @@ void Engine::Impl::read_config()
 
       if (!db.isGroup())
       {
-        SmartMet::Spine::Exception exception(BCP,
-                                             "Configured value of 'database' must be a group!");
+        Spine::Exception exception(BCP, "Configured value of 'database' must be a group!");
         exception.addParameter("Configuration file", itsConfigFile);
         throw exception;
       }
@@ -719,7 +716,7 @@ void Engine::Impl::read_config()
     }
     catch (const libconfig::SettingException &e)
     {
-      SmartMet::Spine::Exception exception(BCP, "Configuration file setting error!");
+      Spine::Exception exception(BCP, "Configuration file setting error!");
       exception.addParameter("Configuration file", itsConfigFile);
       exception.addParameter("Path", e.getPath());
       exception.addParameter("Error description", e.what());
@@ -727,7 +724,7 @@ void Engine::Impl::read_config()
     }
     catch (libconfig::ParseException &e)
     {
-      SmartMet::Spine::Exception exception(BCP, "Configuration file parsing failed!");
+      Spine::Exception exception(BCP, "Configuration file parsing failed!");
       exception.addParameter("Configuration file", itsConfigFile);
       exception.addParameter("Error line", std::to_string(e.getLine()));
       exception.addParameter("Error description", e.getError());
@@ -735,7 +732,7 @@ void Engine::Impl::read_config()
     }
     catch (libconfig::ConfigException &e)
     {
-      SmartMet::Spine::Exception exception(BCP, "Configuration exception!");
+      Spine::Exception exception(BCP, "Configuration exception!");
       exception.addParameter("Configuration file", itsConfigFile);
       exception.addParameter("Error description", e.what());
       throw exception;
@@ -743,7 +740,7 @@ void Engine::Impl::read_config()
   }
   catch (...)
   {
-    SmartMet::Spine::Exception exception(BCP, "Configuration read failed!", NULL);
+    Spine::Exception exception(BCP, "Configuration read failed!", NULL);
     throw exception;
   }
 }
@@ -774,8 +771,8 @@ void Engine::Impl::read_config_priorities()
 
       if (!tmp.isGroup())
       {
-        SmartMet::Spine::Exception exception(
-            BCP, "Configured value of 'priorities.features' must be a group!");
+        Spine::Exception exception(BCP,
+                                   "Configured value of 'priorities.features' must be a group!");
         exception.addParameter("Configuration file", itsConfigFile);
         throw exception;
       }
@@ -788,8 +785,7 @@ void Engine::Impl::read_config_priorities()
 
         if (!itsConfig.exists(mapname))
         {
-          SmartMet::Spine::Exception exception(BCP,
-                                               "Configuration of '" + mapname + "' is missing!");
+          Spine::Exception exception(BCP, "Configuration of '" + mapname + "' is missing!");
           exception.addParameter("Configuration file", itsConfigFile);
           throw exception;
         }
@@ -806,7 +802,7 @@ void Engine::Impl::read_config_priorities()
     }
     catch (const libconfig::SettingException &e)
     {
-      SmartMet::Spine::Exception exception(BCP, "Configuration file setting error!");
+      Spine::Exception exception(BCP, "Configuration file setting error!");
       exception.addParameter("Path", e.getPath());
       exception.addParameter("Configuration file", itsConfigFile);
       exception.addParameter("Error description", e.what());
@@ -815,7 +811,7 @@ void Engine::Impl::read_config_priorities()
   }
   catch (...)
   {
-    SmartMet::Spine::Exception exception(BCP, "Reading config priorities failed!", NULL);
+    Spine::Exception exception(BCP, "Reading config priorities failed!", NULL);
     throw exception;
   }
 }
@@ -841,8 +837,7 @@ void Engine::Impl::read_config_prioritymap(const string &partname, Priorities &p
 
       if (!tmp.isGroup())
       {
-        SmartMet::Spine::Exception exception(BCP,
-                                             "Configured value of '" + name + "' must be a group!");
+        Spine::Exception exception(BCP, "Configured value of '" + name + "' must be a group!");
         exception.addParameter("Configuration file", itsConfigFile);
         throw exception;
       }
@@ -856,7 +851,7 @@ void Engine::Impl::read_config_prioritymap(const string &partname, Priorities &p
     }
     catch (const libconfig::SettingException &e)
     {
-      SmartMet::Spine::Exception exception(BCP, "Configuration file setting error!");
+      Spine::Exception exception(BCP, "Configuration file setting error!");
       exception.addParameter("Config file", itsConfigFile);
       exception.addParameter("Path", e.getPath());
       exception.addParameter("Error description", e.what());
@@ -865,7 +860,7 @@ void Engine::Impl::read_config_prioritymap(const string &partname, Priorities &p
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -891,7 +886,7 @@ void Engine::Impl::read_database_hash_value(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
-      throw SmartMet::Spine::Exception(BCP, "FmiNames: Failed to read database hash value");
+      throw Spine::Exception(BCP, "FmiNames: Failed to read database hash value");
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
@@ -900,7 +895,7 @@ void Engine::Impl::read_database_hash_value(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -927,8 +922,7 @@ void Engine::Impl::read_countries(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
-      throw SmartMet::Spine::Exception(
-          BCP, "FmiNames: Found no PCLI/PCLF/PCLD places from geonames table");
+      throw Spine::Exception(BCP, "FmiNames: Found no PCLI/PCLF/PCLD places from geonames table");
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
@@ -942,7 +936,7 @@ void Engine::Impl::read_countries(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -969,7 +963,7 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
-      throw SmartMet::Spine::Exception(BCP, "FmiNames: Found no country translations");
+      throw Spine::Exception(BCP, "FmiNames: Found no country translations");
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
@@ -995,7 +989,7 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1017,7 +1011,7 @@ void Engine::Impl::read_municipalities(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
-      throw SmartMet::Spine::Exception(BCP, "FmiNames: Found nothing from municipalities table");
+      throw Spine::Exception(BCP, "FmiNames: Found nothing from municipalities table");
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
@@ -1031,7 +1025,7 @@ void Engine::Impl::read_municipalities(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1064,11 +1058,11 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(sql);
 
     if (res.empty())
-      throw SmartMet::Spine::Exception(BCP, "FmiNames: Found nothing from fminames database");
+      throw Spine::Exception(BCP, "FmiNames: Found nothing from fminames database");
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      SmartMet::Spine::GeoId geoid = Fmi::stoi(row["id"].as<string>());
+      Spine::GeoId geoid = Fmi::stoi(row["id"].as<string>());
       string name = row["name"].as<string>();
 
       if (row["timezone"].is_null())
@@ -1111,21 +1105,20 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
         }
 
         string country("");  // country will be filled in upon request
-        SmartMet::Spine::LocationPtr loc(
-            new SmartMet::Spine::Location(geoid,
-                                          name,
-                                          iso2,
-                                          munip,
-                                          area,
-                                          feature,
-                                          country,
-                                          lon,
-                                          lat,
-                                          tz,
-                                          pop,
-                                          boost::numeric_cast<float>(ele),
-                                          boost::numeric_cast<float>(dem),
-                                          covertype));
+        Spine::LocationPtr loc(new Spine::Location(geoid,
+                                                   name,
+                                                   iso2,
+                                                   munip,
+                                                   area,
+                                                   feature,
+                                                   country,
+                                                   lon,
+                                                   lat,
+                                                   tz,
+                                                   pop,
+                                                   boost::numeric_cast<float>(ele),
+                                                   boost::numeric_cast<float>(dem),
+                                                   covertype));
         itsLocations.push_back(loc);
       }
     }
@@ -1135,7 +1128,7 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1181,15 +1174,14 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(sql);
 
     if (res.empty())
-      throw SmartMet::Spine::Exception(BCP,
-                                       "FmiNames: Found nothing from alternate_fminames database");
+      throw Spine::Exception(BCP, "FmiNames: Found nothing from alternate_fminames database");
 
     if (itsVerbose)
       cout << "read_alternate_geonames: " << res.size() << " translations" << endl;
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      SmartMet::Spine::GeoId geoid = Fmi::stoi(row["geonames_id"].as<string>());
+      Spine::GeoId geoid = Fmi::stoi(row["geonames_id"].as<string>());
       string name = row["name"].as<string>();
       string lang = row["language"].as<string>();
 
@@ -1212,7 +1204,7 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1235,8 +1227,7 @@ void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
-      throw SmartMet::Spine::Exception(
-          BCP, "FmiNames: Found nothing from alternate_municipalities database");
+      throw Spine::Exception(BCP, "FmiNames: Found nothing from alternate_municipalities database");
 
     if (itsVerbose)
       cout << "read_alternate_geonames: " << res.size() << " translations" << endl;
@@ -1262,7 +1253,7 @@ void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1282,14 +1273,14 @@ void Engine::Impl::build_geoid_map()
       cout << "build_geoid_map()" << endl;
 
     assert(itsGeoIdMap.size() == 0);
-    BOOST_FOREACH (SmartMet::Spine::LocationPtr &v, itsLocations)
+    BOOST_FOREACH (Spine::LocationPtr &v, itsLocations)
     {
       itsGeoIdMap.insert(GeoIdMap::value_type(v->geoid, &v));
     }
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1299,31 +1290,31 @@ void Engine::Impl::build_geoid_map()
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::assign_priorities(SmartMet::Spine::LocationList &locs) const
+void Engine::Impl::assign_priorities(Spine::LocationList &locs) const
 {
   try
   {
     if (itsVerbose)
       cout << "assign_priorities" << endl;
 
-    BOOST_FOREACH (SmartMet::Spine::LocationPtr &v, locs)
+    BOOST_FOREACH (Spine::LocationPtr &v, locs)
     {
       int score = population_priority(*v);
       score += area_priority(*v);
       score += country_priority(*v);
       score += feature_priority(*v);
 
-      SmartMet::Spine::Location &myloc = const_cast<SmartMet::Spine::Location &>(*v);
+      Spine::Location &myloc = const_cast<Spine::Location &>(*v);
       myloc.priority = score;
     }
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
-int Engine::Impl::country_priority(const SmartMet::Spine::Location &loc) const
+int Engine::Impl::country_priority(const Spine::Location &loc) const
 {
   try
   {
@@ -1339,11 +1330,11 @@ int Engine::Impl::country_priority(const SmartMet::Spine::Location &loc) const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
-int Engine::Impl::area_priority(const SmartMet::Spine::Location &loc) const
+int Engine::Impl::area_priority(const Spine::Location &loc) const
 {
   try
   {
@@ -1359,11 +1350,11 @@ int Engine::Impl::area_priority(const SmartMet::Spine::Location &loc) const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
-int Engine::Impl::population_priority(const SmartMet::Spine::Location &loc) const
+int Engine::Impl::population_priority(const Spine::Location &loc) const
 {
   try
   {
@@ -1379,11 +1370,11 @@ int Engine::Impl::population_priority(const SmartMet::Spine::Location &loc) cons
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
-int Engine::Impl::feature_priority(const SmartMet::Spine::Location &loc) const
+int Engine::Impl::feature_priority(const Spine::Location &loc) const
 {
   try
   {
@@ -1409,7 +1400,7 @@ int Engine::Impl::feature_priority(const SmartMet::Spine::Location &loc) const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1431,8 +1422,7 @@ void Engine::Impl::read_keywords(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
-      throw SmartMet::Spine::Exception(
-          BCP, "FmiNames: Found nothing from keywords_has_geonames database");
+      throw Spine::Exception(BCP, "FmiNames: Found nothing from keywords_has_geonames database");
 
     int count_ok = 0;
     int count_bad = 0;
@@ -1442,7 +1432,7 @@ void Engine::Impl::read_keywords(Locus::Connection &conn)
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
       string key = row["keyword"].as<string>();
-      SmartMet::Spine::GeoId geoid = Fmi::stoi(row["id"].as<string>());
+      Spine::GeoId geoid = Fmi::stoi(row["id"].as<string>());
 
       auto it = itsGeoIdMap.find(geoid);
       if (it != itsGeoIdMap.end())
@@ -1466,7 +1456,7 @@ void Engine::Impl::read_keywords(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1483,7 +1473,7 @@ void Engine::Impl::build_geotrees()
     BOOST_FOREACH (const KeywordMap::value_type &name_locs, itsKeywords)
     {
       const string &keyword = name_locs.first;
-      const SmartMet::Spine::LocationList &locs = name_locs.second;
+      const Spine::LocationList &locs = name_locs.second;
 
       if (itsVerbose)
         cout << "build_geotrees:  keyword '" << keyword << "' of size " << locs.size() << endl;
@@ -1494,7 +1484,7 @@ void Engine::Impl::build_geotrees()
         it = itsGeoTrees.insert(make_pair(keyword, new GeoTree())).first;
       }
 
-      BOOST_FOREACH (SmartMet::Spine::LocationPtr ptr, locs)
+      BOOST_FOREACH (Spine::LocationPtr ptr, locs)
         it->second->insert(ptr);
     }
 
@@ -1505,12 +1495,12 @@ void Engine::Impl::build_geotrees()
            << itsLocations.size() << endl;
 
     auto it = itsGeoTrees.insert(make_pair(FMINAMES_DEFAULT_KEYWORD, new GeoTree())).first;
-    BOOST_FOREACH (SmartMet::Spine::LocationPtr &ptr, itsLocations)
+    BOOST_FOREACH (Spine::LocationPtr &ptr, itsLocations)
       it->second->insert(ptr);
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1529,7 +1519,7 @@ void Engine::Impl::build_ternarytrees()
     BOOST_FOREACH (auto &name_locs, itsKeywords)
     {
       const string &keyword = name_locs.first;
-      SmartMet::Spine::LocationList &locs = name_locs.second;
+      Spine::LocationList &locs = name_locs.second;
 
       if (itsVerbose)
         cout << "build_ternarytrees: keyword '" << keyword << "' of size " << locs.size() << endl;
@@ -1541,7 +1531,7 @@ void Engine::Impl::build_ternarytrees()
         it = itsTernaryTrees.insert(make_pair(keyword, newtree)).first;
       }
 
-      BOOST_FOREACH (SmartMet::Spine::LocationPtr &ptr, locs)
+      BOOST_FOREACH (Spine::LocationPtr &ptr, locs)
       {
         std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
         auto names = to_treewords(preprocess_name(ptr->name), specifier);
@@ -1561,7 +1551,7 @@ void Engine::Impl::build_ternarytrees()
     auto newtree = boost::make_shared<TernaryTree>();
     auto it = itsTernaryTrees.insert(make_pair(FMINAMES_DEFAULT_KEYWORD, newtree)).first;
 
-    BOOST_FOREACH (SmartMet::Spine::LocationPtr &ptr, itsLocations)
+    BOOST_FOREACH (Spine::LocationPtr &ptr, itsLocations)
     {
       std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
       auto names = to_treewords(preprocess_name(ptr->name), specifier);
@@ -1573,7 +1563,7 @@ void Engine::Impl::build_ternarytrees()
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1595,7 +1585,7 @@ void Engine::Impl::build_lang_ternarytrees()
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1634,7 +1624,7 @@ void Engine::Impl::build_lang_ternarytrees_all()
       if (git == itsGeoIdMap.end())
         continue;
 
-      const SmartMet::Spine::LocationPtr &loc = *git->second;
+      const Spine::LocationPtr &loc = *git->second;
 
       // Now process all translations for the geoid
 
@@ -1680,7 +1670,7 @@ void Engine::Impl::build_lang_ternarytrees_all()
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1710,7 +1700,7 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
 
       int ntranslations = 0;
 
-      BOOST_FOREACH (SmartMet::Spine::LocationPtr &loc, kloc.second)
+      BOOST_FOREACH (Spine::LocationPtr &loc, kloc.second)
       {
         int geoid = loc->geoid;
 
@@ -1725,7 +1715,7 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
 
         // Process all the different language translations
 
-        SmartMet::Spine::LocationPtr &ptr = *git->second;
+        Spine::LocationPtr &ptr = *git->second;
 
         BOOST_FOREACH (const auto &tt, ait->second)
         {
@@ -1779,7 +1769,7 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1789,7 +1779,7 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::translate_name(SmartMet::Spine::Location &loc, const string &lang) const
+void Engine::Impl::translate_name(Spine::Location &loc, const string &lang) const
 {
   try
   {
@@ -1813,7 +1803,7 @@ void Engine::Impl::translate_name(SmartMet::Spine::Location &loc, const string &
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1823,7 +1813,7 @@ void Engine::Impl::translate_name(SmartMet::Spine::Location &loc, const string &
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::translate_area(SmartMet::Spine::Location &loc, const string &lang) const
+void Engine::Impl::translate_area(Spine::Location &loc, const string &lang) const
 {
   try
   {
@@ -1859,7 +1849,7 @@ void Engine::Impl::translate_area(SmartMet::Spine::Location &loc, const string &
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1869,11 +1859,11 @@ void Engine::Impl::translate_area(SmartMet::Spine::Location &loc, const string &
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::translate(SmartMet::Spine::LocationPtr &loc, const string &lang) const
+void Engine::Impl::translate(Spine::LocationPtr &loc, const string &lang) const
 {
   try
   {
-    std::unique_ptr<SmartMet::Spine::Location> newloc(new SmartMet::Spine::Location(*loc));
+    std::unique_ptr<Spine::Location> newloc(new Spine::Location(*loc));
     translate_name(*newloc, lang);
     translate_area(*newloc, lang);
     newloc->country = translate_country(newloc->iso2, lang);
@@ -1881,7 +1871,7 @@ void Engine::Impl::translate(SmartMet::Spine::LocationPtr &loc, const string &la
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1891,16 +1881,16 @@ void Engine::Impl::translate(SmartMet::Spine::LocationPtr &loc, const string &la
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::translate(SmartMet::Spine::LocationList &locs, const string &lang) const
+void Engine::Impl::translate(Spine::LocationList &locs, const string &lang) const
 {
   try
   {
-    BOOST_FOREACH (SmartMet::Spine::LocationPtr &loc, locs)
+    BOOST_FOREACH (Spine::LocationPtr &loc, locs)
       translate(loc, lang);
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1938,7 +1928,7 @@ string Engine::Impl::translate_country(const string &iso2, const string &lang) c
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1948,8 +1938,7 @@ string Engine::Impl::translate_country(const string &iso2, const string &lang) c
  */
 // ----------------------------------------------------------------------
 
-bool Engine::Impl::prioritySort(const SmartMet::Spine::LocationPtr &a,
-                                const SmartMet::Spine::LocationPtr &b) const
+bool Engine::Impl::prioritySort(const Spine::LocationPtr &a, const Spine::LocationPtr &b) const
 {
   try
   {
@@ -1969,7 +1958,7 @@ bool Engine::Impl::prioritySort(const SmartMet::Spine::LocationPtr &a,
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -1979,7 +1968,7 @@ bool Engine::Impl::prioritySort(const SmartMet::Spine::LocationPtr &a,
  */
 // ----------------------------------------------------------------------
 
-bool basicSort(SmartMet::Spine::LocationPtr a, SmartMet::Spine::LocationPtr b)
+bool basicSort(Spine::LocationPtr a, Spine::LocationPtr b)
 {
   try
   {
@@ -2002,17 +1991,17 @@ bool basicSort(SmartMet::Spine::LocationPtr a, SmartMet::Spine::LocationPtr b)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
 // ----------------------------------------------------------------------
 /*!
- * \brief Definition of unique for SmartMet::Spine::LocationPtr*
+ * \brief Definition of unique for Spine::LocationPtr*
  */
 // ----------------------------------------------------------------------
 
-bool closeEnough(SmartMet::Spine::LocationPtr a, SmartMet::Spine::LocationPtr b)
+bool closeEnough(Spine::LocationPtr a, Spine::LocationPtr b)
 {
   try
   {
@@ -2027,7 +2016,7 @@ bool closeEnough(SmartMet::Spine::LocationPtr a, SmartMet::Spine::LocationPtr b)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -2037,7 +2026,7 @@ bool closeEnough(SmartMet::Spine::LocationPtr a, SmartMet::Spine::LocationPtr b)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::sort(SmartMet::Spine::LocationList &theLocations) const
+void Engine::Impl::sort(Spine::LocationList &theLocations) const
 {
   try
   {
@@ -2049,7 +2038,7 @@ void Engine::Impl::sort(SmartMet::Spine::LocationList &theLocations) const
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -2059,19 +2048,18 @@ void Engine::Impl::sort(SmartMet::Spine::LocationList &theLocations) const
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationList Engine::Impl::suggest(const string &pattern,
-                                                    const string &lang,
-                                                    const string &keyword,
-                                                    unsigned int page,
-                                                    unsigned int maxresults) const
+Spine::LocationList Engine::Impl::suggest(const string &pattern,
+                                          const string &lang,
+                                          const string &keyword,
+                                          unsigned int page,
+                                          unsigned int maxresults) const
 {
   if (!itsSuggestReadyFlag)
-    throw SmartMet::Spine::Exception(
-        BCP, "Attempt to use geonames suggest before it is ready!", NULL);
+    throw Spine::Exception(BCP, "Attempt to use geonames suggest before it is ready!", NULL);
 
   try
   {
-    SmartMet::Spine::LocationList ret;
+    Spine::LocationList ret;
 
     // return null if keyword is wrong
 
@@ -2097,8 +2085,8 @@ SmartMet::Spine::LocationList Engine::Impl::suggest(const string &pattern,
       auto tit = lt->second->find(keyword);
       if (tit != lt->second->end())
       {
-        list<SmartMet::Spine::LocationPtr> tmpx = tit->second->findprefix(name);
-        BOOST_FOREACH (const SmartMet::Spine::LocationPtr &ptr, tmpx)
+        list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
+        BOOST_FOREACH (const Spine::LocationPtr &ptr, tmpx)
         {
           ret.push_back(ptr);
         }
@@ -2135,7 +2123,7 @@ SmartMet::Spine::LocationList Engine::Impl::suggest(const string &pattern,
 
       if (tmpname == name)
       {
-        SmartMet::Spine::LocationPtr ptr = *iter;
+        Spine::LocationPtr ptr = *iter;
         ret.erase(iter);
         ret.push_front(ptr);
         break;
@@ -2146,7 +2134,7 @@ SmartMet::Spine::LocationList Engine::Impl::suggest(const string &pattern,
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -2156,12 +2144,11 @@ SmartMet::Spine::LocationList Engine::Impl::suggest(const string &pattern,
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationList Engine::Impl::to_locationlist(
-    const Locus::Query::return_type &theList)
+Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_type &theList)
 {
   try
   {
-    SmartMet::Spine::LocationList ret;
+    Spine::LocationList ret;
     BOOST_FOREACH (const auto &loc, theList)
     {
       double dem = elevation(loc.lon, loc.lat);
@@ -2174,21 +2161,20 @@ SmartMet::Spine::LocationList Engine::Impl::to_locationlist(
       if (area == loc.name || area.empty())
         area = loc.country;
 
-      SmartMet::Spine::LocationPtr ptr(
-          new SmartMet::Spine::Location(loc.id,
-                                        loc.name,
-                                        loc.iso2,
-                                        0,
-                                        area,
-                                        loc.feature,
-                                        loc.country,
-                                        loc.lon,
-                                        loc.lat,
-                                        loc.timezone,
-                                        boost::numeric_cast<int>(loc.population),
-                                        loc.elevation,
-                                        dem,
-                                        covertype));
+      Spine::LocationPtr ptr(new Spine::Location(loc.id,
+                                                 loc.name,
+                                                 loc.iso2,
+                                                 0,
+                                                 area,
+                                                 loc.feature,
+                                                 loc.country,
+                                                 loc.lon,
+                                                 loc.lat,
+                                                 loc.timezone,
+                                                 boost::numeric_cast<int>(loc.population),
+                                                 loc.elevation,
+                                                 dem,
+                                                 covertype));
 
       ret.push_back(ptr);
     }
@@ -2196,7 +2182,7 @@ SmartMet::Spine::LocationList Engine::Impl::to_locationlist(
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -2206,8 +2192,8 @@ SmartMet::Spine::LocationList Engine::Impl::to_locationlist(
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOptions,
-                                                        const string &theName)
+Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOptions,
+                                              const string &theName)
 {
   if (itsDatabaseDisabled)
     return {};
@@ -2232,7 +2218,7 @@ SmartMet::Spine::LocationList Engine::Impl::name_search(const Locus::QueryOption
       itsConfig.lookupValue("database.port", port);
 
       Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
-      SmartMet::Spine::LocationList ptrs = to_locationlist(lq.FetchByName(theOptions, theName));
+      Spine::LocationList ptrs = to_locationlist(lq.FetchByName(theOptions, theName));
       assign_priorities(ptrs);
       ptrs.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
 
@@ -2249,7 +2235,7 @@ SmartMet::Spine::LocationList Engine::Impl::name_search(const Locus::QueryOption
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -2259,10 +2245,10 @@ SmartMet::Spine::LocationList Engine::Impl::name_search(const Locus::QueryOption
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOptions &theOptions,
-                                                          float theLongitude,
-                                                          float theLatitude,
-                                                          float theRadius)
+Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOptions &theOptions,
+                                                float theLongitude,
+                                                float theLatitude,
+                                                float theRadius)
 {
   // Let the engine handle setting the timezone, dem and covertype
   if (itsDatabaseDisabled)
@@ -2291,7 +2277,7 @@ SmartMet::Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOpti
 
       Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
 
-      SmartMet::Spine::LocationList ptrs =
+      Spine::LocationList ptrs =
           to_locationlist(lq.FetchByLonLat(theOptions, theLongitude, theLatitude, theRadius));
 
       // Do not cache empty results
@@ -2305,7 +2291,7 @@ SmartMet::Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOpti
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -2315,8 +2301,7 @@ SmartMet::Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOpti
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions &theOptions,
-                                                      int theId)
+Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions &theOptions, int theId)
 {
   if (itsDatabaseDisabled)
     return {};
@@ -2342,7 +2327,7 @@ SmartMet::Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions 
 
       Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
 
-      SmartMet::Spine::LocationList ptrs = to_locationlist(lq.FetchById(theOptions, theId));
+      Spine::LocationList ptrs = to_locationlist(lq.FetchById(theOptions, theId));
 
       // Do not cache empty results
       if (ptrs.empty())
@@ -2357,7 +2342,7 @@ SmartMet::Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions 
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -2367,8 +2352,8 @@ SmartMet::Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions 
  */
 // ----------------------------------------------------------------------
 
-SmartMet::Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theOptions,
-                                                           const std::string &theKeyword)
+Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theOptions,
+                                                 const std::string &theKeyword)
 {
   if (itsDatabaseDisabled)
     return {};
@@ -2397,8 +2382,7 @@ SmartMet::Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOpt
 
       Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
 
-      SmartMet::Spine::LocationList ptrs =
-          to_locationlist(lq.FetchByKeyword(theOptions, theKeyword));
+      Spine::LocationList ptrs = to_locationlist(lq.FetchByKeyword(theOptions, theKeyword));
 
       // Do not cache empty results
       if (ptrs.empty())
@@ -2412,7 +2396,7 @@ SmartMet::Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOpt
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
@@ -2422,8 +2406,8 @@ SmartMet::Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOpt
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::name_cache_status(boost::shared_ptr<SmartMet::Spine::Table> tablePtr,
-                                     SmartMet::Spine::TableFormatter::Names &theNames)
+void Engine::Impl::name_cache_status(boost::shared_ptr<Spine::Table> tablePtr,
+                                     Spine::TableFormatter::Names &theNames)
 {
   try
   {
@@ -2445,7 +2429,7 @@ void Engine::Impl::name_cache_status(boost::shared_ptr<SmartMet::Spine::Table> t
     {
       const std::size_t count = ReportObject.itsHits;
       const std::size_t key = ReportObject.itsKey;
-      const SmartMet::Spine::LocationPtr &loc = ReportObject.itsValue.front();
+      const Spine::LocationPtr &loc = ReportObject.itsValue.front();
 
       unsigned int column = 0;
 
@@ -2464,7 +2448,7 @@ void Engine::Impl::name_cache_status(boost::shared_ptr<SmartMet::Spine::Table> t
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 

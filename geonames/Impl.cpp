@@ -1130,6 +1130,7 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
         double ele = (!row["elevation"].is_null() ? row["elevation"].as<double>()
                                                   : numeric_limits<float>::quiet_NaN());
         double dem = (!row["dem"].is_null() ? row["dem"].as<int>() : elevation(lon, lat));
+        string admin = row["admin1"].as<string>();
         auto covertype = Fmi::LandCover::Type(
             (!row["landcover"].is_null() ? row["landcover"].as<int>() : coverType(lon, lat)));
 

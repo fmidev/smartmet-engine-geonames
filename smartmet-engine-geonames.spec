@@ -10,35 +10,32 @@ Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
 Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: libicu-devel
 BuildRequires: boost-devel
-BuildRequires: smartmet-library-locus-devel >= 17.3.14
-BuildRequires: smartmet-library-spine-devel >= 17.3.15
-BuildRequires: smartmet-library-macgyver-devel >= 17.3.14
-BuildRequires: smartmet-library-gis-devel >= 17.3.14
-BuildRequires: postgresql93-libs
-BuildRequires: libpqxx-devel
+BuildRequires: libatomic
+BuildRequires: libicu-devel
 BuildRequires: libpqxx
+BuildRequires: libpqxx-devel
+BuildRequires: mariadb-devel
 BuildRequires: mysql++-devel
-Requires: smartmet-library-spine >= 17.3.15
-Requires: smartmet-server >= 17.3.15
-Requires: smartmet-library-locus >= 17.3.14
-Requires: smartmet-library-macgyver >= 17.3.14
-Requires: smartmet-library-gis >= 17.3.14
-Requires: libatomic
-Requires: libicu
-%if 0%{rhel} >= 7
+BuildRequires: postgresql93-libs
+BuildRequires: smartmet-library-gis-devel >= 17.3.14
+BuildRequires: smartmet-library-locus-devel >= 17.3.14
+BuildRequires: smartmet-library-macgyver-devel >= 17.3.14
+BuildRequires: smartmet-library-spine-devel >= 17.3.15
 Requires: boost-date-time
 Requires: boost-filesystem
 Requires: boost-iostreams
 Requires: boost-locale
 Requires: boost-system
 Requires: boost-thread
-BuildRequires: mariadb-devel
+Requires: libatomic
+Requires: libicu
 Requires: mariadb-libs
-%else
-BuildRequires: mysql-devel
-%endif
+Requires: smartmet-library-gis >= 17.3.14
+Requires: smartmet-library-locus >= 17.3.14
+Requires: smartmet-library-macgyver >= 17.3.14
+Requires: smartmet-library-spine >= 17.3.15
+Requires: smartmet-server >= 17.3.15
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1

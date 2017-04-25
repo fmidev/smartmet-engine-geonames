@@ -1682,8 +1682,12 @@ void Engine::Impl::translate_area(Spine::Location &loc,
     }
 
     if (!loc.area.empty()) {
-      // Try translating country name first
-      auto it = itsAlternateCountries.find(loc.area);
+      // Try translating country name first, see if it is preceded by a state
+      // designator and a comma
+      auto comma = loc.area.find(", ");
+      auto country =
+          (comma == std::string::npos) ? loc.area : loc.area.substr(comma + 2);
+      auto it = itsAlternateCountries.find(country);
 
       if (it != itsAlternateCountries.end()) {
         const auto &translations = it->second;
@@ -1691,7 +1695,9 @@ void Engine::Impl::translate_area(Spine::Location &loc,
         auto pos = translations.find(lg);
         if (pos == translations.end())
           return;
-        loc.area = pos->second;
+        loc.area = (comma == std::string::npos)
+                       ? pos->second
+                       : loc.area.substr(0, comma + 2).append(pos->second);
       }
     }
   } catch (...) {

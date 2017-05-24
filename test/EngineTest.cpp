@@ -439,8 +439,8 @@ void nameSearch()
 
   ptrs = names->nameSearch(opts, "Rome");
 
-  if (ptrs.size() != 30)
-    TEST_FAILED("Should find 30 Rome, found " + boost::lexical_cast<string>(ptrs.size()));
+  if (ptrs.size() != 1)
+    TEST_FAILED("Should find 1 Rome, found " + boost::lexical_cast<string>(ptrs.size()));
   if (ptrs.front()->name != "Rooma")
     TEST_FAILED("First match for Rome should be Rooma, not " + ptrs.front()->name);
 
@@ -636,14 +636,14 @@ void lonlatSearch()
     TEST_FAILED("DEM for Kumpula should be 24, not " +
                 boost::lexical_cast<std::string>(ptrs.front()->dem));
 
-  // Pigna
+  // Rooma
 
   ptrs = names->lonlatSearch(opts, 12.4833, 41.9);
 
   if (ptrs.size() < 1)
     TEST_FAILED("Should find at least 1 place when searching for 41.9,12.4833");
-  if (ptrs.front()->name != "Pigna")
-    TEST_FAILED("Did not find Pigna but " + ptrs.front()->name);
+  if (ptrs.front()->name != "Rooma")
+    TEST_FAILED("Did not find Rooma but " + ptrs.front()->name);
 
   TEST_PASSED();
 }

@@ -1,13 +1,13 @@
-#include <regression/tframe.h>
 #include "Engine.h"
+#include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
+#include <locus/Query.h>
+#include <regression/tframe.h>
 #include <spine/Location.h>
 #include <spine/Options.h>
 #include <spine/Reactor.h>
-#include <locus/Query.h>
-#include <libconfig.h++>
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
 #include <iterator>
+#include <libconfig.h++>
 #include <unistd.h>
 
 using namespace std;
@@ -15,10 +15,12 @@ using namespace std;
 SmartMet::Spine::Reactor *reactor;
 SmartMet::Engine::Geonames::Engine *names;
 
-void print(const SmartMet::Spine::LocationPtr &ptr) {
+void print(const SmartMet::Spine::LocationPtr &ptr)
+{
   if (!ptr)
     cout << "No location to print" << endl;
-  else {
+  else
+  {
     cout << "Geoid:\t" << ptr->geoid << endl
          << "Name:\t" << ptr->name << endl
          << "Feature:\t" << ptr->feature << endl
@@ -35,17 +37,21 @@ void print(const SmartMet::Spine::LocationPtr &ptr) {
   }
 }
 
-void print(const SmartMet::Spine::LocationList &ptrs) {
-  BOOST_FOREACH (const SmartMet::Spine::LocationPtr &ptr, ptrs) {
+void print(const SmartMet::Spine::LocationList &ptrs)
+{
+  BOOST_FOREACH (const SmartMet::Spine::LocationPtr &ptr, ptrs)
+  {
     print(ptr);
     cout << endl;
   }
 }
 
-namespace Tests {
+namespace Tests
+{
 // ----------------------------------------------------------------------
 
-void countryName() {
+void countryName()
+{
   std::string name = names->countryName("FI", "fi");
   if (name != "Suomi")
     TEST_FAILED("Failed to resolve country name for FI (fi) is Suomi");
@@ -59,7 +65,8 @@ void countryName() {
 
 // ----------------------------------------------------------------------
 
-void nearest() {
+void nearest()
+{
   using SmartMet::Spine::LocationPtr;
 
   LocationPtr ptr;
@@ -75,20 +82,24 @@ void nearest() {
 
 // ----------------------------------------------------------------------
 
-void nearestplaces() {
+void nearestplaces()
+{
   SmartMet::Spine::LocationList ptrs;
 
   Locus::QueryOptions opts;
   opts.SetCountries("fi");
   opts.SetResultLimit(300);
-  opts.SetFeatures("PPLX"); // polulated places
+  opts.SetFeatures("PPLX");  // polulated places
   opts.SetLanguage("fi");
 
-  try {
+  try
+  {
     // from Helsinki onwards:
     //		ptrs = names->lonlatSearch(opts,25,60,50);
     ptrs = names->lonlatSearch(opts, 24.96, 60.17, 10);
-  } catch (libconfig::SettingException &e) {
+  }
+  catch (libconfig::SettingException &e)
+  {
     TEST_FAILED(string("Setting not found: ") + e.getPath());
   }
 
@@ -100,47 +111,51 @@ void nearestplaces() {
 #endif
 
   if (ptrs.size() < 91)
-    TEST_FAILED(
-        "Should find at least 91 places (PPLX) within 50km of Helsinki, not " +
-        boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED("Should find at least 91 places (PPLX) within 50km of Helsinki, not " +
+                boost::lexical_cast<string>(ptrs.size()));
 
   SmartMet::Spine::LocationList::iterator it = ptrs.begin();
 
-  ++it; // skip Kruununhaka
+  ++it;  // skip Kruununhaka
 
   if ((*it)->name != "Katajanokka")
-    TEST_FAILED("Katajanokka should be second name in the list of populated "
-                "places in southern Finland, "
-                "not " +
-                (*it)->name);
+    TEST_FAILED(
+        "Katajanokka should be second name in the list of populated "
+        "places in southern Finland, "
+        "not " +
+        (*it)->name);
 
   ++it;
-  ++it; // skip Kuuvi
+  ++it;  // skip Kuuvi
   if ((*it)->name != "Kaartinkaupunki")
-    TEST_FAILED("Should find Kaartinkaupunki 5rd name in the list of populated "
-                "places in southern Finland, "
-                "not " +
-                (*it)->name);
+    TEST_FAILED(
+        "Should find Kaartinkaupunki 5rd name in the list of populated "
+        "places in southern Finland, "
+        "not " +
+        (*it)->name);
 
   ++it;
-  ++it; // skip Merihaka
+  ++it;  // skip Merihaka
   if ((*it)->name != "Siltasaari")
-    TEST_FAILED("Should find Siltasaari 7th name in the list of populated "
-                "places in southern Finland, "
-                "not " +
-                (*it)->name);
+    TEST_FAILED(
+        "Should find Siltasaari 7th name in the list of populated "
+        "places in southern Finland, "
+        "not " +
+        (*it)->name);
 
   TEST_PASSED();
 }
 
 // ----------------------------------------------------------------------
 
-void suggest() {
+void suggest()
+{
   // Wait for autocomplete data to be loaded
   // Technically this is not needed as long as we run the "nearest" test first,
   // since internally the engine will then wait for autocomplete to be ready.
 
-  while (!names->isSuggestReady()) {
+  while (!names->isSuggestReady())
+  {
     boost::this_thread::sleep(boost::posix_time::milliseconds(100));
   }
 
@@ -155,8 +170,7 @@ void suggest() {
                 boost::lexical_cast<string>(ptrs.size()));
 
   if (ptrs.front()->name != "Helsinki")
-    TEST_FAILED("First match for 'he' should be Helsinki, not " +
-                ptrs.front()->name);
+    TEST_FAILED("First match for 'he' should be Helsinki, not " + ptrs.front()->name);
   if (ptrs.front()->area != "")
     TEST_FAILED("Helsinki area should be ''");
   if (ptrs.front()->country != "Suomi")
@@ -164,8 +178,7 @@ void suggest() {
 
   ptrs.pop_front();
   if (ptrs.front()->name != "Heinola")
-    TEST_FAILED("Second match for 'he' should be Heinola, not " +
-                ptrs.front()->name);
+    TEST_FAILED("Second match for 'he' should be Heinola, not " + ptrs.front()->name);
 
   // Match hAm
 
@@ -174,27 +187,23 @@ void suggest() {
     TEST_FAILED("Should find 15 places starting with 'hAm', not " +
                 boost::lexical_cast<string>(ptrs.size()));
   if (ptrs.front()->name != "Hamina")
-    TEST_FAILED("First match for 'hAm' should be Hamina, not " +
-                ptrs.front()->name);
+    TEST_FAILED("First match for 'hAm' should be Hamina, not " + ptrs.front()->name);
 
   // Match Äänekoski
 
   ptrs = names->suggest("Äänekoski");
   if (ptrs.size() < 2)
-    TEST_FAILED(
-        "Should find at least 2 places starting with 'Äänekoski', not " +
-        boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED("Should find at least 2 places starting with 'Äänekoski', not " +
+                boost::lexical_cast<string>(ptrs.size()));
   if (ptrs.front()->name != "Äänekoski")
-    TEST_FAILED("First match for 'Äänekoski' should be Äänekoski, not " +
-                ptrs.front()->name);
+    TEST_FAILED("First match for 'Äänekoski' should be Äänekoski, not " + ptrs.front()->name);
 
   ptrs = names->suggest("Ääne");
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 places starting with 'Ääne', not " +
                 boost::lexical_cast<string>(ptrs.size()));
   if (ptrs.front()->name != "Äänekoski")
-    TEST_FAILED("First match for 'Ääne' should be Äänekoski, not " +
-                ptrs.front()->name);
+    TEST_FAILED("First match for 'Ääne' should be Äänekoski, not " + ptrs.front()->name);
 
   // Match helsinki in swedish
 
@@ -247,8 +256,7 @@ void suggest() {
     TEST_FAILED("Should find 5 places starting with 'h' in 3rd page, not " +
                 boost::lexical_cast<string>(ptrs.size()));
   if (ptrs.front()->name[0] != 'H')
-    TEST_FAILED("Should find H... in page 3 at pos 1, not " +
-                ptrs.front()->name);
+    TEST_FAILED("Should find H... in page 3 at pos 1, not " + ptrs.front()->name);
 
   // Ii, Iisalmi, Iitti
 
@@ -295,15 +303,13 @@ void suggest() {
   if (ptrs.size() < 1)
     TEST_FAILED("Should find Kumpula,Helsinki");
   if (ptrs.front()->area != "Helsinki")
-    TEST_FAILED("Kumpula,Helsinki should be in Helsinki, not " +
-                ptrs.front()->area);
+    TEST_FAILED("Kumpula,Helsinki should be in Helsinki, not " + ptrs.front()->area);
 
   ptrs = names->suggest("Kumpula, Helsinki");
   if (ptrs.size() < 1)
     TEST_FAILED("Should find Kumpula, Helsinki with a space after comma");
   if (ptrs.front()->area != "Helsinki")
-    TEST_FAILED("Kumpula, Helsinki should be in Helsinki, not " +
-                ptrs.front()->area);
+    TEST_FAILED("Kumpula, Helsinki should be in Helsinki, not " + ptrs.front()->area);
 
   // Test fmisid
 
@@ -311,8 +317,7 @@ void suggest() {
   if (ptrs.size() < 1)
     TEST_FAILED("Should find Kemi Ajos");
   if (ptrs.front()->geoid != -100539)
-    TEST_FAILED("GeoId of Kemi Ajos mareograph should be -100539, not " +
-                ptrs.front()->geoid);
+    TEST_FAILED("GeoId of Kemi Ajos mareograph should be -100539, not " + ptrs.front()->geoid);
 
   ptrs = names->suggest("100540", "fmisid");
   if (ptrs.size() < 1)
@@ -328,18 +333,15 @@ void suggest() {
     TEST_FAILED("Should find 'The Settlement' and 'The Valley' for 'the'");
 
   if (ptrs.front()->name != "The Valley")
-    TEST_FAILED(
-        "Name of the first match for 'The' should be 'The Valley', not " +
-        ptrs.front()->name);
+    TEST_FAILED("Name of the first match for 'The' should be 'The Valley', not " +
+                ptrs.front()->name);
 
   if (ptrs.front()->iso2 != "AI")
-    TEST_FAILED("Iso2-code of the first match for 'The' should be 'AI', not " +
-                ptrs.front()->iso2);
+    TEST_FAILED("Iso2-code of the first match for 'The' should be 'AI', not " + ptrs.front()->iso2);
 
   if (ptrs.front()->area != "Anguilla")
-    TEST_FAILED(
-        "Country of the first match for 'The' should be 'Anguilla', not " +
-        ptrs.front()->area);
+    TEST_FAILED("Country of the first match for 'The' should be 'Anguilla', not " +
+                ptrs.front()->area);
 
   // nameSearch and suggest should get similar results
 
@@ -347,43 +349,37 @@ void suggest() {
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find 'Nouméa' with pattern 'noumea'");
   if (ptrs.front()->name != "Nouméa")
-    TEST_FAILED(
-        "Name of the first match for 'noumea' should be 'Nouméa', not " +
-        ptrs.front()->name);
+    TEST_FAILED("Name of the first match for 'noumea' should be 'Nouméa', not " +
+                ptrs.front()->name);
 
   ptrs = names->suggest("liege");
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find 'Liege' with pattern 'liege'");
   if (ptrs.front()->name != "Liege")
-    TEST_FAILED("Name of the first match for 'liege' should be 'Liege', not " +
-                ptrs.front()->name);
+    TEST_FAILED("Name of the first match for 'liege' should be 'Liege', not " + ptrs.front()->name);
 
   ptrs = names->suggest("montreal");
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find 'Montreal' with pattern 'Montreal'");
   if (ptrs.front()->name != "Montreal")
-    TEST_FAILED(
-        "Name of the first match for 'montreal' should be 'Montreal', not " +
-        ptrs.front()->name);
+    TEST_FAILED("Name of the first match for 'montreal' should be 'Montreal', not " +
+                ptrs.front()->name);
   if (ptrs.front()->area != "Kanada")
-    TEST_FAILED("Area of first match for 'montreal' should be 'Kanada', not " +
-                ptrs.front()->area);
+    TEST_FAILED("Area of first match for 'montreal' should be 'Kanada', not " + ptrs.front()->area);
 
   ptrs = names->suggest("pristina");
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find 'Pristina' with pattern 'Pristina'");
   if (ptrs.front()->name != "Pristina")
-    TEST_FAILED(
-        "Name of the first match for 'pristina' should be 'Pristina', not " +
-        ptrs.front()->name);
+    TEST_FAILED("Name of the first match for 'pristina' should be 'Pristina', not " +
+                ptrs.front()->name);
 
   ptrs = names->suggest("malakka");
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find 'Malakka' with pattern 'Malakka'");
   if (ptrs.front()->name != "Malakka")
-    TEST_FAILED(
-        "Name of the first match for 'malakka' should be 'Malakka', not " +
-        ptrs.front()->name);
+    TEST_FAILED("Name of the first match for 'malakka' should be 'Malakka', not " +
+                ptrs.front()->name);
 
   // Test English country names
 
@@ -398,24 +394,23 @@ void suggest() {
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find 'Stockholm' with lang=en");
   if (ptrs.front()->country != "Sweden")
-    TEST_FAILED(
-        "Country of first match for 'stockholm' should be 'Sweden', not " +
-        ptrs.front()->country);
+    TEST_FAILED("Country of first match for 'stockholm' should be 'Sweden', not " +
+                ptrs.front()->country);
 
   ptrs = names->suggest("copenhagen", "en");
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find 'Copenhagen' with lang=en");
   if (ptrs.front()->country != "Denmark")
-    TEST_FAILED(
-        "Country of first match for 'copenhagen' should be 'Denmark', not " +
-        ptrs.front()->country);
+    TEST_FAILED("Country of first match for 'copenhagen' should be 'Denmark', not " +
+                ptrs.front()->country);
 
   TEST_PASSED();
 }
 
 // ----------------------------------------------------------------------
 
-void nameSearch() {
+void nameSearch()
+{
   SmartMet::Spine::LocationList ptrs;
 
   Locus::QueryOptions opts;
@@ -425,16 +420,18 @@ void nameSearch() {
 
   // Helsinki
 
-  try {
+  try
+  {
     ptrs = names->nameSearch(opts, "Helsinki");
-  } catch (libconfig::SettingException &e) {
+  }
+  catch (libconfig::SettingException &e)
+  {
     TEST_FAILED(string("Setting not found: ") + e.getPath());
   }
 
   if (ptrs.size() < 1)
-    TEST_FAILED(
-        "Should find at least 1 place when searching for Helsinki, not " +
-        boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED("Should find at least 1 place when searching for Helsinki, not " +
+                boost::lexical_cast<string>(ptrs.size()));
   if (ptrs.front()->name != "Helsinki")
     TEST_FAILED("Did not find Helsinki but " + ptrs.front()->name);
 
@@ -443,33 +440,29 @@ void nameSearch() {
   ptrs = names->nameSearch(opts, "Rome");
 
   if (ptrs.size() != 30)
-    TEST_FAILED("Should find 30 Rome, found " +
-                boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED("Should find 30 Rome, found " + boost::lexical_cast<string>(ptrs.size()));
   if (ptrs.front()->name != "Rooma")
-    TEST_FAILED("First match for Rome should be Rooma, not " +
-                ptrs.front()->name);
+    TEST_FAILED("First match for Rome should be Rooma, not " + ptrs.front()->name);
 
   // Kumpula
 
   ptrs = names->nameSearch(opts, "Kumpula");
 
   if (ptrs.size() < 8)
-    TEST_FAILED("Should find at least 8 places when searching for Kumpula, "
-                "found only " +
-                boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED(
+        "Should find at least 8 places when searching for Kumpula, "
+        "found only " +
+        boost::lexical_cast<string>(ptrs.size()));
   if (ptrs.front()->area != "Helsinki")
-    TEST_FAILED("First match for Kumpula should be in Helsinki, not " +
-                ptrs.front()->area);
+    TEST_FAILED("First match for Kumpula should be in Helsinki, not " + ptrs.front()->area);
 
   // Tallinna
 
   ptrs = names->nameSearch(opts, "Tallinna");
   if (ptrs.size() < 1)
-    TEST_FAILED(
-        "Should find at least 1 place when searching for Tallinna, found none");
+    TEST_FAILED("Should find at least 1 place when searching for Tallinna, found none");
   if (ptrs.front()->name != "Tallinna")
-    TEST_FAILED("First match for Tallinna should be in Tallinna, not " +
-                ptrs.front()->name);
+    TEST_FAILED("First match for Tallinna should be in Tallinna, not " + ptrs.front()->name);
 
   // Kumpula in English
 
@@ -478,20 +471,23 @@ void nameSearch() {
   ptrs = names->nameSearch(opts, "Kumpula");
 
   if (ptrs.size() < 8)
-    TEST_FAILED("Should find at least 8 places when searching for Kumpula in "
-                "English, found only " +
-                boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED(
+        "Should find at least 8 places when searching for Kumpula in "
+        "English, found only " +
+        boost::lexical_cast<string>(ptrs.size()));
 
   ptrs = names->nameSearch(opts, "Kumpula,Helsinki");
 
   if (ptrs.size() != 1)
-    TEST_FAILED("Should find 1 places when searching for Kumpula,Helsinki in "
-                "English, found " +
-                boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED(
+        "Should find 1 places when searching for Kumpula,Helsinki in "
+        "English, found " +
+        boost::lexical_cast<string>(ptrs.size()));
   if (ptrs.front()->name != "Kumpula")
-    TEST_FAILED("First match for Kumpula,Helsinki in English should be in "
-                "Helsinki, not " +
-                ptrs.front()->area);
+    TEST_FAILED(
+        "First match for Kumpula,Helsinki in English should be in "
+        "Helsinki, not " +
+        ptrs.front()->area);
 
   // Should find Alanya PPLA2, not ADM2
 
@@ -503,29 +499,29 @@ void nameSearch() {
 
   // Find one Sepänkylä
 
-  opts.SetResultLimit(1); // Setting the limit must not break nameSearch
+  opts.SetResultLimit(1);  // Setting the limit must not break nameSearch
 
   ptrs = names->nameSearch(opts, "Sepänkylä,Espoo");
   if (ptrs.size() != 1)
-    TEST_FAILED("Should find 1 places when searching for Sepänkylä,Espoo in "
-                "English, found " +
-                boost::lexical_cast<string>(ptrs.size()));
-  if (ptrs.front()->name != "Sepänkylä")
     TEST_FAILED(
-        "First match for Sepänkylä,Espoo in English should be in Espoo, not " +
-        ptrs.front()->area);
+        "Should find 1 places when searching for Sepänkylä,Espoo in "
+        "English, found " +
+        boost::lexical_cast<string>(ptrs.size()));
+  if (ptrs.front()->name != "Sepänkylä")
+    TEST_FAILED("First match for Sepänkylä,Espoo in English should be in Espoo, not " +
+                ptrs.front()->area);
 
   SmartMet::Spine::LocationPtr loc;
   loc = names->nameSearch("Sepänkylä,Espoo", "eng");
 
   if (loc == 0)
-    TEST_FAILED("Should find 1 places when searching for Sepänkylä,Espoo in "
-                "English, found " +
-                boost::lexical_cast<string>(ptrs.size()));
-  if (loc.get()->area != "Espoo")
     TEST_FAILED(
-        "First match for Sepänkylä,Espoo in English should be in Espoo, not " +
-        ptrs.front()->area);
+        "Should find 1 places when searching for Sepänkylä,Espoo in "
+        "English, found " +
+        boost::lexical_cast<string>(ptrs.size()));
+  if (loc.get()->area != "Espoo")
+    TEST_FAILED("First match for Sepänkylä,Espoo in English should be in Espoo, not " +
+                ptrs.front()->area);
 
   opts.SetLanguage("fi");
 
@@ -533,46 +529,41 @@ void nameSearch() {
   if (ptrs.empty())
     TEST_FAILED("Failed to find Noumea");
   if (ptrs.front()->name != "Nouméa")
-    TEST_FAILED("First match for Noumea should be Nouméa, not " +
-                ptrs.front()->name);
+    TEST_FAILED("First match for Noumea should be Nouméa, not " + ptrs.front()->name);
 
   ptrs = names->nameSearch(opts, "Liege");
   if (ptrs.empty())
     TEST_FAILED("Failed to find Liege");
   if (ptrs.front()->name != "Liege")
-    TEST_FAILED("First match for Liege should be Liege, not " +
-                ptrs.front()->name);
+    TEST_FAILED("First match for Liege should be Liege, not " + ptrs.front()->name);
 
   ptrs = names->nameSearch(opts, "Montreal");
   if (ptrs.empty())
     TEST_FAILED("Failed to find Montreal");
   if (ptrs.front()->name != "Montreal")
-    TEST_FAILED("First match for Montreal should be Montreal, not " +
-                ptrs.front()->name);
+    TEST_FAILED("First match for Montreal should be Montreal, not " + ptrs.front()->name);
   if (ptrs.front()->area != "Kanada")
-    TEST_FAILED("Area of 'Montreal' should be 'Kanada', not " +
-                ptrs.front()->area);
+    TEST_FAILED("Area of 'Montreal' should be 'Kanada', not " + ptrs.front()->area);
 
   ptrs = names->nameSearch(opts, "Pristina");
   if (ptrs.empty())
     TEST_FAILED("Failed to find Pristina");
   if (ptrs.front()->name != "Pristina")
-    TEST_FAILED("First match for Pristina should be Pristina, not " +
-                ptrs.front()->name);
+    TEST_FAILED("First match for Pristina should be Pristina, not " + ptrs.front()->name);
 
   ptrs = names->nameSearch(opts, "Malakka");
   if (ptrs.empty())
     TEST_FAILED("Failed to find Malakka");
   if (ptrs.front()->name != "Malakka")
-    TEST_FAILED("First match for Malakka should be Malakka, not " +
-                ptrs.front()->name);
+    TEST_FAILED("First match for Malakka should be Malakka, not " + ptrs.front()->name);
 
   TEST_PASSED();
 }
 
 // ----------------------------------------------------------------------
 
-void idSearch() {
+void idSearch()
+{
   SmartMet::Spine::LocationList ptrs;
 
   Locus::QueryOptions opts;
@@ -582,9 +573,12 @@ void idSearch() {
 
   // Helsinki
 
-  try {
+  try
+  {
     ptrs = names->idSearch(opts, 658225);
-  } catch (libconfig::SettingException &e) {
+  }
+  catch (libconfig::SettingException &e)
+  {
     TEST_FAILED(string("Setting not found: ") + e.getPath());
   }
 
@@ -609,7 +603,8 @@ void idSearch() {
 
 // ----------------------------------------------------------------------
 
-void lonlatSearch() {
+void lonlatSearch()
+{
   SmartMet::Spine::LocationList ptrs;
 
   Locus::QueryOptions opts;
@@ -619,15 +614,17 @@ void lonlatSearch() {
 
   // Kumpula, Helsinki
 
-  try {
+  try
+  {
     ptrs = names->lonlatSearch(opts, 24.9642, 60.2089);
-  } catch (libconfig::SettingException &e) {
+  }
+  catch (libconfig::SettingException &e)
+  {
     TEST_FAILED(string("Setting not found: ") + e.getPath());
   }
 
   if (ptrs.size() < 1)
-    TEST_FAILED(
-        "Should find at least 1 place when searching for 60.2089,24.9642");
+    TEST_FAILED("Should find at least 1 place when searching for 60.2089,24.9642");
   if (ptrs.front()->name != "Kumpula")
     TEST_FAILED("Did not find Kumpula, Helsinki but " + ptrs.front()->name);
 
@@ -653,7 +650,8 @@ void lonlatSearch() {
 
 // ----------------------------------------------------------------------
 
-void keywordSearch() {
+void keywordSearch()
+{
   SmartMet::Spine::LocationList ptrs;
 
   Locus::QueryOptions opts;
@@ -663,24 +661,26 @@ void keywordSearch() {
 
   // ylewww_fi
 
-  try {
+  try
+  {
     ptrs = names->keywordSearch(opts, "mareografit");
-  } catch (libconfig::SettingException &e) {
+  }
+  catch (libconfig::SettingException &e)
+  {
     TEST_FAILED(string("Setting not found: ") + e.getPath());
   }
 
   if (ptrs.size() < 14)
-    TEST_FAILED(
-        string(
-            "mareografit keyword should have at least 14 locations: found ") +
-        boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED(string("mareografit keyword should have at least 14 locations: found ") +
+                boost::lexical_cast<string>(ptrs.size()));
 
   TEST_PASSED();
 }
 
 // ----------------------------------------------------------------------
 
-void reload() {
+void reload()
+{
   SmartMet::Spine::LocationList ptrs;
 
   Locus::QueryOptions opts;
@@ -698,11 +698,13 @@ void reload() {
 // ----------------------------------------------------------------------
 
 // The actual test driver
-class tests : public tframe::tests {
+class tests : public tframe::tests
+{
   //! Overridden message separator
   virtual const char *error_message_prefix() const { return "\n\t"; }
   //! Main test suite
-  void test() {
+  void test()
+  {
     TEST(nameSearch);
     TEST(idSearch);
     TEST(lonlatSearch);
@@ -716,11 +718,12 @@ class tests : public tframe::tests {
     // TEST(reload);
   }
 
-}; // class tests
+};  // class tests
 
-} // namespace Tests
+}  // namespace Tests
 
-int main(void) {
+int main(void)
+{
   SmartMet::Spine::Options opts;
   opts.configfile = "cnf/reactor.conf";
   opts.parseConfig();

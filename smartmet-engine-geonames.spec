@@ -18,6 +18,7 @@ BuildRequires: libpqxx-devel
 BuildRequires: mariadb-devel
 BuildRequires: mysql++-devel
 BuildRequires: postgresql93-libs
+BuildRequires: postgresql93-devel
 BuildRequires: smartmet-library-gis-devel >= 17.3.14
 BuildRequires: smartmet-library-locus-devel >= 17.3.14
 BuildRequires: smartmet-library-macgyver-devel >= 17.3.14

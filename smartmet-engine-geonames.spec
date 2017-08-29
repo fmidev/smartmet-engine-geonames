@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 17.8.28
+Version: 17.8.29
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -78,6 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Tue Aug 29 2017 Mika Heiskanen <mika.heiskanen@fmi.fi> - 17.8.29-1.fmi
+- Fixed overrides to work for all queries and match host name prefix only
+
 * Mon Aug 28 2017 Mika Heiskanen <mika.heiskanen@fmi.fi> - 17.8.28-1.fmi
 - Upgrade to boost 1.65
 

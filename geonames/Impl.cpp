@@ -4,19 +4,19 @@
  */
 // ======================================================================
 
-#include "Engine.h"
 #include "Impl.h"
+#include "Engine.h"
 
-#include <spine/Location.h>
 #include <spine/Exception.h>
+#include <spine/Location.h>
 
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
 
 #include <macgyver/StringConversion.h>
 
-#include <boost/asio/ip/host_name.hpp>
 #include <boost/algorithm/string/erase.hpp>
+#include <boost/asio/ip/host_name.hpp>
 #include <boost/foreach.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/thread.hpp>
@@ -27,8 +27,8 @@
 #include <stdexcept>
 #include <string>
 
-#include <signal.h>
 #include <sys/types.h>
+#include <signal.h>
 
 using namespace std;
 
@@ -36,11 +36,14 @@ const int default_port = 5432;
 
 #ifndef NDEBUG
 
-void print(const SmartMet::Spine::LocationPtr &ptr) {
-  try {
+void print(const SmartMet::Spine::LocationPtr &ptr)
+{
+  try
+  {
     if (!ptr)
       cout << "No location to print" << endl;
-    else {
+    else
+    {
       cout << "Geoid:\t" << ptr->geoid << endl
            << "Name:\t" << ptr->name << endl
            << "Feature:\t" << ptr->feature << endl
@@ -54,37 +57,51 @@ void print(const SmartMet::Spine::LocationPtr &ptr) {
            << "DEM:\t" << ptr->dem << endl
            << "Priority:\t" << ptr->priority << endl;
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
-void print(const list<SmartMet::Spine::LocationPtr *> &ptrs) {
-  try {
-    BOOST_FOREACH (const SmartMet::Spine::LocationPtr *ptr, ptrs) {
+void print(const list<SmartMet::Spine::LocationPtr *> &ptrs)
+{
+  try
+  {
+    BOOST_FOREACH (const SmartMet::Spine::LocationPtr *ptr, ptrs)
+    {
       print(*ptr);
       cout << endl;
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 #endif
 
-namespace SmartMet {
-namespace Engine {
-namespace Geonames {
+namespace SmartMet
+{
+namespace Engine
+{
+namespace Geonames
+{
 // ----------------------------------------------------------------------
 /*!
  * \brief Impl destructor
  */
 // ----------------------------------------------------------------------
 
-Engine::Impl::~Impl() {
-  try {
+Engine::Impl::~Impl()
+{
+  try
+  {
     BOOST_FOREACH (auto &pp, itsGeoTrees)
       delete pp.second;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -105,16 +122,27 @@ Engine::Impl::~Impl() {
 // ----------------------------------------------------------------------
 
 Engine::Impl::Impl(const string &configfile, bool reloading)
-    : itsReady(false), itsReloading(reloading), itsReloadOK(false),
-      itsReloadError(), itsGeoTrees(), itsVerbose(false), itsMockEngine(false),
-      itsRemoveUnderscores(false), itsConfigFile(configfile), itsCollator(0),
-      itsHashValue(0), itsShutdownRequested(false) {
-  try {
+    : itsReady(false),
+      itsReloading(reloading),
+      itsReloadOK(false),
+      itsReloadError(),
+      itsGeoTrees(),
+      itsVerbose(false),
+      itsMockEngine(false),
+      itsRemoveUnderscores(false),
+      itsConfigFile(configfile),
+      itsCollator(0),
+      itsHashValue(0),
+      itsShutdownRequested(false)
+{
+  try
+  {
     // Configuration
 
     read_config();
 
-    try {
+    try
+    {
       // Cache settings
       unsigned int cacheMaxSize = 1000;
       itsConfig.lookupValue("cache.max_size", cacheMaxSize);
@@ -127,7 +155,9 @@ Engine::Impl::Impl(const string &configfile, bool reloading)
       const libconfig::Setting &locale = itsConfig.lookup("locale");
       itsLocale = itsLocaleGenerator(locale);
       itsCollator = &use_facet<Collator>(itsLocale);
-    } catch (const libconfig::SettingException &e) {
+    }
+    catch (const libconfig::SettingException &e)
+    {
       Spine::Exception exception(BCP, "Configuration file setting error!");
       exception.addParameter("Path", e.getPath());
       exception.addParameter("Configuration file", itsConfigFile);
@@ -136,7 +166,8 @@ Engine::Impl::Impl(const string &configfile, bool reloading)
     }
   }
 
-  catch (...) {
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Constructor failed!", NULL);
   }
 }
@@ -147,7 +178,10 @@ Engine::Impl::Impl(const string &configfile, bool reloading)
  */
 // ----------------------------------------------------------------------
 
-boost::shared_ptr<Fmi::DEM> Engine::Impl::dem() const { return itsDEM; }
+boost::shared_ptr<Fmi::DEM> Engine::Impl::dem() const
+{
+  return itsDEM;
+}
 
 // ----------------------------------------------------------------------
 /*!
@@ -155,13 +189,17 @@ boost::shared_ptr<Fmi::DEM> Engine::Impl::dem() const { return itsDEM; }
  */
 // ----------------------------------------------------------------------
 
-double Engine::Impl::elevation(double lon, double lat) const {
-  try {
+double Engine::Impl::elevation(double lon, double lat) const
+{
+  try
+  {
     if (!itsDEM)
       return std::numeric_limits<double>::quiet_NaN();
 
     return itsDEM->elevation(lon, lat, itsMaxDemResolution);
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -172,14 +210,17 @@ double Engine::Impl::elevation(double lon, double lat) const {
  */
 // ----------------------------------------------------------------------
 
-double Engine::Impl::elevation(double lon, double lat,
-                               unsigned int maxdemresolution) const {
-  try {
+double Engine::Impl::elevation(double lon, double lat, unsigned int maxdemresolution) const
+{
+  try
+  {
     if (!itsDEM)
       return std::numeric_limits<double>::quiet_NaN();
 
     return itsDEM->elevation(lon, lat, maxdemresolution);
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -190,7 +231,8 @@ double Engine::Impl::elevation(double lon, double lat,
  */
 // ----------------------------------------------------------------------
 
-boost::shared_ptr<Fmi::LandCover> Engine::Impl::landCover() const {
+boost::shared_ptr<Fmi::LandCover> Engine::Impl::landCover() const
+{
   return itsLandCover;
 }
 
@@ -200,13 +242,17 @@ boost::shared_ptr<Fmi::LandCover> Engine::Impl::landCover() const {
  */
 // ----------------------------------------------------------------------
 
-Fmi::LandCover::Type Engine::Impl::coverType(double lon, double lat) const {
-  try {
+Fmi::LandCover::Type Engine::Impl::coverType(double lon, double lat) const
+{
+  try
+  {
     if (!itsLandCover)
       return Fmi::LandCover::NoData;
 
     return itsLandCover->coverType(lon, lat);
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -217,20 +263,25 @@ Fmi::LandCover::Type Engine::Impl::coverType(double lon, double lat) const {
  */
 // ----------------------------------------------------------------------
 
-string Engine::Impl::preprocess_name(const string &name) const {
-  try {
+string Engine::Impl::preprocess_name(const string &name) const
+{
+  try
+  {
     auto ret = name;
 
     // Some road stations used to have bad names with underscores
     // which prevents proper splitting of names at word boundaries.
     // Replacing underscores with spaces fixes the problem.
 
-    if (itsRemoveUnderscores) {
+    if (itsRemoveUnderscores)
+    {
       boost::algorithm::replace_all(ret, "_", " ");
     }
 
     return ret;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -246,9 +297,10 @@ string Engine::Impl::preprocess_name(const string &name) const {
  */
 // ----------------------------------------------------------------------
 
-list<string> Engine::Impl::to_treewords(const string &name,
-                                        const string &area) const {
-  try {
+list<string> Engine::Impl::to_treewords(const string &name, const string &area) const
+{
+  try
+  {
     namespace bb = boost::locale::boundary;
 
     list<string> ret;
@@ -262,11 +314,13 @@ list<string> Engine::Impl::to_treewords(const string &name,
 
     // Extract the remaining name starting from all word boundaries
 
-    for (bb::ssegment_index::iterator p = map.begin(), e = map.end(); p != e;
-         ++p) {
-      if (p->rule() != 0) {
+    for (bb::ssegment_index::iterator p = map.begin(), e = map.end(); p != e; ++p)
+    {
+      if (p->rule() != 0)
+      {
         const auto &it = p->begin();
-        if (it != name.end()) {
+        if (it != name.end())
+        {
           // From word beginning to end of the original input location name
           string subname(it, name.end());
 
@@ -278,7 +332,9 @@ list<string> Engine::Impl::to_treewords(const string &name,
     }
 
     return ret;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -289,8 +345,10 @@ list<string> Engine::Impl::to_treewords(const string &name,
  */
 // ----------------------------------------------------------------------
 
-string Engine::Impl::to_treeword(const string &name) const {
-  try {
+string Engine::Impl::to_treeword(const string &name) const
+{
+  try
+  {
     string tmp = name;
     boost::algorithm::erase_all(tmp, " ");
     tmp = itsCollator->transform(boost::locale::collator_base::primary, tmp);
@@ -303,7 +361,9 @@ string Engine::Impl::to_treeword(const string &name) const {
       tmp.resize(tmp.size() - 1);
 
     return tmp;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -314,13 +374,17 @@ string Engine::Impl::to_treeword(const string &name) const {
  */
 // ----------------------------------------------------------------------
 
-string Engine::Impl::to_treeword(const string &name, const string &area) const {
-  try {
+string Engine::Impl::to_treeword(const string &name, const string &area) const
+{
+  try
+  {
     if (area.empty())
       return to_treeword(name);
 
     return to_treeword(name + "," + area);
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -331,7 +395,8 @@ string Engine::Impl::to_treeword(const string &name, const string &area) const {
  */
 // ----------------------------------------------------------------------
 
-string Engine::Impl::to_language(const string &lang) const {
+string Engine::Impl::to_language(const string &lang) const
+{
   return Fmi::ascii_tolower_copy(lang);
 }
 
@@ -341,7 +406,10 @@ string Engine::Impl::to_language(const string &lang) const {
  */
 // ----------------------------------------------------------------------
 
-std::size_t Engine::Impl::hash_value() const { return itsHashValue; }
+std::size_t Engine::Impl::hash_value() const
+{
+  return itsHashValue;
+}
 
 // ----------------------------------------------------------------------
 /*!
@@ -349,30 +417,35 @@ std::size_t Engine::Impl::hash_value() const { return itsHashValue; }
  */
 // ----------------------------------------------------------------------
 
-const libconfig::Setting &
-Engine::Impl::lookup_database(const std::string &setting,
-                              const std::string &name) const {
-  try {
-    const libconfig::Setting &default_db =
-        itsConfig.lookup("database." + setting);
-    if (itsConfig.exists("database.overrides")) {
-      const libconfig::Setting &override =
-          itsConfig.lookup("database.overrides");
+const libconfig::Setting &Engine::Impl::lookup_database(const std::string &setting,
+                                                        const std::string &name) const
+{
+  try
+  {
+    const libconfig::Setting &default_value = itsConfig.lookup("database." + setting);
+    if (itsConfig.exists("database.overrides"))
+    {
+      const libconfig::Setting &override = itsConfig.lookup("database.overrides");
       int count = override.getLength();
-      for (int i = 0; i < count; ++i) {
-        const libconfig::Setting &names = override[i]["name"];
-        int num = names.getLength();
-        for (int j = 0; j < num; ++j) {
-          std::string found = names[j];
-          if (found.compare(name) == 0 && override[i].exists(setting))
+      for (int i = 0; i < count; ++i)
+      {
+        const libconfig::Setting &trial_hosts = override[i]["name"];
+        int num = trial_hosts.getLength();
+        for (int j = 0; j < num; ++j)
+        {
+          std::string trial_host = trial_hosts[j];
+          // If the start of the suggested host name matches current host name, accept override if
+          // it has been set
+          if (boost::algorithm::istarts_with(name, trial_host) && override[i].exists(setting))
             return override[i][setting];
-        } // for int j
-      }   // for int i
-    }     // if
-    return default_db;
-  } catch (libconfig::SettingNotFoundException &ex) {
-    throw SmartMet::Spine::Exception(
-        BCP, "Override configuration error: " + setting, nullptr);
+        }  // for int j
+      }    // for int i
+    }      // if
+    return default_value;
+  }
+  catch (libconfig::SettingNotFoundException &ex)
+  {
+    throw SmartMet::Spine::Exception(BCP, "Override configuration error: " + setting, nullptr);
   }
 }
 
@@ -382,17 +455,20 @@ Engine::Impl::lookup_database(const std::string &setting,
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::initSuggest(bool threaded) {
-  try {
-    try {
-      itsMaxDemResolution =
-          itsConfig.lookupValue("maxdemresolution", itsMaxDemResolution);
+void Engine::Impl::initSuggest(bool threaded)
+{
+  try
+  {
+    try
+    {
+      itsMaxDemResolution = itsConfig.lookupValue("maxdemresolution", itsMaxDemResolution);
 
       itsConfig.lookupValue("database.disable", itsDatabaseDisabled);
 
       if (itsDatabaseDisabled)
         std::cerr << "Warning: Geonames database is disabled" << std::endl;
-      else {
+      else
+      {
         const std::string &name = boost::asio::ip::host_name();
 
         const libconfig::Setting &user = lookup_database("user", name);
@@ -402,8 +478,7 @@ void Engine::Impl::initSuggest(bool threaded) {
         int port = default_port;
         itsConfig.lookupValue("database.port", port);
 
-        Locus::Connection conn(host, user, pass, base, "UTF8",
-                               Fmi::to_string(port));
+        Locus::Connection conn(host, user, pass, base, "UTF8", Fmi::to_string(port));
 
         if (!conn.isConnected())
           throw Spine::Exception(BCP, "Failed to connect to fminames database");
@@ -417,14 +492,15 @@ void Engine::Impl::initSuggest(bool threaded) {
         read_countries(conn);
         read_alternate_countries(conn);
 
-        if (!itsMockEngine) {
+        if (!itsMockEngine)
+        {
           if (handleShutDownRequest())
             return;
           read_municipalities(conn);
 
           if (handleShutDownRequest())
             return;
-          read_geonames(conn); // requires read_municipalities, read_countries
+          read_geonames(conn);  // requires read_municipalities, read_countries
 
           if (handleShutDownRequest())
             return;
@@ -436,23 +512,29 @@ void Engine::Impl::initSuggest(bool threaded) {
 
           if (handleShutDownRequest())
             return;
-          build_geoid_map(); // requires read_geonames
+          build_geoid_map();  // requires read_geonames
 
           if (handleShutDownRequest())
             return;
-          read_keywords(conn); // requires build_geoid_map
+          read_keywords(conn);  // requires build_geoid_map
         }
       }
-    } catch (libconfig::ParseException &e) {
+    }
+    catch (libconfig::ParseException &e)
+    {
       Spine::Exception exception(BCP, "Geo configuration error!", NULL);
-      exception.addDetail(std::string(e.getError()) + "' on line " +
-                          std::to_string(e.getLine()));
+      exception.addDetail(std::string(e.getError()) + "' on line " + std::to_string(e.getLine()));
       throw exception;
-    } catch (libconfig::ConfigException &) {
+    }
+    catch (libconfig::ConfigException &)
+    {
       throw Spine::Exception(BCP, "Geo configuration error", NULL);
-    } catch (...) {
+    }
+    catch (...)
+    {
       Spine::Exception exception(BCP, "Operation failed", NULL);
-      if (!itsReloading) {
+      if (!itsReloading)
+      {
         throw exception;
       }
 
@@ -470,33 +552,34 @@ void Engine::Impl::initSuggest(bool threaded) {
 
     if (handleShutDownRequest())
       return;
-    build_geotrees(); // requires ?
+    build_geotrees();  // requires ?
 
     if (handleShutDownRequest())
       return;
-    build_ternarytrees(); // requires ?
+    build_ternarytrees();  // requires ?
 
     if (handleShutDownRequest())
       return;
-    build_lang_ternarytrees(); // requires ?
+    build_lang_ternarytrees();  // requires ?
 
     if (handleShutDownRequest())
       return;
-    assign_priorities(itsLocations); // requires read_geonames
+    assign_priorities(itsLocations);  // requires read_geonames
 
     // Ready
     itsReloadOK = true;
     itsSuggestReadyFlag = true;
-  } catch (...) {
-    Spine::Exception exception(
-        BCP, "Geonames autocomplete data initialization failed", NULL);
+  }
+  catch (...)
+  {
+    Spine::Exception exception(BCP, "Geonames autocomplete data initialization failed", NULL);
 
     if (!threaded)
       throw exception;
 
     std::cerr << exception.getStackTrace() << std::endl;
-    kill(getpid(), SIGKILL); // If we use exit() we might get a core dump.
-                             // exit(-1);
+    kill(getpid(), SIGKILL);  // If we use exit() we might get a core dump.
+                              // exit(-1);
   }
 }
 
@@ -506,7 +589,8 @@ void Engine::Impl::initSuggest(bool threaded) {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::initDEM() {
+void Engine::Impl::initDEM()
+{
   std::string demdir;
   itsConfig.lookupValue("demdir", demdir);
   if (!demdir.empty())
@@ -519,7 +603,8 @@ void Engine::Impl::initDEM() {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::initLandCover() {
+void Engine::Impl::initLandCover()
+{
   std::string landcoverdir;
   itsConfig.lookupValue("landcoverdir", landcoverdir);
   if (!landcoverdir.empty())
@@ -532,8 +617,10 @@ void Engine::Impl::initLandCover() {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::init(bool first_construction) {
-  try {
+void Engine::Impl::init(bool first_construction)
+{
+  try
+  {
     if (handleShutDownRequest())
       return;
 
@@ -543,10 +630,8 @@ void Engine::Impl::init(bool first_construction) {
     itsConfig.lookupValue("landcoverdir", landcoverdir);
 
     boost::thread_group threads;
-    threads.add_thread(
-        new boost::thread(boost::bind(&Engine::Impl::initDEM, this)));
-    threads.add_thread(
-        new boost::thread(boost::bind(&Engine::Impl::initLandCover, this)));
+    threads.add_thread(new boost::thread(boost::bind(&Engine::Impl::initDEM, this)));
+    threads.add_thread(new boost::thread(boost::bind(&Engine::Impl::initLandCover, this)));
     threads.join_all();
 
     // Early abort if so requested
@@ -563,7 +648,9 @@ void Engine::Impl::init(bool first_construction) {
 
     // Done apart from autocomplete. Ready to shutdown now though.
     itsReady = true;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -574,19 +661,26 @@ void Engine::Impl::init(bool first_construction) {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::shutdown() {
-  try {
+void Engine::Impl::shutdown()
+{
+  try
+  {
     std::cout << "  -- Shutdown requested (Impl)\n";
     itsShutdownRequested = true;
 
     while (!itsReady)
       boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
-void Engine::Impl::shutdownRequestFlagSet() { itsShutdownRequested = true; }
+void Engine::Impl::shutdownRequestFlagSet()
+{
+  itsShutdownRequested = true;
+}
 
 // ----------------------------------------------------------------------
 /*!
@@ -594,7 +688,8 @@ void Engine::Impl::shutdownRequestFlagSet() { itsShutdownRequested = true; }
  */
 // ----------------------------------------------------------------------
 
-bool Engine::Impl::handleShutDownRequest() {
+bool Engine::Impl::handleShutDownRequest()
+{
   if (itsShutdownRequested)
     itsReady = true;
   return itsShutdownRequested;
@@ -620,27 +715,29 @@ bool Engine::Impl::handleShutDownRequest() {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_config() {
-  try {
-    try {
+void Engine::Impl::read_config()
+{
+  try
+  {
+    try
+    {
       if (itsVerbose)
-        cout << "Reading fminames configuration file '" << itsConfigFile << "'"
-             << endl;
+        cout << "Reading fminames configuration file '" << itsConfigFile << "'" << endl;
 
       itsConfig.readFile(itsConfigFile.c_str());
 
-      if (!itsConfig.exists("database")) {
-        Spine::Exception exception(
-            BCP, "Configuration file must specify the database details!");
+      if (!itsConfig.exists("database"))
+      {
+        Spine::Exception exception(BCP, "Configuration file must specify the database details!");
         exception.addParameter("Configuration file", itsConfigFile);
         throw exception;
       }
 
       const libconfig::Setting &db = itsConfig.lookup("database");
 
-      if (!db.isGroup()) {
-        Spine::Exception exception(
-            BCP, "Configured value of 'database' must be a group!");
+      if (!db.isGroup())
+      {
+        Spine::Exception exception(BCP, "Configured value of 'database' must be a group!");
         exception.addParameter("Configuration file", itsConfigFile);
         throw exception;
       }
@@ -658,25 +755,33 @@ void Engine::Impl::read_config() {
       itsConfig.lookup("database.database");
       itsConfig.lookup("database.user");
       itsConfig.lookup("database.pass");
-    } catch (const libconfig::SettingException &e) {
+    }
+    catch (const libconfig::SettingException &e)
+    {
       Spine::Exception exception(BCP, "Configuration file setting error!");
       exception.addParameter("Configuration file", itsConfigFile);
       exception.addParameter("Path", e.getPath());
       exception.addParameter("Error description", e.what());
       throw exception;
-    } catch (libconfig::ParseException &e) {
+    }
+    catch (libconfig::ParseException &e)
+    {
       Spine::Exception exception(BCP, "Configuration file parsing failed!");
       exception.addParameter("Configuration file", itsConfigFile);
       exception.addParameter("Error line", std::to_string(e.getLine()));
       exception.addParameter("Error description", e.getError());
       throw exception;
-    } catch (libconfig::ConfigException &e) {
+    }
+    catch (libconfig::ConfigException &e)
+    {
       Spine::Exception exception(BCP, "Configuration exception!");
       exception.addParameter("Configuration file", itsConfigFile);
       exception.addParameter("Error description", e.what());
       throw exception;
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     Spine::Exception exception(BCP, "Configuration read failed!", NULL);
     throw exception;
   }
@@ -688,9 +793,12 @@ void Engine::Impl::read_config() {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_config_priorities() {
-  try {
-    try {
+void Engine::Impl::read_config_priorities()
+{
+  try
+  {
+    try
+    {
       if (!itsConfig.exists("priorities"))
         return;
 
@@ -703,41 +811,48 @@ void Engine::Impl::read_config_priorities() {
 
       const libconfig::Setting &tmp = itsConfig.lookup("priorities.features");
 
-      if (!tmp.isGroup()) {
-        Spine::Exception exception(
-            BCP, "Configured value of 'priorities.features' must be a group!");
+      if (!tmp.isGroup())
+      {
+        Spine::Exception exception(BCP,
+                                   "Configured value of 'priorities.features' must be a group!");
         exception.addParameter("Configuration file", itsConfigFile);
         throw exception;
       }
-      for (int i = 0; i < tmp.getLength(); ++i) {
+      for (int i = 0; i < tmp.getLength(); ++i)
+      {
         string countryname = tmp[i].getName();
         string featurename = tmp[i];
 
         string mapname = "priorities." + featurename;
 
-        if (!itsConfig.exists(mapname)) {
-          Spine::Exception exception(BCP, "Configuration of '" + mapname +
-                                              "' is missing!");
+        if (!itsConfig.exists(mapname))
+        {
+          Spine::Exception exception(BCP, "Configuration of '" + mapname + "' is missing!");
           exception.addParameter("Configuration file", itsConfigFile);
           throw exception;
         }
 
         const libconfig::Setting &tmpmap = itsConfig.lookup(mapname);
 
-        for (int j = 0; j < tmpmap.getLength(); ++j) {
+        for (int j = 0; j < tmpmap.getLength(); ++j)
+        {
           string name = tmpmap[j].getName();
           int value = tmpmap[j];
           itsFeaturePriorities[countryname][name] = value;
         }
       }
-    } catch (const libconfig::SettingException &e) {
+    }
+    catch (const libconfig::SettingException &e)
+    {
       Spine::Exception exception(BCP, "Configuration file setting error!");
       exception.addParameter("Path", e.getPath());
       exception.addParameter("Configuration file", itsConfigFile);
       exception.addParameter("Error description", e.what());
       throw exception;
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     Spine::Exception exception(BCP, "Reading config priorities failed!", NULL);
     throw exception;
   }
@@ -749,10 +864,12 @@ void Engine::Impl::read_config_priorities() {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_config_prioritymap(const string &partname,
-                                           Priorities &priomap) {
-  try {
-    try {
+void Engine::Impl::read_config_prioritymap(const string &partname, Priorities &priomap)
+{
+  try
+  {
+    try
+    {
       string name = "priorities." + partname;
 
       if (!itsConfig.exists(name))
@@ -760,26 +877,31 @@ void Engine::Impl::read_config_prioritymap(const string &partname,
 
       const libconfig::Setting &tmp = itsConfig.lookup(name);
 
-      if (!tmp.isGroup()) {
-        Spine::Exception exception(BCP, "Configured value of '" + name +
-                                            "' must be a group!");
+      if (!tmp.isGroup())
+      {
+        Spine::Exception exception(BCP, "Configured value of '" + name + "' must be a group!");
         exception.addParameter("Configuration file", itsConfigFile);
         throw exception;
       }
 
-      for (int i = 0; i < tmp.getLength(); ++i) {
+      for (int i = 0; i < tmp.getLength(); ++i)
+      {
         string varname = tmp[i].getName();
         int value = tmp[i];
         priomap[varname] = value;
       }
-    } catch (const libconfig::SettingException &e) {
+    }
+    catch (const libconfig::SettingException &e)
+    {
       Spine::Exception exception(BCP, "Configuration file setting error!");
       exception.addParameter("Config file", itsConfigFile);
       exception.addParameter("Path", e.getPath());
       exception.addParameter("Error description", e.what());
       throw exception;
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -790,8 +912,10 @@ void Engine::Impl::read_config_prioritymap(const string &partname,
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_database_hash_value(Locus::Connection &conn) {
-  try {
+void Engine::Impl::read_database_hash_value(Locus::Connection &conn)
+{
+  try
+  {
     // Select maximum last_modified from tables which have it. Note that
     // the maximum mya have fractional seconds, hence the rounding to seconds
 
@@ -805,14 +929,15 @@ void Engine::Impl::read_database_hash_value(Locus::Connection &conn) {
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
-      throw Spine::Exception(BCP,
-                             "FmiNames: Failed to read database hash value");
+      throw Spine::Exception(BCP, "FmiNames: Failed to read database hash value");
 
-    for (pqxx::result::const_iterator row = res.begin(); row != res.end();
-         ++row) {
+    for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
+    {
       itsHashValue = row["max"].as<std::size_t>();
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -823,16 +948,19 @@ void Engine::Impl::read_database_hash_value(Locus::Connection &conn) {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_countries(Locus::Connection &conn) {
-  try {
+void Engine::Impl::read_countries(Locus::Connection &conn)
+{
+  try
+  {
     // Note: PCLI overrides smaller political entities if there are multiple
     // for
     // the same iso2
     // country
     // code
-    std::string query("SELECT name, countries_iso2 as iso2 FROM geonames WHERE "
-                      "features_code in "
-                      "('PCLD','PCLF','PCLI') ORDER BY features_code ASC");
+    std::string query(
+        "SELECT name, countries_iso2 as iso2 FROM geonames WHERE "
+        "features_code in "
+        "('PCLD','PCLF','PCLI') ORDER BY features_code ASC");
 
     if (itsVerbose)
       cout << "read_countries: " << query << endl;
@@ -840,11 +968,10 @@ void Engine::Impl::read_countries(Locus::Connection &conn) {
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
-      throw Spine::Exception(
-          BCP, "FmiNames: Found no PCLI/PCLF/PCLD places from geonames table");
+      throw Spine::Exception(BCP, "FmiNames: Found no PCLI/PCLF/PCLD places from geonames table");
 
-    for (pqxx::result::const_iterator row = res.begin(); row != res.end();
-         ++row) {
+    for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
+    {
       string name = row["name"].as<std::string>();
       string iso2 = row["iso2"].as<std::string>();
       itsCountries[iso2] = name;
@@ -852,7 +979,9 @@ void Engine::Impl::read_countries(Locus::Connection &conn) {
 
     if (itsVerbose)
       cout << "read_countries: " << res.size() << " countries" << endl;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -863,15 +992,18 @@ void Engine::Impl::read_countries(Locus::Connection &conn) {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_alternate_countries(Locus::Connection &conn) {
-  try {
-    std::string query("SELECT language, g.name as gname,a.name as "
-                      "alt_gname,a.preferred,a.priority,length(a.name) "
-                      "as length FROM geonames g, alternate_geonames a WHERE "
-                      "g.features_code in "
-                      "('PCLI','PCLF','PCLD') AND g.id=a.geonames_id ORDER BY "
-                      "geonames_id, a.priority ASC, "
-                      "a.preferred DESC, length ASC, alt_gname ASC");
+void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
+{
+  try
+  {
+    std::string query(
+        "SELECT language, g.name as gname,a.name as "
+        "alt_gname,a.preferred,a.priority,length(a.name) "
+        "as length FROM geonames g, alternate_geonames a WHERE "
+        "g.features_code in "
+        "('PCLI','PCLF','PCLD') AND g.id=a.geonames_id ORDER BY "
+        "geonames_id, a.priority ASC, "
+        "a.preferred DESC, length ASC, alt_gname ASC");
 
     if (itsVerbose)
       cout << "read_alternate_countries: " << query << endl;
@@ -881,16 +1013,16 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn) {
     if (res.empty())
       throw Spine::Exception(BCP, "FmiNames: Found no country translations");
 
-    for (pqxx::result::const_iterator row = res.begin(); row != res.end();
-         ++row) {
+    for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
+    {
       string lang = row["language"].as<std::string>();
       string name = row["gname"].as<std::string>();
       string translation = row["alt_gname"].as<std::string>();
 
       auto it = itsAlternateCountries.find(name);
-      if (it == itsAlternateCountries.end()) {
-        it =
-            itsAlternateCountries.insert(make_pair(name, Translations())).first;
+      if (it == itsAlternateCountries.end())
+      {
+        it = itsAlternateCountries.insert(make_pair(name, Translations())).first;
       }
 
       Fmi::ascii_tolower(lang);
@@ -902,9 +1034,10 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn) {
     }
 
     if (itsVerbose)
-      cout << "read_alternate_countries: " << res.size() << " translations"
-           << endl;
-  } catch (...) {
+      cout << "read_alternate_countries: " << res.size() << " translations" << endl;
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -915,8 +1048,10 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn) {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_municipalities(Locus::Connection &conn) {
-  try {
+void Engine::Impl::read_municipalities(Locus::Connection &conn)
+{
+  try
+  {
     std::string query("SELECT id, name FROM municipalities");
 
     if (itsVerbose)
@@ -925,20 +1060,20 @@ void Engine::Impl::read_municipalities(Locus::Connection &conn) {
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
-      throw Spine::Exception(
-          BCP, "FmiNames: Found nothing from municipalities table");
+      throw Spine::Exception(BCP, "FmiNames: Found nothing from municipalities table");
 
-    for (pqxx::result::const_iterator row = res.begin(); row != res.end();
-         ++row) {
+    for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
+    {
       int id = row["id"].as<int>();
       string name = row["name"].as<string>();
       itsMunicipalities[id] = name;
     }
 
     if (itsVerbose)
-      cout << "read_municipalities: " << itsMunicipalities.size()
-           << " municipalities" << endl;
-  } catch (...) {
+      cout << "read_municipalities: " << itsMunicipalities.size() << " municipalities" << endl;
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -949,8 +1084,10 @@ void Engine::Impl::read_municipalities(Locus::Connection &conn) {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_geonames(Locus::Connection &conn) {
-  try {
+void Engine::Impl::read_geonames(Locus::Connection &conn)
+{
+  try
+  {
     std::string sql =
         "SELECT id, geonames.name AS name, countries_iso2 as iso2, "
         "features_code as feature, "
@@ -960,9 +1097,9 @@ void Engine::Impl::read_geonames(Locus::Connection &conn) {
         "geonames WHERE EXISTS (SELECT * FROM keywords_has_geonames WHERE "
         "geonames.id=keywords_has_geonames.geonames_id)";
 
-    if (itsConfig.exists("database.where.geonames")) {
-      const libconfig::Setting &where_clause =
-          itsConfig.lookup("database.where.geonames");
+    if (itsConfig.exists("database.where.geonames"))
+    {
+      const libconfig::Setting &where_clause = itsConfig.lookup("database.where.geonames");
       sql.append(" AND ").append(static_cast<const char *>(where_clause));
     }
 
@@ -972,46 +1109,44 @@ void Engine::Impl::read_geonames(Locus::Connection &conn) {
     pqxx::result res = conn.executeNonTransaction(sql);
 
     if (res.empty())
-      throw Spine::Exception(BCP,
-                             "FmiNames: Found nothing from fminames database");
+      throw Spine::Exception(BCP, "FmiNames: Found nothing from fminames database");
 
-    for (pqxx::result::const_iterator row = res.begin(); row != res.end();
-         ++row) {
+    for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
+    {
       Spine::GeoId geoid = Fmi::stoi(row["id"].as<string>());
       string name = row["name"].as<string>();
 
-      if (row["timezone"].is_null()) {
+      if (row["timezone"].is_null())
+      {
         std::cerr << "Warning: " << geoid << " '" << name
                   << "' timezone is NULL, discarding the location" << std::endl;
-      } else {
+      }
+      else
+      {
         string iso2 = (row["iso2"].is_null() ? "" : row["iso2"].as<string>());
-        string feature =
-            (row["feature"].is_null() ? "" : row["feature"].as<string>());
+        string feature = (row["feature"].is_null() ? "" : row["feature"].as<string>());
         int munip = row["munip"].as<int>();
         double lon = row["lon"].as<double>();
         double lat = row["lat"].as<double>();
         string tz = row["timezone"].as<string>();
-        int pop =
-            (!row["population"].is_null() ? row["population"].as<int>() : 0);
-        double ele =
-            (!row["elevation"].is_null() ? row["elevation"].as<double>()
-                                         : numeric_limits<float>::quiet_NaN());
-        double dem = (!row["dem"].is_null() ? row["dem"].as<int>()
-                                            : elevation(lon, lat));
-        string admin =
-            (!row["admin1"].is_null() ? row["admin1"].as<string>() : "");
-        auto covertype = Fmi::LandCover::Type((!row["landcover"].is_null()
-                                                   ? row["landcover"].as<int>()
-                                                   : coverType(lon, lat)));
+        int pop = (!row["population"].is_null() ? row["population"].as<int>() : 0);
+        double ele = (!row["elevation"].is_null() ? row["elevation"].as<double>()
+                                                  : numeric_limits<float>::quiet_NaN());
+        double dem = (!row["dem"].is_null() ? row["dem"].as<int>() : elevation(lon, lat));
+        string admin = (!row["admin1"].is_null() ? row["admin1"].as<string>() : "");
+        auto covertype = Fmi::LandCover::Type(
+            (!row["landcover"].is_null() ? row["landcover"].as<int>() : coverType(lon, lat)));
 
         string area;
-        if (munip != 0) {
+        if (munip != 0)
+        {
           auto it = itsMunicipalities.find(munip);
           if (it != itsMunicipalities.end())
             area = it->second;
         }
 
-        if (area.empty()) {
+        if (area.empty())
+        {
           auto it = itsCountries.find(iso2);
           auto us = itsCountries.find("US");
           if (it != itsCountries.end())
@@ -1024,18 +1159,30 @@ void Engine::Impl::read_geonames(Locus::Connection &conn) {
 #endif
         }
 
-        string country(""); // country will be filled in upon request
-        Spine::LocationPtr loc(new Spine::Location(
-            geoid, name, iso2, munip, area, feature, country, lon, lat, tz, pop,
-            boost::numeric_cast<float>(ele), boost::numeric_cast<float>(dem),
-            covertype));
+        string country("");  // country will be filled in upon request
+        Spine::LocationPtr loc(new Spine::Location(geoid,
+                                                   name,
+                                                   iso2,
+                                                   munip,
+                                                   area,
+                                                   feature,
+                                                   country,
+                                                   lon,
+                                                   lat,
+                                                   tz,
+                                                   pop,
+                                                   boost::numeric_cast<float>(ele),
+                                                   boost::numeric_cast<float>(dem),
+                                                   covertype));
         itsLocations.push_back(loc);
       }
     }
 
     if (itsVerbose)
       cout << "read_geonames: " << itsLocations.size() << " locations" << endl;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1046,8 +1193,10 @@ void Engine::Impl::read_geonames(Locus::Connection &conn) {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_alternate_geonames(Locus::Connection &conn) {
-  try {
+void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
+{
+  try
+  {
     std::string sql =
         "SELECT a.geonames_id, a.name, a.language, a.priority, a.preferred, "
         "length(a.name) as "
@@ -1055,9 +1204,9 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn) {
         "FROM alternate_geonames a INNER JOIN keywords_has_geonames k ON "
         "a.geonames_id=k.geonames_id";
 
-    if (itsConfig.exists("database.where.alternate_geonames")) {
-      const auto &where_clause =
-          itsConfig.lookup("database.where.alternate_geonames");
+    if (itsConfig.exists("database.where.alternate_geonames"))
+    {
+      const auto &where_clause = itsConfig.lookup("database.where.alternate_geonames");
       sql.append(" WHERE ").append(static_cast<const char *>(where_clause));
     }
 
@@ -1070,11 +1219,12 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn) {
     sql.append(" GROUP BY a.id HAVING count(*) > 1 ORDER BY a.geonames_id, a.priority ASC, a.preferred DESC, length ASC, name ASC");
 #else
     // PostGreSQL requires all the names to be mentioned
-    sql.append(" GROUP BY "
-               "a.id,a.geonames_id,a.name,a.language,a.priority,a.preferred "
-               "HAVING count(*) > 0 "
-               "ORDER BY a.geonames_id, a.priority ASC, a.preferred DESC, "
-               "length ASC, name ASC");
+    sql.append(
+        " GROUP BY "
+        "a.id,a.geonames_id,a.name,a.language,a.priority,a.preferred "
+        "HAVING count(*) > 0 "
+        "ORDER BY a.geonames_id, a.priority ASC, a.preferred DESC, "
+        "length ASC, name ASC");
 #endif
 
     if (itsVerbose)
@@ -1083,21 +1233,20 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn) {
     pqxx::result res = conn.executeNonTransaction(sql);
 
     if (res.empty())
-      throw Spine::Exception(
-          BCP, "FmiNames: Found nothing from alternate_fminames database");
+      throw Spine::Exception(BCP, "FmiNames: Found nothing from alternate_fminames database");
 
     if (itsVerbose)
-      cout << "read_alternate_geonames: " << res.size() << " translations"
-           << endl;
+      cout << "read_alternate_geonames: " << res.size() << " translations" << endl;
 
-    for (pqxx::result::const_iterator row = res.begin(); row != res.end();
-         ++row) {
+    for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
+    {
       Spine::GeoId geoid = Fmi::stoi(row["geonames_id"].as<string>());
       string name = row["name"].as<string>();
       string lang = row["language"].as<string>();
 
       auto it = itsAlternateNames.find(geoid);
-      if (it == itsAlternateNames.end()) {
+      if (it == itsAlternateNames.end())
+      {
         it = itsAlternateNames.insert(make_pair(geoid, Translations())).first;
       }
 
@@ -1112,7 +1261,9 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn) {
 
     if (itsVerbose)
       cout << "read_alternate_geonames done" << endl;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1123,10 +1274,13 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn) {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn) {
-  try {
-    std::string query("SELECT municipalities_id as id, name, language FROM "
-                      "alternate_municipalities");
+void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn)
+{
+  try
+  {
+    std::string query(
+        "SELECT municipalities_id as id, name, language FROM "
+        "alternate_municipalities");
 
     if (itsVerbose)
       cout << "read_alternate_municipalities: " << query << endl;
@@ -1134,24 +1288,21 @@ void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn) {
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
-      throw Spine::Exception(
-          BCP,
-          "FmiNames: Found nothing from alternate_municipalities database");
+      throw Spine::Exception(BCP, "FmiNames: Found nothing from alternate_municipalities database");
 
     if (itsVerbose)
-      cout << "read_alternate_geonames: " << res.size() << " translations"
-           << endl;
+      cout << "read_alternate_geonames: " << res.size() << " translations" << endl;
 
-    for (pqxx::result::const_iterator row = res.begin(); row != res.end();
-         ++row) {
+    for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
+    {
       int munip = row["id"].as<int>();
       string name = row["name"].as<string>();
       string lang = row["language"].as<string>();
 
       auto it = itsAlternateMunicipalities.find(munip);
-      if (it == itsAlternateMunicipalities.end()) {
-        it = itsAlternateMunicipalities.insert(make_pair(munip, Translations()))
-                 .first;
+      if (it == itsAlternateMunicipalities.end())
+      {
+        it = itsAlternateMunicipalities.insert(make_pair(munip, Translations())).first;
       }
 
       Fmi::ascii_tolower(lang);
@@ -1159,9 +1310,10 @@ void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn) {
     }
 
     if (itsVerbose)
-      cout << "read_alternate_municipalities: " << res.size() << " translations"
-           << endl;
-  } catch (...) {
+      cout << "read_alternate_municipalities: " << res.size() << " translations" << endl;
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1174,16 +1326,21 @@ void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn) {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::build_geoid_map() {
-  try {
+void Engine::Impl::build_geoid_map()
+{
+  try
+  {
     if (itsVerbose)
       cout << "build_geoid_map()" << endl;
 
     assert(itsGeoIdMap.size() == 0);
-    BOOST_FOREACH (Spine::LocationPtr &v, itsLocations) {
+    BOOST_FOREACH (Spine::LocationPtr &v, itsLocations)
+    {
       itsGeoIdMap.insert(GeoIdMap::value_type(v->geoid, &v));
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1194,12 +1351,15 @@ void Engine::Impl::build_geoid_map() {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::assign_priorities(Spine::LocationList &locs) const {
-  try {
+void Engine::Impl::assign_priorities(Spine::LocationList &locs) const
+{
+  try
+  {
     if (itsVerbose)
       cout << "assign_priorities" << endl;
 
-    BOOST_FOREACH (Spine::LocationPtr &v, locs) {
+    BOOST_FOREACH (Spine::LocationPtr &v, locs)
+    {
       int score = population_priority(*v);
       score += area_priority(*v);
       score += country_priority(*v);
@@ -1208,13 +1368,17 @@ void Engine::Impl::assign_priorities(Spine::LocationList &locs) const {
       Spine::Location &myloc = const_cast<Spine::Location &>(*v);
       myloc.priority = score;
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
-int Engine::Impl::country_priority(const Spine::Location &loc) const {
-  try {
+int Engine::Impl::country_priority(const Spine::Location &loc) const
+{
+  try
+  {
     auto it = itsCountryPriorities.find(loc.iso2);
     if (it != itsCountryPriorities.end())
       return it->second;
@@ -1224,13 +1388,17 @@ int Engine::Impl::country_priority(const Spine::Location &loc) const {
       return it->second;
 
     return 0;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
-int Engine::Impl::area_priority(const Spine::Location &loc) const {
-  try {
+int Engine::Impl::area_priority(const Spine::Location &loc) const
+{
+  try
+  {
     auto it = itsAreaPriorities.find(loc.area);
     if (it != itsAreaPriorities.end())
       return it->second;
@@ -1240,31 +1408,37 @@ int Engine::Impl::area_priority(const Spine::Location &loc) const {
       return it->second;
 
     return 0;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
-int Engine::Impl::population_priority(const Spine::Location &loc) const {
-  try {
+int Engine::Impl::population_priority(const Spine::Location &loc) const
+{
+  try
+  {
     auto it = itsPopulationPriorities.find(loc.iso2);
     if (it != itsPopulationPriorities.end())
-      return static_cast<int>(
-          round(static_cast<float>(loc.population) / it->second));
+      return static_cast<int>(round(static_cast<float>(loc.population) / it->second));
 
     it = itsPopulationPriorities.find("default");
     if (it != itsPopulationPriorities.end())
-      return static_cast<int>(
-          round(static_cast<float>(loc.population) / it->second));
+      return static_cast<int>(round(static_cast<float>(loc.population) / it->second));
 
     return 0;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
 
-int Engine::Impl::feature_priority(const Spine::Location &loc) const {
-  try {
+int Engine::Impl::feature_priority(const Spine::Location &loc) const
+{
+  try
+  {
     auto it = itsFeaturePriorities.find(loc.iso2);
     if (it == itsFeaturePriorities.end())
       it = itsFeaturePriorities.find("default");
@@ -1284,7 +1458,9 @@ int Engine::Impl::feature_priority(const Spine::Location &loc) const {
       return jt->second;
 
     return 0;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1295,10 +1471,11 @@ int Engine::Impl::feature_priority(const Spine::Location &loc) const {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_keywords(Locus::Connection &conn) {
-  try {
-    std::string query(
-        "SELECT keyword, geonames_id as id FROM keywords_has_geonames");
+void Engine::Impl::read_keywords(Locus::Connection &conn)
+{
+  try
+  {
+    std::string query("SELECT keyword, geonames_id as id FROM keywords_has_geonames");
 
     if (itsVerbose)
       cout << "read_keywords: " << query << endl;
@@ -1306,38 +1483,40 @@ void Engine::Impl::read_keywords(Locus::Connection &conn) {
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
-      throw Spine::Exception(
-          BCP, "FmiNames: Found nothing from keywords_has_geonames database");
+      throw Spine::Exception(BCP, "FmiNames: Found nothing from keywords_has_geonames database");
 
     int count_ok = 0;
     int count_bad = 0;
 
     bool limited_db = itsConfig.exists("database.where");
 
-    for (pqxx::result::const_iterator row = res.begin(); row != res.end();
-         ++row) {
+    for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
+    {
       string key = row["keyword"].as<string>();
       Spine::GeoId geoid = Fmi::stoi(row["id"].as<string>());
 
       auto it = itsGeoIdMap.find(geoid);
-      if (it != itsGeoIdMap.end()) {
+      if (it != itsGeoIdMap.end())
+      {
         itsKeywords[key].push_back(*it->second);
         ++count_ok;
-      } else {
+      }
+      else
+      {
         ++count_bad;
-        if (!limited_db) {
-          cerr << "  warning: keyword " << key << " uses nonexistent geoid "
-               << geoid << endl;
+        if (!limited_db)
+        {
+          cerr << "  warning: keyword " << key << " uses nonexistent geoid " << geoid << endl;
         }
       }
     }
 
     if (itsVerbose)
-      cout << "read_keywords: attached " << count_ok
-           << " keywords to locations succesfully" << endl
-           << "read_keywords: found " << count_bad << " unknown locations"
-           << endl;
-  } catch (...) {
+      cout << "read_keywords: attached " << count_ok << " keywords to locations succesfully" << endl
+           << "read_keywords: found " << count_bad << " unknown locations" << endl;
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1348,18 +1527,21 @@ void Engine::Impl::read_keywords(Locus::Connection &conn) {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::build_geotrees() {
-  try {
-    BOOST_FOREACH (const KeywordMap::value_type &name_locs, itsKeywords) {
+void Engine::Impl::build_geotrees()
+{
+  try
+  {
+    BOOST_FOREACH (const KeywordMap::value_type &name_locs, itsKeywords)
+    {
       const string &keyword = name_locs.first;
       const Spine::LocationList &locs = name_locs.second;
 
       if (itsVerbose)
-        cout << "build_geotrees:  keyword '" << keyword << "' of size "
-             << locs.size() << endl;
+        cout << "build_geotrees:  keyword '" << keyword << "' of size " << locs.size() << endl;
 
       auto it = itsGeoTrees.find(keyword);
-      if (it == itsGeoTrees.end()) {
+      if (it == itsGeoTrees.end())
+      {
         it = itsGeoTrees.insert(make_pair(keyword, new GeoTree())).first;
       }
 
@@ -1370,15 +1552,15 @@ void Engine::Impl::build_geotrees() {
     // global tree
 
     if (itsVerbose)
-      cout << "build_geotrees: keyword '" << FMINAMES_DEFAULT_KEYWORD
-           << "' of size " << itsLocations.size() << endl;
+      cout << "build_geotrees: keyword '" << FMINAMES_DEFAULT_KEYWORD << "' of size "
+           << itsLocations.size() << endl;
 
-    auto it =
-        itsGeoTrees.insert(make_pair(FMINAMES_DEFAULT_KEYWORD, new GeoTree()))
-            .first;
+    auto it = itsGeoTrees.insert(make_pair(FMINAMES_DEFAULT_KEYWORD, new GeoTree())).first;
     BOOST_FOREACH (Spine::LocationPtr &ptr, itsLocations)
       it->second->insert(ptr);
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1389,28 +1571,33 @@ void Engine::Impl::build_geotrees() {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::build_ternarytrees() {
-  try {
+void Engine::Impl::build_ternarytrees()
+{
+  try
+  {
     // normal geonames for each keyword
 
-    BOOST_FOREACH (auto &name_locs, itsKeywords) {
+    BOOST_FOREACH (auto &name_locs, itsKeywords)
+    {
       const string &keyword = name_locs.first;
       Spine::LocationList &locs = name_locs.second;
 
       if (itsVerbose)
-        cout << "build_ternarytrees: keyword '" << keyword << "' of size "
-             << locs.size() << endl;
+        cout << "build_ternarytrees: keyword '" << keyword << "' of size " << locs.size() << endl;
 
       auto it = itsTernaryTrees.find(keyword);
-      if (it == itsTernaryTrees.end()) {
+      if (it == itsTernaryTrees.end())
+      {
         auto newtree = boost::make_shared<TernaryTree>();
         it = itsTernaryTrees.insert(make_pair(keyword, newtree)).first;
       }
 
-      BOOST_FOREACH (Spine::LocationPtr &ptr, locs) {
+      BOOST_FOREACH (Spine::LocationPtr &ptr, locs)
+      {
         std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
         auto names = to_treewords(preprocess_name(ptr->name), specifier);
-        BOOST_FOREACH (const auto &name, names) {
+        BOOST_FOREACH (const auto &name, names)
+        {
           it->second->insert(name, ptr);
         }
       }
@@ -1419,20 +1606,24 @@ void Engine::Impl::build_ternarytrees() {
     // all geonames
 
     if (itsVerbose)
-      cout << "build_ternarytrees: keyword '" << FMINAMES_DEFAULT_KEYWORD
-           << "' of size " << itsLocations.size() << endl;
+      cout << "build_ternarytrees: keyword '" << FMINAMES_DEFAULT_KEYWORD << "' of size "
+           << itsLocations.size() << endl;
 
     auto newtree = boost::make_shared<TernaryTree>();
-    auto it =
-        itsTernaryTrees.insert(make_pair(FMINAMES_DEFAULT_KEYWORD, newtree))
-            .first;
+    auto it = itsTernaryTrees.insert(make_pair(FMINAMES_DEFAULT_KEYWORD, newtree)).first;
 
-    BOOST_FOREACH (Spine::LocationPtr &ptr, itsLocations) {
+    BOOST_FOREACH (Spine::LocationPtr &ptr, itsLocations)
+    {
       std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
       auto names = to_treewords(preprocess_name(ptr->name), specifier);
-      BOOST_FOREACH (const auto &name, names) { it->second->insert(name, ptr); }
+      BOOST_FOREACH (const auto &name, names)
+      {
+        it->second->insert(name, ptr);
+      }
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1443,14 +1634,18 @@ void Engine::Impl::build_ternarytrees() {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::build_lang_ternarytrees() {
-  try {
+void Engine::Impl::build_lang_ternarytrees()
+{
+  try
+  {
     if (itsVerbose)
       cout << "build_lang_ternarytrees" << endl;
 
     build_lang_ternarytrees_all();
     build_lang_ternarytrees_keywords();
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1467,15 +1662,17 @@ void Engine::Impl::build_lang_ternarytrees() {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::build_lang_ternarytrees_all() {
-  try {
+void Engine::Impl::build_lang_ternarytrees_all()
+{
+  try
+  {
     // traverse all alternate names
 
     if (itsVerbose)
-      cout << "build_lang_ternarytrees_all: " << itsAlternateNames.size()
-           << " names" << endl;
+      cout << "build_lang_ternarytrees_all: " << itsAlternateNames.size() << " names" << endl;
 
-    BOOST_FOREACH (const auto &gt, itsAlternateNames) {
+    BOOST_FOREACH (const auto &gt, itsAlternateNames)
+    {
       int geoid = gt.first;
       const Translations &translations = gt.second;
 
@@ -1492,7 +1689,8 @@ void Engine::Impl::build_lang_ternarytrees_all() {
 
       // Now process all translations for the geoid
 
-      BOOST_FOREACH (const auto &tt, translations) {
+      BOOST_FOREACH (const auto &tt, translations)
+      {
         const string &lang = tt.first;
         const string &name = tt.second;
 
@@ -1503,18 +1701,15 @@ void Engine::Impl::build_lang_ternarytrees_all() {
         // If there isn't one, create it now
 
         if (it == itsLangTernaryTreeMap.end())
-          it =
-              itsLangTernaryTreeMap
-                  .insert(make_pair(lang, boost::make_shared<TernaryTreeMap>()))
-                  .first;
+          it = itsLangTernaryTreeMap.insert(make_pair(lang, boost::make_shared<TernaryTreeMap>()))
+                   .first;
         // Then find keyword specific map, keyword being "all"
 
         auto &tmap = *it->second;
         auto tit = tmap.find("all");
 
         if (tit == tmap.end())
-          tit = tmap.insert(TernaryTreeMap::value_type(
-                                "all", boost::make_shared<TernaryTree>()))
+          tit = tmap.insert(TernaryTreeMap::value_type("all", boost::make_shared<TernaryTree>()))
                     .first;
 
         // Insert the word "name, area" to the tree
@@ -1524,14 +1719,18 @@ void Engine::Impl::build_lang_ternarytrees_all() {
         std::string specifier = loc->area + "," + Fmi::to_string(loc->geoid);
         auto treenames = to_treewords(preprocess_name(name), specifier);
 
-        BOOST_FOREACH (const auto &treename, treenames) {
-          if (!tree.insert(treename, *git->second)) {
+        BOOST_FOREACH (const auto &treename, treenames)
+        {
+          if (!tree.insert(treename, *git->second))
+          {
             // cout << "Failed to insert " << treename << endl;
           }
         }
       }
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1547,19 +1746,23 @@ void Engine::Impl::build_lang_ternarytrees_all() {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::build_lang_ternarytrees_keywords() {
-  try {
+void Engine::Impl::build_lang_ternarytrees_keywords()
+{
+  try
+  {
     // Traverse all alternate names
 
     if (itsVerbose)
       cout << "build_lang_ternarytrees_keywords()" << endl;
 
-    BOOST_FOREACH (auto &kloc, itsKeywords) {
+    BOOST_FOREACH (auto &kloc, itsKeywords)
+    {
       const string &keyword = kloc.first;
 
       int ntranslations = 0;
 
-      BOOST_FOREACH (Spine::LocationPtr &loc, kloc.second) {
+      BOOST_FOREACH (Spine::LocationPtr &loc, kloc.second)
+      {
         int geoid = loc->geoid;
 
         // safety check against missing geoid
@@ -1575,7 +1778,8 @@ void Engine::Impl::build_lang_ternarytrees_keywords() {
 
         Spine::LocationPtr &ptr = *git->second;
 
-        BOOST_FOREACH (const auto &tt, ait->second) {
+        BOOST_FOREACH (const auto &tt, ait->second)
+        {
           const string &lang = tt.first;
           const string &translation = tt.second;
 
@@ -1586,9 +1790,7 @@ void Engine::Impl::build_lang_ternarytrees_keywords() {
           // If there isn't one, create it now
 
           if (it == itsLangTernaryTreeMap.end())
-            it = itsLangTernaryTreeMap
-                     .insert(
-                         make_pair(lang, boost::make_shared<TernaryTreeMap>()))
+            it = itsLangTernaryTreeMap.insert(make_pair(lang, boost::make_shared<TernaryTreeMap>()))
                      .first;
 
           // Then find keyword specific map
@@ -1597,9 +1799,9 @@ void Engine::Impl::build_lang_ternarytrees_keywords() {
           auto tit = tmap.find(keyword);
 
           if (tit == tmap.end())
-            tit = tmap.insert(TernaryTreeMap::value_type(
-                                  keyword, boost::make_shared<TernaryTree>()))
-                      .first;
+            tit =
+                tmap.insert(TernaryTreeMap::value_type(keyword, boost::make_shared<TernaryTree>()))
+                    .first;
 
           // Insert the word "name, area" to the tree
 
@@ -1611,8 +1813,10 @@ void Engine::Impl::build_lang_ternarytrees_keywords() {
           std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
           auto names = to_treewords(preprocess_name(translation), specifier);
 
-          BOOST_FOREACH (const auto &name, names) {
-            if (!tree.insert(name, loc)) {
+          BOOST_FOREACH (const auto &name, names)
+          {
+            if (!tree.insert(name, loc))
+            {
               // cout << "Failed to insert " << name << endl;
             }
           }
@@ -1620,10 +1824,12 @@ void Engine::Impl::build_lang_ternarytrees_keywords() {
       }
 
       if (itsVerbose)
-        cout << "build_lang_ternarytrees_keywords: " << keyword << " with "
-             << ntranslations << " translations" << endl;
+        cout << "build_lang_ternarytrees_keywords: " << keyword << " with " << ntranslations
+             << " translations" << endl;
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1634,9 +1840,10 @@ void Engine::Impl::build_lang_ternarytrees_keywords() {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::translate_name(Spine::Location &loc,
-                                  const string &lang) const {
-  try {
+void Engine::Impl::translate_name(Spine::Location &loc, const string &lang) const
+{
+  try
+  {
     // are there any translations?
 
     auto trans = itsAlternateNames.find(loc.geoid);
@@ -1654,7 +1861,9 @@ void Engine::Impl::translate_name(Spine::Location &loc,
       return;
 
     loc.name = pos->second;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1665,15 +1874,17 @@ void Engine::Impl::translate_name(Spine::Location &loc,
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::translate_area(Spine::Location &loc,
-                                  const string &lang) const {
-  try {
+void Engine::Impl::translate_area(Spine::Location &loc, const string &lang) const
+{
+  try
+  {
     string lg = to_language(lang);
 
     // are there any municipality translations?
 
     auto trans = itsAlternateMunicipalities.find(loc.municipality);
-    if (trans != itsAlternateMunicipalities.end()) {
+    if (trans != itsAlternateMunicipalities.end())
+    {
       const auto &translations = trans->second;
       auto pos = translations.find(lg);
 
@@ -1681,26 +1892,28 @@ void Engine::Impl::translate_area(Spine::Location &loc,
         loc.area = pos->second;
     }
 
-    if (!loc.area.empty()) {
+    if (!loc.area.empty())
+    {
       // Try translating country name first, see if it is preceded by a state
       // designator and a comma
       auto comma = loc.area.find(", ");
-      auto country =
-          (comma == std::string::npos) ? loc.area : loc.area.substr(comma + 2);
+      auto country = (comma == std::string::npos) ? loc.area : loc.area.substr(comma + 2);
       auto it = itsAlternateCountries.find(country);
 
-      if (it != itsAlternateCountries.end()) {
+      if (it != itsAlternateCountries.end())
+      {
         const auto &translations = it->second;
 
         auto pos = translations.find(lg);
         if (pos == translations.end())
           return;
-        loc.area = (comma == std::string::npos)
-                       ? pos->second
-                       : loc.area.substr(0, comma + 2).append(pos->second);
+        loc.area = (comma == std::string::npos) ? pos->second
+                                                : loc.area.substr(0, comma + 2).append(pos->second);
       }
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1711,15 +1924,18 @@ void Engine::Impl::translate_area(Spine::Location &loc,
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::translate(Spine::LocationPtr &loc,
-                             const string &lang) const {
-  try {
+void Engine::Impl::translate(Spine::LocationPtr &loc, const string &lang) const
+{
+  try
+  {
     std::unique_ptr<Spine::Location> newloc(new Spine::Location(*loc));
     translate_name(*newloc, lang);
     translate_area(*newloc, lang);
     newloc->country = translate_country(newloc->iso2, lang);
     loc.reset(newloc.release());
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1730,12 +1946,15 @@ void Engine::Impl::translate(Spine::LocationPtr &loc,
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::translate(Spine::LocationList &locs,
-                             const string &lang) const {
-  try {
+void Engine::Impl::translate(Spine::LocationList &locs, const string &lang) const
+{
+  try
+  {
     BOOST_FOREACH (Spine::LocationPtr &loc, locs)
       translate(loc, lang);
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1746,9 +1965,10 @@ void Engine::Impl::translate(Spine::LocationList &locs,
  */
 // ----------------------------------------------------------------------
 
-string Engine::Impl::translate_country(const string &iso2,
-                                       const string &lang) const {
-  try {
+string Engine::Impl::translate_country(const string &iso2, const string &lang) const
+{
+  try
+  {
     string lg = to_language(lang);
 
     // iso2 to official name
@@ -1770,7 +1990,9 @@ string Engine::Impl::translate_country(const string &iso2,
       return country->second;
 
     return pos2->second;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1781,9 +2003,10 @@ string Engine::Impl::translate_country(const string &iso2,
  */
 // ----------------------------------------------------------------------
 
-bool Engine::Impl::prioritySort(const Spine::LocationPtr &a,
-                                const Spine::LocationPtr &b) const {
-  try {
+bool Engine::Impl::prioritySort(const Spine::LocationPtr &a, const Spine::LocationPtr &b) const
+{
+  try
+  {
     // First try priority
     if (a->priority != b->priority)
       return (a->priority > b->priority);
@@ -1797,7 +2020,9 @@ bool Engine::Impl::prioritySort(const Spine::LocationPtr &a,
       return (aname < bname);
 
     return (a->area < b->area);
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1808,18 +2033,29 @@ bool Engine::Impl::prioritySort(const Spine::LocationPtr &a,
  */
 // ----------------------------------------------------------------------
 
-bool basicSort(Spine::LocationPtr a, Spine::LocationPtr b) {
-  try {
-    if (a->name != b->name) {
+bool basicSort(Spine::LocationPtr a, Spine::LocationPtr b)
+{
+  try
+  {
+    if (a->name != b->name)
+    {
       return (a->name < b->name);
-    } else if (a->iso2 != b->iso2) {
+    }
+    else if (a->iso2 != b->iso2)
+    {
       return (a->iso2 < b->iso2);
-    } else if (a->area != b->area) {
+    }
+    else if (a->area != b->area)
+    {
       return (a->area < b->area);
-    } else {
+    }
+    else
+    {
       return (a->priority > b->priority);
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1830,15 +2066,21 @@ bool basicSort(Spine::LocationPtr a, Spine::LocationPtr b) {
  */
 // ----------------------------------------------------------------------
 
-bool closeEnough(Spine::LocationPtr a, Spine::LocationPtr b) {
-  try {
-    if (((a->name == b->name)) && (a->iso2 == b->iso2) &&
-        (a->area == b->area)) {
+bool closeEnough(Spine::LocationPtr a, Spine::LocationPtr b)
+{
+  try
+  {
+    if (((a->name == b->name)) && (a->iso2 == b->iso2) && (a->area == b->area))
+    {
       return true;
-    } else {
+    }
+    else
+    {
       return false;
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1849,15 +2091,19 @@ bool closeEnough(Spine::LocationPtr a, Spine::LocationPtr b) {
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::sort(Spine::LocationList &theLocations) const {
-  try {
+void Engine::Impl::sort(Spine::LocationList &theLocations) const
+{
+  try
+  {
     assign_priorities(theLocations);
     theLocations.sort(basicSort);
-    theLocations.unique(closeEnough); // needed because language specific trees
-                                      // create duplicates
+    theLocations.unique(closeEnough);  // needed because language specific trees
+                                       // create duplicates
     // Sort based on priorities
     theLocations.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1872,12 +2118,13 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
                                           const string &lang,
                                           const string &keyword,
                                           unsigned int page,
-                                          unsigned int maxresults) const {
+                                          unsigned int maxresults) const
+{
   if (!itsSuggestReadyFlag)
-    throw Spine::Exception(
-        BCP, "Attempt to use geonames suggest before it is ready!", NULL);
+    throw Spine::Exception(BCP, "Attempt to use geonames suggest before it is ready!", NULL);
 
-  try {
+  try
+  {
     Spine::LocationList ret;
 
     // return null if keyword is wrong
@@ -1899,26 +2146,30 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
     string lg = to_language(lang);
 
     auto lt = itsLangTernaryTreeMap.find(lg);
-    if (lt != itsLangTernaryTreeMap.end()) {
+    if (lt != itsLangTernaryTreeMap.end())
+    {
       auto tit = lt->second->find(keyword);
-      if (tit != lt->second->end()) {
+      if (tit != lt->second->end())
+      {
         list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
-        BOOST_FOREACH (const Spine::LocationPtr &ptr, tmpx) {
+        BOOST_FOREACH (const Spine::LocationPtr &ptr, tmpx)
+        {
           ret.push_back(ptr);
         }
       }
     }
 
     ret.sort(basicSort);
-    ret.unique(closeEnough); // needed because language specific trees create
-                             // duplicates
+    ret.unique(closeEnough);  // needed because language specific trees create
+                              // duplicates
 
     // Sort based on priorities
 
     ret.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
 
     // Keep the desired part
-    if (maxresults > 0) {
+    if (maxresults > 0)
+    {
       // should do this using erase
       unsigned int first = page * maxresults;
       for (std::size_t i = 0; i < first; i++)
@@ -1933,10 +2184,12 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
     // If there is an exact name match, move it to first place.
     // This will move only the first match though!
 
-    for (auto iter = ret.begin(); iter != ret.end(); ++iter) {
+    for (auto iter = ret.begin(); iter != ret.end(); ++iter)
+    {
       string tmpname = to_treeword((*iter)->name);
 
-      if (tmpname == name) {
+      if (tmpname == name)
+      {
         Spine::LocationPtr ptr = *iter;
         ret.erase(iter);
         ret.push_front(ptr);
@@ -1945,7 +2198,9 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
     }
 
     return ret;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1956,11 +2211,13 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationList
-Engine::Impl::to_locationlist(const Locus::Query::return_type &theList) {
-  try {
+Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_type &theList)
+{
+  try
+  {
     Spine::LocationList ret;
-    BOOST_FOREACH (const auto &loc, theList) {
+    BOOST_FOREACH (const auto &loc, theList)
+    {
       double dem = elevation(loc.lon, loc.lat);
       auto covertype = coverType(loc.lon, loc.lat);
 
@@ -1972,16 +2229,27 @@ Engine::Impl::to_locationlist(const Locus::Query::return_type &theList) {
       if (area == loc.name || area.empty())
         area = loc.country;
 
-      Spine::LocationPtr ptr(
-          new Spine::Location(loc.id, loc.name, loc.iso2, 0, area, loc.feature,
-                              loc.country, loc.lon, loc.lat, loc.timezone,
-                              boost::numeric_cast<int>(loc.population),
-                              loc.elevation, dem, covertype));
+      Spine::LocationPtr ptr(new Spine::Location(loc.id,
+                                                 loc.name,
+                                                 loc.iso2,
+                                                 0,
+                                                 area,
+                                                 loc.feature,
+                                                 loc.country,
+                                                 loc.lon,
+                                                 loc.lat,
+                                                 loc.timezone,
+                                                 boost::numeric_cast<int>(loc.population),
+                                                 loc.elevation,
+                                                 dem,
+                                                 covertype));
 
       ret.push_back(ptr);
     }
     return ret;
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -1992,30 +2260,36 @@ Engine::Impl::to_locationlist(const Locus::Query::return_type &theList) {
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationList
-Engine::Impl::name_search(const Locus::QueryOptions &theOptions,
-                          const string &theName) {
+Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOptions,
+                                              const string &theName)
+{
   if (itsDatabaseDisabled)
     return {};
 
-  try {
+  try
+  {
     std::size_t key = boost::hash_value(theName);
     boost::hash_combine(key, theOptions.HashValue());
 
     auto pos = itsNameSearchCache.find(key);
-    if (pos) {
+    if (pos)
+    {
       return *pos;
-    } else {
-      std::string host = itsConfig.lookup("database.host");
-      std::string user = itsConfig.lookup("database.user");
-      std::string pass = itsConfig.lookup("database.pass");
-      std::string base = itsConfig.lookup("database.database");
+    }
+    else
+    {
+      const std::string &name = boost::asio::ip::host_name();
+
+      const libconfig::Setting &user = lookup_database("user", name);
+      const libconfig::Setting &host = lookup_database("host", name);
+      const libconfig::Setting &pass = lookup_database("pass", name);
+      const libconfig::Setting &base = lookup_database("database", name);
+
       int port = default_port;
       itsConfig.lookupValue("database.port", port);
 
       Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
-      Spine::LocationList ptrs =
-          to_locationlist(lq.FetchByName(theOptions, theName));
+      Spine::LocationList ptrs = to_locationlist(lq.FetchByName(theOptions, theName));
       assign_priorities(ptrs);
       ptrs.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
 
@@ -2029,7 +2303,9 @@ Engine::Impl::name_search(const Locus::QueryOptions &theOptions,
 
       return ptrs;
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -2040,35 +2316,43 @@ Engine::Impl::name_search(const Locus::QueryOptions &theOptions,
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationList
-Engine::Impl::lonlat_search(const Locus::QueryOptions &theOptions,
-                            float theLongitude, float theLatitude,
-                            float theRadius) {
+Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOptions &theOptions,
+                                                float theLongitude,
+                                                float theLatitude,
+                                                float theRadius)
+{
   // Let the engine handle setting the timezone, dem and covertype
   if (itsDatabaseDisabled)
     return {};
 
-  try {
+  try
+  {
     std::size_t key = boost::hash_value(theLongitude);
     boost::hash_combine(key, boost::hash_value(theLatitude));
     boost::hash_combine(key, boost::hash_value(theRadius));
     boost::hash_combine(key, theOptions.HashValue());
 
     auto pos = itsNameSearchCache.find(key);
-    if (pos) {
+    if (pos)
+    {
       return *pos;
-    } else {
-      std::string host = itsConfig.lookup("database.host");
-      std::string user = itsConfig.lookup("database.user");
-      std::string pass = itsConfig.lookup("database.pass");
-      std::string base = itsConfig.lookup("database.database");
+    }
+    else
+    {
+      const std::string &name = boost::asio::ip::host_name();
+
+      const libconfig::Setting &user = lookup_database("user", name);
+      const libconfig::Setting &host = lookup_database("host", name);
+      const libconfig::Setting &pass = lookup_database("pass", name);
+      const libconfig::Setting &base = lookup_database("database", name);
+
       int port = default_port;
       itsConfig.lookupValue("database.port", port);
 
       Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
 
-      Spine::LocationList ptrs = to_locationlist(
-          lq.FetchByLonLat(theOptions, theLongitude, theLatitude, theRadius));
+      Spine::LocationList ptrs =
+          to_locationlist(lq.FetchByLonLat(theOptions, theLongitude, theLatitude, theRadius));
 
       // Do not cache empty results
       if (ptrs.empty())
@@ -2078,7 +2362,9 @@ Engine::Impl::lonlat_search(const Locus::QueryOptions &theOptions,
       itsNameSearchCache.insert(key, ptrs);
       return ptrs;
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -2089,30 +2375,36 @@ Engine::Impl::lonlat_search(const Locus::QueryOptions &theOptions,
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationList
-Engine::Impl::id_search(const Locus::QueryOptions &theOptions, int theId) {
+Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions &theOptions, int theId)
+{
   if (itsDatabaseDisabled)
     return {};
 
-  try {
+  try
+  {
     std::size_t key = boost::hash_value(theId);
     boost::hash_combine(key, theOptions.HashValue());
 
     auto pos = itsNameSearchCache.find(key);
-    if (pos) {
+    if (pos)
+    {
       return *pos;
-    } else {
-      std::string host = itsConfig.lookup("database.host");
-      std::string user = itsConfig.lookup("database.user");
-      std::string pass = itsConfig.lookup("database.pass");
-      std::string base = itsConfig.lookup("database.database");
+    }
+    else
+    {
+      const std::string &name = boost::asio::ip::host_name();
+
+      const libconfig::Setting &user = lookup_database("user", name);
+      const libconfig::Setting &host = lookup_database("host", name);
+      const libconfig::Setting &pass = lookup_database("pass", name);
+      const libconfig::Setting &base = lookup_database("database", name);
+
       int port = default_port;
       itsConfig.lookupValue("database.port", port);
 
       Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
 
-      Spine::LocationList ptrs =
-          to_locationlist(lq.FetchById(theOptions, theId));
+      Spine::LocationList ptrs = to_locationlist(lq.FetchById(theOptions, theId));
 
       // Do not cache empty results
       if (ptrs.empty())
@@ -2124,7 +2416,9 @@ Engine::Impl::id_search(const Locus::QueryOptions &theOptions, int theId) {
 
       return ptrs;
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -2135,13 +2429,14 @@ Engine::Impl::id_search(const Locus::QueryOptions &theOptions, int theId) {
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationList
-Engine::Impl::keyword_search(const Locus::QueryOptions &theOptions,
-                             const std::string &theKeyword) {
+Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theOptions,
+                                                 const std::string &theKeyword)
+{
   if (itsDatabaseDisabled)
     return {};
 
-  try {
+  try
+  {
     // Just in case there is a keyword equal to an actual location name
     // we do not start the start hashing directly from the keyword
     std::size_t key = 0x12345678;
@@ -2149,20 +2444,25 @@ Engine::Impl::keyword_search(const Locus::QueryOptions &theOptions,
     boost::hash_combine(key, theOptions.HashValue());
 
     auto pos = itsNameSearchCache.find(key);
-    if (pos) {
+    if (pos)
+    {
       return *pos;
-    } else {
-      std::string host = itsConfig.lookup("database.host");
-      std::string user = itsConfig.lookup("database.user");
-      std::string pass = itsConfig.lookup("database.pass");
-      std::string base = itsConfig.lookup("database.database");
+    }
+    else
+    {
+      const std::string &name = boost::asio::ip::host_name();
+
+      const libconfig::Setting &user = lookup_database("user", name);
+      const libconfig::Setting &host = lookup_database("host", name);
+      const libconfig::Setting &pass = lookup_database("pass", name);
+      const libconfig::Setting &base = lookup_database("database", name);
+
       int port = default_port;
       itsConfig.lookupValue("database.port", port);
 
       Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
 
-      Spine::LocationList ptrs =
-          to_locationlist(lq.FetchByKeyword(theOptions, theKeyword));
+      Spine::LocationList ptrs = to_locationlist(lq.FetchByKeyword(theOptions, theKeyword));
 
       // Do not cache empty results
       if (ptrs.empty())
@@ -2173,7 +2473,9 @@ Engine::Impl::keyword_search(const Locus::QueryOptions &theOptions,
 
       return ptrs;
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -2185,11 +2487,14 @@ Engine::Impl::keyword_search(const Locus::QueryOptions &theOptions,
 // ----------------------------------------------------------------------
 
 void Engine::Impl::name_cache_status(boost::shared_ptr<Spine::Table> tablePtr,
-                                     Spine::TableFormatter::Names &theNames) {
-  try {
+                                     Spine::TableFormatter::Names &theNames)
+{
+  try
+  {
     auto contentList = itsNameSearchCache.getContent();
 
-    if (contentList.empty()) {
+    if (contentList.empty())
+    {
       return;
     }
 
@@ -2200,7 +2505,8 @@ void Engine::Impl::name_cache_status(boost::shared_ptr<Spine::Table> tablePtr,
     theNames.push_back("Geoid");
 
     unsigned int row = 0;
-    BOOST_FOREACH (const auto &ReportObject, contentList) {
+    BOOST_FOREACH (const auto &ReportObject, contentList)
+    {
       const std::size_t count = ReportObject.itsHits;
       const std::size_t key = ReportObject.itsKey;
       const Spine::LocationPtr &loc = ReportObject.itsValue.front();
@@ -2219,7 +2525,9 @@ void Engine::Impl::name_cache_status(boost::shared_ptr<Spine::Table> tablePtr,
 
       ++row;
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     throw Spine::Exception(BCP, "Operation failed!", NULL);
   }
 }
@@ -2230,10 +2538,13 @@ void Engine::Impl::name_cache_status(boost::shared_ptr<Spine::Table> tablePtr,
  */
 // ----------------------------------------------------------------------
 
-bool Engine::Impl::isSuggestReady() const { return itsSuggestReadyFlag; }
+bool Engine::Impl::isSuggestReady() const
+{
+  return itsSuggestReadyFlag;
+}
 
-} // namespace Geonames
-} // namespace Engine
-} // namespace SmartMet
+}  // namespace Geonames
+}  // namespace Engine
+}  // namespace SmartMet
 
 // ======================================================================

@@ -51,6 +51,8 @@ SmartMet geonames engine
 Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
+Requires: %{SPECNAME}
+Requires: smartmet-library-locus-devel
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.

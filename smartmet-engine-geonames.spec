@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 17.8.29
+Version: 17.11.1
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -21,10 +21,10 @@ BuildRequires: mariadb-devel
 BuildRequires: mysql++-devel
 BuildRequires: postgresql93-libs
 BuildRequires: postgresql93-devel
-BuildRequires: smartmet-library-gis-devel >= 17.8.28
+BuildRequires: smartmet-library-gis-devel >= 17.10.31
 BuildRequires: smartmet-library-locus-devel >= 17.8.28
 BuildRequires: smartmet-library-macgyver-devel >= 17.8.28
-BuildRequires: smartmet-library-spine-devel >= 17.8.28
+BuildRequires: smartmet-library-spine-devel >= 17.11.1
 Requires: boost-date-time
 Requires: boost-filesystem
 Requires: boost-iostreams
@@ -34,10 +34,10 @@ Requires: boost-thread
 Requires: libatomic
 Requires: libicu
 Requires: mariadb-libs
-Requires: smartmet-library-gis >= 17.8.28
+Requires: smartmet-library-gis >= 17.10.31
 Requires: smartmet-library-locus >= 17.8.28
 Requires: smartmet-library-macgyver >= 17.8.28
-Requires: smartmet-library-spine >= 17.8.28
+Requires: smartmet-library-spine >= 17.11.1
 Requires: smartmet-server >= 17.8.28
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
@@ -80,6 +80,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Nov  1 2017 Mika Heiskanen <mika.heiskanen@fmi.fi> - 17.11.1-1.fmi
+- Rebuilt due to GIS-library API change
+
 * Tue Aug 29 2017 Mika Heiskanen <mika.heiskanen@fmi.fi> - 17.8.29-1.fmi
 - Fixed overrides to work for all queries and match host name prefix only
 

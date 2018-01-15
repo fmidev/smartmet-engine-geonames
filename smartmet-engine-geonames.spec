@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 17.11.1
+Version: 18.1.15
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -19,12 +19,12 @@ BuildRequires: libpqxx
 BuildRequires: libpqxx-devel
 BuildRequires: mariadb-devel
 BuildRequires: mysql++-devel
-BuildRequires: postgresql93-libs
-BuildRequires: postgresql93-devel
-BuildRequires: smartmet-library-gis-devel >= 17.10.31
-BuildRequires: smartmet-library-locus-devel >= 17.8.28
-BuildRequires: smartmet-library-macgyver-devel >= 17.8.28
-BuildRequires: smartmet-library-spine-devel >= 17.11.1
+BuildRequires: postgresql95-libs
+BuildRequires: postgresql95-devel
+BuildRequires: smartmet-library-gis-devel >= 18.1.15
+BuildRequires: smartmet-library-locus-devel >= 18.1.15
+BuildRequires: smartmet-library-macgyver-devel >= 17.11.27
+BuildRequires: smartmet-library-spine-devel >= 18.1.15
 Requires: boost-date-time
 Requires: boost-filesystem
 Requires: boost-iostreams
@@ -34,11 +34,11 @@ Requires: boost-thread
 Requires: libatomic
 Requires: libicu
 Requires: mariadb-libs
-Requires: smartmet-library-gis >= 17.10.31
-Requires: smartmet-library-locus >= 17.8.28
-Requires: smartmet-library-macgyver >= 17.8.28
-Requires: smartmet-library-spine >= 17.11.1
-Requires: smartmet-server >= 17.8.28
+Requires: smartmet-library-gis >= 18.1.15
+Requires: smartmet-library-locus >= 18.1.15
+Requires: smartmet-library-macgyver >= 17.11.27
+Requires: smartmet-library-spine >= 18.1.15
+Requires: smartmet-server >= 17.11.10
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
@@ -80,6 +80,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Jan 15 2018 Mika Heiskanen <mika.heiskanen@fmi.fi> - 18.1.15-1.fmi
+- Updated to postgresql 9.5
+
 * Wed Nov  1 2017 Mika Heiskanen <mika.heiskanen@fmi.fi> - 17.11.1-1.fmi
 - Rebuilt due to GIS-library API change
 

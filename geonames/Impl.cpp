@@ -1059,8 +1059,9 @@ void Engine::Impl::read_municipalities(Locus::Connection &conn)
 
     pqxx::result res = conn.executeNonTransaction(query);
 
-    if (res.empty())
-      throw Spine::Exception(BCP, "FmiNames: Found nothing from municipalities table");
+    // We allow this to be empty since the table contains only Finnish information
+    // if (res.empty()) throw Spine::Exception(BCP, "FmiNames: Found nothing from municipalities
+    // table");
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
@@ -1210,9 +1211,9 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
       sql.append(" WHERE ").append(static_cast<const char *>(where_clause));
     }
 
-// This makes sure preferred names come first, and longest names last.
-// Note that this leaves cases like Montreal vs Montr�al, hence we do a final
-// name sort to guarantee a fixed order. Using ASC prefers non-accented letters.
+    // This makes sure preferred names come first, and longest names last.
+    // Note that this leaves cases like Montreal vs Montr�al, hence we do a final
+    // name sort to guarantee a fixed order. Using ASC prefers non-accented letters.
 
 #if 0
     // Works only in MySQL
@@ -1287,8 +1288,9 @@ void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn)
 
     pqxx::result res = conn.executeNonTransaction(query);
 
-    if (res.empty())
-      throw Spine::Exception(BCP, "FmiNames: Found nothing from alternate_municipalities database");
+    // Permit the table to be empty since it contains only Finnish information
+    // if (res.empty()) throw Spine::Exception(BCP, "FmiNames: Found nothing from
+    // alternate_municipalities database");
 
     if (itsVerbose)
       cout << "read_alternate_geonames: " << res.size() << " translations" << endl;

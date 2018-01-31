@@ -469,16 +469,7 @@ void Engine::Impl::initSuggest(bool threaded)
         std::cerr << "Warning: Geonames database is disabled" << std::endl;
       else
       {
-        const std::string &name = boost::asio::ip::host_name();
-
-        const libconfig::Setting &user = lookup_database("user", name);
-        const libconfig::Setting &host = lookup_database("host", name);
-        const libconfig::Setting &pass = lookup_database("pass", name);
-        const libconfig::Setting &base = lookup_database("database", name);
-        int port = default_port;
-        itsConfig.lookupValue("database.port", port);
-
-        Locus::Connection conn(host, user, pass, base, "UTF8", Fmi::to_string(port));
+        Locus::Connection conn(itsHost, itsUser, itsPass, itsDatabase, "UTF8", itsPort);
 
         if (!conn.isConnected())
           throw Spine::Exception(BCP, "Failed to connect to fminames database");
@@ -748,13 +739,16 @@ void Engine::Impl::read_config()
 
       read_config_priorities();
 
-      // Required settings to be used later on. Note that port is optional, the
-      // default is 5432
-      // These will throw if the setting is not found.
-      itsConfig.lookup("database.host");
-      itsConfig.lookup("database.database");
-      itsConfig.lookup("database.user");
-      itsConfig.lookup("database.pass");
+      const std::string &name = boost::asio::ip::host_name();
+      itsUser = lookup_database("user", name).c_str();
+      itsHost = lookup_database("host", name).c_str();
+      itsPass = lookup_database("pass", name).c_str();
+      itsDatabase = lookup_database("database", name).c_str();
+
+      // port is optional
+      int port = default_port;
+      itsConfig.lookupValue("database.port", port);
+      itsPort = Fmi::to_string(port);
     }
     catch (const libconfig::SettingException &e)
     {
@@ -2280,17 +2274,7 @@ Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOpti
     }
     else
     {
-      const std::string &name = boost::asio::ip::host_name();
-
-      const libconfig::Setting &user = lookup_database("user", name);
-      const libconfig::Setting &host = lookup_database("host", name);
-      const libconfig::Setting &pass = lookup_database("pass", name);
-      const libconfig::Setting &base = lookup_database("database", name);
-
-      int port = default_port;
-      itsConfig.lookupValue("database.port", port);
-
-      Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
+      Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
       Spine::LocationList ptrs = to_locationlist(lq.FetchByName(theOptions, theName));
       assign_priorities(ptrs);
       ptrs.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
@@ -2341,17 +2325,7 @@ Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOptions &theOp
     }
     else
     {
-      const std::string &name = boost::asio::ip::host_name();
-
-      const libconfig::Setting &user = lookup_database("user", name);
-      const libconfig::Setting &host = lookup_database("host", name);
-      const libconfig::Setting &pass = lookup_database("pass", name);
-      const libconfig::Setting &base = lookup_database("database", name);
-
-      int port = default_port;
-      itsConfig.lookupValue("database.port", port);
-
-      Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
+      Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
 
       Spine::LocationList ptrs =
           to_locationlist(lq.FetchByLonLat(theOptions, theLongitude, theLatitude, theRadius));
@@ -2394,17 +2368,7 @@ Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions &theOption
     }
     else
     {
-      const std::string &name = boost::asio::ip::host_name();
-
-      const libconfig::Setting &user = lookup_database("user", name);
-      const libconfig::Setting &host = lookup_database("host", name);
-      const libconfig::Setting &pass = lookup_database("pass", name);
-      const libconfig::Setting &base = lookup_database("database", name);
-
-      int port = default_port;
-      itsConfig.lookupValue("database.port", port);
-
-      Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
+      Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
 
       Spine::LocationList ptrs = to_locationlist(lq.FetchById(theOptions, theId));
 
@@ -2452,17 +2416,7 @@ Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theO
     }
     else
     {
-      const std::string &name = boost::asio::ip::host_name();
-
-      const libconfig::Setting &user = lookup_database("user", name);
-      const libconfig::Setting &host = lookup_database("host", name);
-      const libconfig::Setting &pass = lookup_database("pass", name);
-      const libconfig::Setting &base = lookup_database("database", name);
-
-      int port = default_port;
-      itsConfig.lookupValue("database.port", port);
-
-      Locus::Query lq(host, user, pass, base, Fmi::to_string(port));
+      Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
 
       Spine::LocationList ptrs = to_locationlist(lq.FetchByKeyword(theOptions, theKeyword));
 

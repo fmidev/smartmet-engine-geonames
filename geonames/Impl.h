@@ -8,11 +8,11 @@
 
 #include "Engine.h"
 
-#include <libconfig.h++>
 #include <macgyver/Cache.h>
 #include <macgyver/Geometry.h>
 #include <macgyver/NearTree.h>
 #include <macgyver/TernarySearchTree.h>
+#include <libconfig.h++>
 
 #include <gis/LandCover.h>
 
@@ -236,6 +236,15 @@ class Engine::Impl : private boost::noncopyable
   std::size_t itsHashValue;
 
   bool itsShutdownRequested;
+
+  // We store these as data members to avoid calling libconfig which
+  // uses exceptions for normal control flow
+
+  std::string itsUser;
+  std::string itsHost;
+  std::string itsPass;
+  std::string itsDatabase;
+  std::string itsPort;
 
  private:
   Impl();

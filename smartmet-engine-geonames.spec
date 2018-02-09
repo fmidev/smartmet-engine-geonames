@@ -81,7 +81,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %changelog
 * Fri Feb  9 2018 Mika Heiskanen <mika.heiskanen@fmi.fi> - 18.2.9-1.fmi
-- Repackaged since base class SmartMetEngine size changed
+- Repackaged since base class SmartMetEngine size changed and TimeZones API changed
 
 * Wed Jan 31 2018 Mika Heiskanen <mika.heiskanen@fmi.fi> - 18.1.31-1.fmi
 - Read database configuration only once during initialization

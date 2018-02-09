@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 18.1.31
+Version: 18.2.9
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -23,8 +23,8 @@ BuildRequires: postgresql95-libs
 BuildRequires: postgresql95-devel
 BuildRequires: smartmet-library-gis-devel >= 18.1.15
 BuildRequires: smartmet-library-locus-devel >= 18.1.15
-BuildRequires: smartmet-library-macgyver-devel >= 17.11.27
-BuildRequires: smartmet-library-spine-devel >= 18.1.15
+BuildRequires: smartmet-library-macgyver-devel >= 18.2.6
+BuildRequires: smartmet-library-spine-devel >= 18.2.9
 Requires: boost-date-time
 Requires: boost-filesystem
 Requires: boost-iostreams
@@ -36,8 +36,8 @@ Requires: libicu
 Requires: mariadb-libs
 Requires: smartmet-library-gis >= 18.1.15
 Requires: smartmet-library-locus >= 18.1.15
-Requires: smartmet-library-macgyver >= 17.11.27
-Requires: smartmet-library-spine >= 18.1.15
+Requires: smartmet-library-macgyver >= 18.2.6
+Requires: smartmet-library-spine >= 18.2.9
 Requires: smartmet-server >= 17.11.10
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
@@ -80,6 +80,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Fri Feb  9 2018 Mika Heiskanen <mika.heiskanen@fmi.fi> - 18.2.9-1.fmi
+- Repackaged since base class SmartMetEngine size changed
+
 * Wed Jan 31 2018 Mika Heiskanen <mika.heiskanen@fmi.fi> - 18.1.31-1.fmi
 - Read database configuration only once during initialization
 

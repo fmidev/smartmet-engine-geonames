@@ -21,9 +21,9 @@ BuildRequires: mariadb-devel
 BuildRequires: mysql++-devel
 BuildRequires: postgresql95-libs
 BuildRequires: postgresql95-devel
-BuildRequires: smartmet-library-gis-devel >= 18.1.15
+BuildRequires: smartmet-library-gis-devel >= 18.2.8
 BuildRequires: smartmet-library-locus-devel >= 18.1.15
-BuildRequires: smartmet-library-macgyver-devel >= 18.2.6
+BuildRequires: smartmet-library-macgyver-devel >= 18.2.9
 BuildRequires: smartmet-library-spine-devel >= 18.2.9
 Requires: boost-date-time
 Requires: boost-filesystem
@@ -34,9 +34,9 @@ Requires: boost-thread
 Requires: libatomic
 Requires: libicu
 Requires: mariadb-libs
-Requires: smartmet-library-gis >= 18.1.15
+Requires: smartmet-library-gis >= 18.2.8
 Requires: smartmet-library-locus >= 18.1.15
-Requires: smartmet-library-macgyver >= 18.2.6
+Requires: smartmet-library-macgyver >= 18.2.9
 Requires: smartmet-library-spine >= 18.2.9
 Requires: smartmet-server >= 17.11.10
 Provides: %{SPECNAME}

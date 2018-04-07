@@ -7,20 +7,20 @@
 #include "Engine.h"
 #include "Impl.h"
 
-#include <spine/DebugFormatter.h>
-#include <spine/TableFormatterOptions.h>
-#include <spine/Location.h>
 #include <spine/Convenience.h>
+#include <spine/DebugFormatter.h>
 #include <spine/Exception.h>
+#include <spine/Location.h>
+#include <spine/TableFormatterOptions.h>
 
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
+#include <locus/Query.h>
 #include <macgyver/StringConversion.h>
 #include <macgyver/TimeZoneFactory.h>
-#include <locus/Query.h>
 
-#include <boost/foreach.hpp>
 #include <boost/date_time/posix_time/posix_time_io.hpp>
+#include <boost/foreach.hpp>
 
 #include <algorithm>
 #include <iterator>
@@ -122,9 +122,7 @@ Engine::Engine(const string& theConfigFile)
  */
 // ----------------------------------------------------------------------
 
-Engine::~Engine()
-{
-}
+Engine::~Engine() {}
 // ----------------------------------------------------------------------
 /*!
  * \brief Nontrivial construction happens here

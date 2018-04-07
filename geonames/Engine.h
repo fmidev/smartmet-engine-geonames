@@ -6,12 +6,12 @@
 
 #pragma once
 
-#include <spine/Location.h>
 #include <spine/HTTP.h>
+#include <spine/Location.h>
+#include <spine/SmartMetEngine.h>
 #include <spine/Table.h>
 #include <spine/TableFormatter.h>
 #include <spine/Thread.h>
-#include <spine/SmartMetEngine.h>
 
 #include <macgyver/TimeZones.h>
 
@@ -29,7 +29,7 @@ namespace Fmi
 {
 class DEM;
 class LandCover;
-}
+}  // namespace Fmi
 
 namespace SmartMet
 {
@@ -45,6 +45,7 @@ class LocationOptions
   const Spine::TaggedLocationList& locations() const { return itsLocations; }
   bool empty() const { return itsLocations.empty(); }
   Spine::TaggedLocationList::size_type size() const { return itsLocations.size(); }
+
  private:
   friend class Engine;
   Spine::TaggedLocationList itsLocations;

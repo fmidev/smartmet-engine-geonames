@@ -98,7 +98,7 @@ void nearestplaces()
     //		ptrs = names->lonlatSearch(opts,25,60,50);
     ptrs = names->lonlatSearch(opts, 24.96, 60.17, 10);
   }
-  catch (libconfig::SettingException &e)
+  catch (const libconfig::SettingException &e)
   {
     TEST_FAILED(string("Setting not found: ") + e.getPath());
   }
@@ -424,7 +424,7 @@ void nameSearch()
   {
     ptrs = names->nameSearch(opts, "Helsinki");
   }
-  catch (libconfig::SettingException &e)
+  catch (const libconfig::SettingException &e)
   {
     TEST_FAILED(string("Setting not found: ") + e.getPath());
   }
@@ -577,7 +577,7 @@ void idSearch()
   {
     ptrs = names->idSearch(opts, 658225);
   }
-  catch (libconfig::SettingException &e)
+  catch (const libconfig::SettingException &e)
   {
     TEST_FAILED(string("Setting not found: ") + e.getPath());
   }
@@ -618,7 +618,7 @@ void lonlatSearch()
   {
     ptrs = names->lonlatSearch(opts, 24.9642, 60.2089);
   }
-  catch (libconfig::SettingException &e)
+  catch (const libconfig::SettingException &e)
   {
     TEST_FAILED(string("Setting not found: ") + e.getPath());
   }
@@ -665,7 +665,7 @@ void keywordSearch()
   {
     ptrs = names->keywordSearch(opts, "mareografit");
   }
-  catch (libconfig::SettingException &e)
+  catch (const libconfig::SettingException &e)
   {
     TEST_FAILED(string("Setting not found: ") + e.getPath());
   }

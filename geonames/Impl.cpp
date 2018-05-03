@@ -443,7 +443,7 @@ const libconfig::Setting &Engine::Impl::lookup_database(const std::string &setti
     }      // if
     return default_value;
   }
-  catch (libconfig::SettingNotFoundException &ex)
+  catch (const libconfig::SettingNotFoundException &ex)
   {
     throw SmartMet::Spine::Exception(BCP, "Override configuration error: " + setting, nullptr);
   }
@@ -511,13 +511,13 @@ void Engine::Impl::initSuggest(bool threaded)
         }
       }
     }
-    catch (libconfig::ParseException &e)
+    catch (const libconfig::ParseException &e)
     {
       Spine::Exception exception(BCP, "Geo configuration error!", NULL);
       exception.addDetail(std::string(e.getError()) + "' on line " + std::to_string(e.getLine()));
       throw exception;
     }
-    catch (libconfig::ConfigException &)
+    catch (const libconfig::ConfigException &)
     {
       throw Spine::Exception(BCP, "Geo configuration error", NULL);
     }
@@ -758,7 +758,7 @@ void Engine::Impl::read_config()
       exception.addParameter("Error description", e.what());
       throw exception;
     }
-    catch (libconfig::ParseException &e)
+    catch (const libconfig::ParseException &e)
     {
       Spine::Exception exception(BCP, "Configuration file parsing failed!");
       exception.addParameter("Configuration file", itsConfigFile);
@@ -766,7 +766,7 @@ void Engine::Impl::read_config()
       exception.addParameter("Error description", e.getError());
       throw exception;
     }
-    catch (libconfig::ConfigException &e)
+    catch (const libconfig::ConfigException &e)
     {
       Spine::Exception exception(BCP, "Configuration exception!");
       exception.addParameter("Configuration file", itsConfigFile);

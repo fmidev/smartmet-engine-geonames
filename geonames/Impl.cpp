@@ -469,7 +469,7 @@ void Engine::Impl::initSuggest(bool threaded)
         std::cerr << "Warning: Geonames database is disabled" << std::endl;
       else
       {
-        Locus::Connection conn(itsHost, itsUser, itsPass, itsDatabase, "UTF8", itsPort);
+        Locus::Connection conn(itsHost, itsUser, itsPass, itsDatabase, "UTF8", itsPort, "");
 
         if (!conn.isConnected())
           throw Spine::Exception(BCP, "Failed to connect to fminames database");

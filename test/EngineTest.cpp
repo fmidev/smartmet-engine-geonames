@@ -397,13 +397,6 @@ void suggest()
     TEST_FAILED("Country of first match for 'stockholm' should be 'Sweden', not " +
                 ptrs.front()->country);
 
-  ptrs = names->suggest("copenhagen", "en");
-  if (ptrs.size() < 1)
-    TEST_FAILED("Failed to find 'Copenhagen' with lang=en");
-  if (ptrs.front()->country != "Denmark")
-    TEST_FAILED("Country of first match for 'copenhagen' should be 'Denmark', not " +
-                ptrs.front()->country);
-
   TEST_PASSED();
 }
 

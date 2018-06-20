@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 18.4.7
+Version: 18.6.20
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -23,9 +23,9 @@ BuildRequires: mysql++-devel
 BuildRequires: postgresql95-libs
 BuildRequires: postgresql95-devel
 BuildRequires: smartmet-library-gis-devel >= 18.4.7
-BuildRequires: smartmet-library-locus-devel >= 18.4.7
-BuildRequires: smartmet-library-macgyver-devel >= 18.4.7
-BuildRequires: smartmet-library-spine-devel >= 18.4.7
+BuildRequires: smartmet-library-locus-devel >= 18.6.14
+BuildRequires: smartmet-library-macgyver-devel >= 18.6.7
+BuildRequires: smartmet-library-spine-devel >= 18.6.18
 Requires: boost-date-time
 Requires: boost-filesystem
 Requires: boost-iostreams
@@ -36,10 +36,10 @@ Requires: libatomic
 Requires: libicu
 Requires: mariadb-libs
 Requires: smartmet-library-gis >= 18.4.7
-Requires: smartmet-library-locus >= 18.4.7
-Requires: smartmet-library-macgyver >= 18.4.7
-Requires: smartmet-library-spine >= 18.4.7
-Requires: smartmet-server >= 18.4.7
+Requires: smartmet-library-locus >= 18.6.14
+Requires: smartmet-library-macgyver >= 18.6.7
+Requires: smartmet-library-spine >= 18.6.18
+Requires: smartmet-server >= 18.6.6
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
@@ -81,6 +81,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Jun 20 2018 Mika Heiskanen <mika.heiskanen@fmi.fi> - 18.6.20-1.fmi
+- Added caching of suggest results, since especially single letter searches are expensive
+
 * Sat Apr  7 2018 Mika Heiskanen <mika.heiskanen@fmi.fi> - 18.4.7-1.fmi
 - Upgrade to boost 1.66
 

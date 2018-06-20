@@ -12,6 +12,7 @@
 #include <macgyver/Geometry.h>
 #include <macgyver/NearTree.h>
 #include <macgyver/TernarySearchTree.h>
+#include <macgyver/TimedCache.h>
 #include <libconfig.h++>
 
 #include <gis/LandCover.h>
@@ -94,6 +95,10 @@ class Engine::Impl : private boost::noncopyable
 
   // From search hash key to result
   typedef Fmi::Cache::Cache<std::size_t, Spine::LocationList> NameSearchCache;
+
+  // Suggest cache
+  using SuggestCache = Fmi::TimedCache::Cache<std::size_t, Spine::LocationList>;
+  std::unique_ptr<SuggestCache> itsSuggestCache;
 
  public:
   Impl(const std::string& configfile, bool reloading);
@@ -276,6 +281,12 @@ class Engine::Impl : private boost::noncopyable
   void build_lang_ternarytrees();
   void build_lang_ternarytrees_all();
   void build_lang_ternarytrees_keywords();
+
+  std::size_t cache_key(const std::string& pattern,
+                        const std::string& lang,
+                        const std::string& keyword,
+                        unsigned int page,
+                        unsigned int maxresults) const;
 
 };  // Impl
 

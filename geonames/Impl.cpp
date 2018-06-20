@@ -6,29 +6,23 @@
 
 #include "Impl.h"
 #include "Engine.h"
-
-#include <spine/Exception.h>
-#include <spine/Location.h>
-
-#include <gis/DEM.h>
-#include <gis/LandCover.h>
-
-#include <macgyver/StringConversion.h>
-
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/asio/ip/host_name.hpp>
 #include <boost/foreach.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/thread.hpp>
-
+#include <gis/DEM.h>
+#include <gis/LandCover.h>
+#include <macgyver/StringConversion.h>
+#include <spine/Exception.h>
+#include <spine/Location.h>
+#include <sys/types.h>
 #include <cassert>
 #include <cmath>
+#include <signal.h>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-
-#include <sys/types.h>
-#include <signal.h>
 
 using namespace std;
 
@@ -60,7 +54,7 @@ void print(const SmartMet::Spine::LocationPtr &ptr)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw SmartMet::Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -76,7 +70,7 @@ void print(const list<SmartMet::Spine::LocationPtr *> &ptrs)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception(BCP, "Operation failed!", NULL);
+    throw SmartMet::Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 #endif
@@ -102,7 +96,7 @@ Engine::Impl::~Impl()
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -146,9 +140,12 @@ Engine::Impl::Impl(const string &configfile, bool reloading)
       // Cache settings
       unsigned int cacheMaxSize = 1000;
       itsConfig.lookupValue("cache.max_size", cacheMaxSize);
-
-      // Resize the cache according to the given size
       itsNameSearchCache.resize(cacheMaxSize);
+
+      // Suggest cache settings
+      unsigned int suggestCacheSize = 10000;
+      itsConfig.lookupValue("cache.suggest_max_size", suggestCacheSize);
+      itsSuggestCache.reset(new SuggestCache(suggestCacheSize));
 
       // Establish collator
 
@@ -158,17 +155,16 @@ Engine::Impl::Impl(const string &configfile, bool reloading)
     }
     catch (const libconfig::SettingException &e)
     {
-      Spine::Exception exception(BCP, "Configuration file setting error!");
-      exception.addParameter("Path", e.getPath());
-      exception.addParameter("Configuration file", itsConfigFile);
-      exception.addParameter("Error description", e.what());
-      throw exception;
+      throw Spine::Exception(BCP, "Configuration file setting error!")
+          .addParameter("Path", e.getPath())
+          .addParameter("Configuration file", itsConfigFile)
+          .addParameter("Error description", e.what());
     }
   }
 
   catch (...)
   {
-    throw Spine::Exception(BCP, "Constructor failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Constructor failed!");
   }
 }
 
@@ -200,7 +196,7 @@ double Engine::Impl::elevation(double lon, double lat) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -221,7 +217,7 @@ double Engine::Impl::elevation(double lon, double lat, unsigned int maxdemresolu
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -253,7 +249,7 @@ Fmi::LandCover::Type Engine::Impl::coverType(double lon, double lat) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -282,7 +278,7 @@ string Engine::Impl::preprocess_name(const string &name) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -335,7 +331,7 @@ list<string> Engine::Impl::to_treewords(const string &name, const string &area) 
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -364,7 +360,7 @@ string Engine::Impl::to_treeword(const string &name) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -385,7 +381,7 @@ string Engine::Impl::to_treeword(const string &name, const string &area) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -469,7 +465,7 @@ void Engine::Impl::initSuggest(bool threaded)
         std::cerr << "Warning: Geonames database is disabled" << std::endl;
       else
       {
-        Locus::Connection conn(itsHost, itsUser, itsPass, itsDatabase, "UTF8", itsPort, "");
+        Locus::Connection conn(itsHost, itsUser, itsPass, itsDatabase, "UTF8", itsPort, false);
 
         if (!conn.isConnected())
           throw Spine::Exception(BCP, "Failed to connect to fminames database");
@@ -513,17 +509,16 @@ void Engine::Impl::initSuggest(bool threaded)
     }
     catch (const libconfig::ParseException &e)
     {
-      Spine::Exception exception(BCP, "Geo configuration error!", NULL);
-      exception.addDetail(std::string(e.getError()) + "' on line " + std::to_string(e.getLine()));
-      throw exception;
+      throw Spine::Exception::Trace(BCP, "Geo configuration error!")
+          .addDetail(std::string(e.getError()) + "' on line " + std::to_string(e.getLine()));
     }
     catch (const libconfig::ConfigException &)
     {
-      throw Spine::Exception(BCP, "Geo configuration error", NULL);
+      throw Spine::Exception::Trace(BCP, "Geo configuration error");
     }
     catch (...)
     {
-      Spine::Exception exception(BCP, "Operation failed", NULL);
+      Spine::Exception exception(BCP, "Operation failed", nullptr);
       if (!itsReloading)
       {
         throw exception;
@@ -563,7 +558,7 @@ void Engine::Impl::initSuggest(bool threaded)
   }
   catch (...)
   {
-    Spine::Exception exception(BCP, "Geonames autocomplete data initialization failed", NULL);
+    Spine::Exception exception(BCP, "Geonames autocomplete data initialization failed", nullptr);
 
     if (!threaded)
       throw exception;
@@ -642,7 +637,7 @@ void Engine::Impl::init(bool first_construction)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -664,7 +659,7 @@ void Engine::Impl::shutdown()
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -776,8 +771,7 @@ void Engine::Impl::read_config()
   }
   catch (...)
   {
-    Spine::Exception exception(BCP, "Configuration read failed!", NULL);
-    throw exception;
+    throw Spine::Exception::Trace(BCP, "Configuration read failed!");
   }
 }
 
@@ -847,8 +841,7 @@ void Engine::Impl::read_config_priorities()
   }
   catch (...)
   {
-    Spine::Exception exception(BCP, "Reading config priorities failed!", NULL);
-    throw exception;
+    throw Spine::Exception::Trace(BCP, "Reading config priorities failed!");
   }
 }
 
@@ -896,7 +889,7 @@ void Engine::Impl::read_config_prioritymap(const string &partname, Priorities &p
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -932,7 +925,7 @@ void Engine::Impl::read_database_hash_value(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -976,7 +969,7 @@ void Engine::Impl::read_countries(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1032,7 +1025,7 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1069,7 +1062,7 @@ void Engine::Impl::read_municipalities(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1178,7 +1171,7 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1259,7 +1252,7 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1310,7 +1303,7 @@ void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1337,7 +1330,7 @@ void Engine::Impl::build_geoid_map()
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1367,7 +1360,7 @@ void Engine::Impl::assign_priorities(Spine::LocationList &locs) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1387,7 +1380,7 @@ int Engine::Impl::country_priority(const Spine::Location &loc) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1407,7 +1400,7 @@ int Engine::Impl::area_priority(const Spine::Location &loc) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1427,7 +1420,7 @@ int Engine::Impl::population_priority(const Spine::Location &loc) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1457,7 +1450,7 @@ int Engine::Impl::feature_priority(const Spine::Location &loc) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1513,7 +1506,7 @@ void Engine::Impl::read_keywords(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1557,7 +1550,7 @@ void Engine::Impl::build_geotrees()
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1620,7 +1613,7 @@ void Engine::Impl::build_ternarytrees()
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1642,7 +1635,7 @@ void Engine::Impl::build_lang_ternarytrees()
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1727,7 +1720,7 @@ void Engine::Impl::build_lang_ternarytrees_all()
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1826,7 +1819,7 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1860,7 +1853,7 @@ void Engine::Impl::translate_name(Spine::Location &loc, const string &lang) cons
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1910,7 +1903,7 @@ void Engine::Impl::translate_area(Spine::Location &loc, const string &lang) cons
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1932,7 +1925,7 @@ void Engine::Impl::translate(Spine::LocationPtr &loc, const string &lang) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1951,7 +1944,7 @@ void Engine::Impl::translate(Spine::LocationList &locs, const string &lang) cons
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1989,7 +1982,7 @@ string Engine::Impl::translate_country(const string &iso2, const string &lang) c
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2019,7 +2012,7 @@ bool Engine::Impl::prioritySort(const Spine::LocationPtr &a, const Spine::Locati
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2052,7 +2045,7 @@ bool basicSort(Spine::LocationPtr a, Spine::LocationPtr b)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2077,7 +2070,7 @@ bool closeEnough(Spine::LocationPtr a, Spine::LocationPtr b)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2100,7 +2093,7 @@ void Engine::Impl::sort(Spine::LocationList &theLocations) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2117,13 +2110,19 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
                                           unsigned int maxresults) const
 {
   if (!itsSuggestReadyFlag)
-    throw Spine::Exception(BCP, "Attempt to use geonames suggest before it is ready!", NULL);
+    throw Spine::Exception(BCP, "Attempt to use geonames suggest before it is ready!");
 
   try
   {
-    Spine::LocationList ret;
+    // Try using the cache first
+    auto key = cache_key(pattern, lang, keyword, page, maxresults);
+    auto cached_result = itsSuggestCache->find(key);
+    if (cached_result)
+      return *cached_result;
 
     // return null if keyword is wrong
+
+    Spine::LocationList ret;
 
     auto it = itsTernaryTrees.find(keyword);
     if (it == itsTernaryTrees.end())
@@ -2193,11 +2192,13 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
       }
     }
 
+    itsSuggestCache->insert(key, ret);
+
     return ret;
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2246,7 +2247,7 @@ Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_typ
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2292,7 +2293,7 @@ Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOpti
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2341,7 +2342,7 @@ Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOptions &theOp
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2385,7 +2386,7 @@ Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions &theOption
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2432,7 +2433,7 @@ Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theO
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2484,7 +2485,7 @@ void Engine::Impl::name_cache_status(boost::shared_ptr<Spine::Table> tablePtr,
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2497,6 +2498,26 @@ void Engine::Impl::name_cache_status(boost::shared_ptr<Spine::Table> tablePtr,
 bool Engine::Impl::isSuggestReady() const
 {
   return itsSuggestReadyFlag;
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Cache key for a suggestion
+ */
+// ----------------------------------------------------------------------
+
+std::size_t Engine::Impl::cache_key(const std::string &pattern,
+                                    const std::string &lang,
+                                    const std::string &keyword,
+                                    unsigned int page,
+                                    unsigned int maxresults) const
+{
+  auto hash = boost::hash_value(pattern);
+  boost::hash_combine(hash, boost::hash_value(lang));
+  boost::hash_combine(hash, boost::hash_value(keyword));
+  boost::hash_combine(hash, boost::hash_value(page));
+  boost::hash_combine(hash, boost::hash_value(maxresults));
+  return hash;
 }
 
 }  // namespace Geonames

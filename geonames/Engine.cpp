@@ -62,7 +62,7 @@ string parse_radius(const string& lat_string, double& radius)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -140,7 +140,7 @@ void Engine::init()
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Init failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Init failed!");
   }
 }
 
@@ -181,7 +181,7 @@ void Engine::shutdown()
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -207,7 +207,7 @@ void Engine::shutdownRequestFlagSet()
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -226,7 +226,7 @@ std::size_t Engine::hash_value() const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -258,7 +258,7 @@ Spine::LocationPtr Engine::nameSearch(const string& theName, const string& theLa
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -337,7 +337,7 @@ Spine::LocationPtr Engine::lonlatSearch(double theLongitude,
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -370,7 +370,7 @@ Spine::LocationPtr Engine::idSearch(long theGeoID, const string& theLang) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -391,7 +391,7 @@ Spine::LocationList Engine::nameSearch(const Locus::QueryOptions& theOptions,
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -413,7 +413,7 @@ Spine::LocationList Engine::latlonSearch(const Locus::QueryOptions& theOptions,
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -436,7 +436,7 @@ Spine::LocationList Engine::lonlatSearch(const Locus::QueryOptions& theOptions,
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -456,7 +456,7 @@ Spine::LocationList Engine::idSearch(const Locus::QueryOptions& theOptions, int 
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -477,7 +477,7 @@ Spine::LocationList Engine::keywordSearch(const Locus::QueryOptions& theOptions,
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -504,7 +504,7 @@ Spine::LocationList Engine::suggest(const string& thePattern,
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -556,7 +556,7 @@ Spine::LocationPtr Engine::keywordSearch(
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -914,7 +914,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -933,7 +933,7 @@ string Engine::countryName(const string& theIso2, const string& theLang) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -952,7 +952,7 @@ boost::shared_ptr<Fmi::DEM> Engine::dem() const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -971,7 +971,7 @@ unsigned int Engine::maxDemResolution() const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -990,7 +990,7 @@ boost::shared_ptr<Fmi::LandCover> Engine::landCover() const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1028,7 +1028,7 @@ void Engine::sort(Spine::LocationList& theLocations) const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1078,7 +1078,7 @@ bool Engine::reload()
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1106,7 +1106,7 @@ std::string printrate(long count, long secs)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1200,7 +1200,7 @@ StatusReturnType Engine::metadataStatus() const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1218,7 +1218,7 @@ StatusReturnType Engine::cacheStatus() const
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 

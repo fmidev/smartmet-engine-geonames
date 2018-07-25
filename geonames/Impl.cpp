@@ -1107,7 +1107,7 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
       if (row["timezone"].is_null())
       {
         std::cerr << "Warning: " << geoid << " '" << name
-                  << "' timezone is NULL, discarding the location" << std::endl;
+                  << "' timezone is null, discarding the location" << std::endl;
       }
       else
       {

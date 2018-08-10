@@ -163,19 +163,17 @@ void Engine::shutdown()
         mycopy->shutdown();
         return;
       }
-      else if (tmpImpl)
+      if (tmpImpl)
       {
         tmpImpl->shutdown();
         return;
       }
-      else
-      {
-        // The is no Impl object available yet, so its initialization is probably still
-        // running. There should be a way to terminate this initialization, because
-        // now we have to wait its termination.
 
-        boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-      }
+      // The is no Impl object available yet, so its initialization is probably still
+      // running. There should be a way to terminate this initialization, because
+      // now we have to wait its termination.
+
+      boost::this_thread::sleep(boost::posix_time::milliseconds(100));
     }
   }
   catch (...)

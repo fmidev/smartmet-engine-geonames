@@ -2019,21 +2019,15 @@ bool basicSort(Spine::LocationPtr a, Spine::LocationPtr b)
   try
   {
     if (a->name != b->name)
-    {
       return (a->name < b->name);
-    }
-    else if (a->iso2 != b->iso2)
-    {
+
+    if (a->iso2 != b->iso2)
       return (a->iso2 < b->iso2);
-    }
-    else if (a->area != b->area)
-    {
+
+    if (a->area != b->area)
       return (a->area < b->area);
-    }
-    else
-    {
-      return (a->priority > b->priority);
-    }
+
+    return (a->priority > b->priority);
   }
   catch (...)
   {
@@ -2051,14 +2045,7 @@ bool closeEnough(Spine::LocationPtr a, Spine::LocationPtr b)
 {
   try
   {
-    if (((a->name == b->name)) && (a->iso2 == b->iso2) && (a->area == b->area))
-    {
-      return true;
-    }
-    else
-    {
-      return false;
-    }
+    return (((a->name == b->name)) && (a->iso2 == b->iso2) && (a->area == b->area));
   }
   catch (...)
   {

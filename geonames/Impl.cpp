@@ -88,15 +88,8 @@ namespace Geonames
 
 Engine::Impl::~Impl()
 {
-  try
-  {
-    for (auto &pp : itsGeoTrees)
-      delete pp.second;
-  }
-  catch (...)
-  {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
-  }
+  for (auto &pp : itsGeoTrees)
+    delete pp.second;
 }
 
 // ----------------------------------------------------------------------

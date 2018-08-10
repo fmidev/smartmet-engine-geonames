@@ -20,7 +20,6 @@
 #include <macgyver/TimeZoneFactory.h>
 
 #include <boost/date_time/posix_time/posix_time_io.hpp>
-#include <boost/foreach.hpp>
 
 #include <algorithm>
 #include <iterator>
@@ -587,7 +586,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     auto searchName = theReq.getParameterList("place");
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& city, searchName)
+      for (const string& city : searchName)
       {
         double radius(0.0);
         string city_string = parse_radius(city, radius);
@@ -604,12 +603,12 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("places");
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& places, searchName)
+      for (const string& places : searchName)
       {
         list<string> parts;
         boost::algorithm::split(parts, places, boost::algorithm::is_any_of(","));
 
-        BOOST_FOREACH (const string& city, parts)
+        for (const string& city : parts)
         {
           double radius(0.0);
           string city_string = parse_radius(city, radius);
@@ -627,7 +626,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("area");
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& area, searchName)
+      for (const string& area : searchName)
       {
         double radius(0.0);
         string area_string = parse_radius(area, radius);
@@ -641,12 +640,12 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("areas");
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& areas, searchName)
+      for (const string& areas : searchName)
       {
         list<string> area_list;
         boost::algorithm::split(area_list, areas, boost::algorithm::is_any_of(","));
 
-        BOOST_FOREACH (const string& area, area_list)
+        for (const string& area : area_list)
         {
           double radius(0.0);
           string area_string = parse_radius(area, radius);
@@ -662,7 +661,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     unsigned int path_counter(1);  // numer is added to the end of pathname
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& path, searchName)
+      for (const string& path : searchName)
       {
         if (path.find(' ') != std::string::npos)
           throw Spine::Exception(BCP, "Invalid path parameter " + path + ", no spaces allowed!");
@@ -683,12 +682,12 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     unsigned int paths_counter(1);  // numer is added to the end of pathname
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& paths, searchName)
+      for (const string& paths : searchName)
       {
         list<string> path_list;
         boost::algorithm::split(path_list, paths, boost::algorithm::is_any_of(" "));
 
-        BOOST_FOREACH (const string& path, path_list)
+        for (const string& path : path_list)
         {
           if (path.find(':') != std::string::npos)
             throw Spine::Exception(BCP, "Invalid path parameter " + path + ", no radius allowed!");
@@ -705,7 +704,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("bbox");
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& bbox, searchName)
+      for (const string& bbox : searchName)
       {
         list<string> parts;
         boost::algorithm::split(parts, bbox, boost::algorithm::is_any_of(","));
@@ -727,7 +726,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("bboxes");
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& bboxes, searchName)
+      for (const string& bboxes : searchName)
       {
         vector<string> coordinates;
         boost::algorithm::split(coordinates, bboxes, boost::algorithm::is_any_of(","));
@@ -756,7 +755,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("lonlat");
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& coords, searchName)
+      for (const string& coords : searchName)
       {
         vector<string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
@@ -782,7 +781,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("lonlats");
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& coords, searchName)
+      for (const string& coords : searchName)
       {
         vector<string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
@@ -808,7 +807,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("latlon");
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& coords, searchName)
+      for (const string& coords : searchName)
       {
         vector<string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
@@ -836,7 +835,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("latlons");
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& coords, searchName)
+      for (const string& coords : searchName)
       {
         vector<string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
@@ -863,11 +862,11 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("geoid");
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& geoids, searchName)
+      for (const string& geoids : searchName)
       {
         list<string> parts;
         boost::algorithm::split(parts, geoids, boost::algorithm::is_any_of(","));
-        BOOST_FOREACH (const string& geoid, parts)
+        for (const string& geoid : parts)
         {
           long number = Fmi::stol(geoid);
           Spine::LocationPtr loc = this->idSearch(number, language);
@@ -879,11 +878,11 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("geoids");
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& geoids, searchName)
+      for (const string& geoids : searchName)
       {
         list<string> parts;
         boost::algorithm::split(parts, geoids, boost::algorithm::is_any_of(","));
-        BOOST_FOREACH (const string& geoid, parts)
+        for (const string& geoid : parts)
         {
           long number = Fmi::stol(geoid);
           Spine::LocationPtr loc = this->idSearch(number, language);
@@ -895,7 +894,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("keyword");
     if (!searchName.empty())
     {
-      BOOST_FOREACH (const string& keyword, searchName)
+      for (const string& keyword : searchName)
       {
         Locus::QueryOptions opts;
         opts.SetLanguage(language);
@@ -903,7 +902,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         if (places.empty())
           throw Spine::Exception(BCP, "No locations for keyword " + string(keyword) + " found");
 
-        BOOST_FOREACH (Spine::LocationPtr& place, places)
+        for (Spine::LocationPtr& place : places)
         {
           options.add(place->name, place);
         }

@@ -8,7 +8,6 @@
 #include "Engine.h"
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/asio/ip/host_name.hpp>
-#include <boost/foreach.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/thread.hpp>
 #include <gis/DEM.h>
@@ -62,7 +61,7 @@ void print(const list<SmartMet::Spine::LocationPtr *> &ptrs)
 {
   try
   {
-    BOOST_FOREACH (const SmartMet::Spine::LocationPtr *ptr, ptrs)
+    for (const SmartMet::Spine::LocationPtr *ptr : ptrs)
     {
       print(*ptr);
       cout << endl;
@@ -91,7 +90,7 @@ Engine::Impl::~Impl()
 {
   try
   {
-    BOOST_FOREACH (auto &pp, itsGeoTrees)
+    for (auto &pp : itsGeoTrees)
       delete pp.second;
   }
   catch (...)
@@ -1323,7 +1322,7 @@ void Engine::Impl::build_geoid_map()
       cout << "build_geoid_map()" << endl;
 
     assert(itsGeoIdMap.size() == 0);
-    BOOST_FOREACH (Spine::LocationPtr &v, itsLocations)
+    for (Spine::LocationPtr &v : itsLocations)
     {
       itsGeoIdMap.insert(GeoIdMap::value_type(v->geoid, &v));
     }
@@ -1347,7 +1346,7 @@ void Engine::Impl::assign_priorities(Spine::LocationList &locs) const
     if (itsVerbose)
       cout << "assign_priorities" << endl;
 
-    BOOST_FOREACH (Spine::LocationPtr &v, locs)
+    for (Spine::LocationPtr &v : locs)
     {
       int score = population_priority(*v);
       score += area_priority(*v);
@@ -1520,7 +1519,7 @@ void Engine::Impl::build_geotrees()
 {
   try
   {
-    BOOST_FOREACH (const KeywordMap::value_type &name_locs, itsKeywords)
+    for (const KeywordMap::value_type &name_locs : itsKeywords)
     {
       const string &keyword = name_locs.first;
       const Spine::LocationList &locs = name_locs.second;
@@ -1534,7 +1533,7 @@ void Engine::Impl::build_geotrees()
         it = itsGeoTrees.insert(make_pair(keyword, new GeoTree())).first;
       }
 
-      BOOST_FOREACH (Spine::LocationPtr ptr, locs)
+      for (Spine::LocationPtr ptr : locs)
         it->second->insert(ptr);
     }
 
@@ -1545,7 +1544,7 @@ void Engine::Impl::build_geotrees()
            << itsLocations.size() << endl;
 
     auto it = itsGeoTrees.insert(make_pair(FMINAMES_DEFAULT_KEYWORD, new GeoTree())).first;
-    BOOST_FOREACH (Spine::LocationPtr &ptr, itsLocations)
+    for (Spine::LocationPtr &ptr : itsLocations)
       it->second->insert(ptr);
   }
   catch (...)
@@ -1566,7 +1565,7 @@ void Engine::Impl::build_ternarytrees()
   {
     // normal geonames for each keyword
 
-    BOOST_FOREACH (auto &name_locs, itsKeywords)
+    for (auto &name_locs : itsKeywords)
     {
       const string &keyword = name_locs.first;
       Spine::LocationList &locs = name_locs.second;
@@ -1581,11 +1580,11 @@ void Engine::Impl::build_ternarytrees()
         it = itsTernaryTrees.insert(make_pair(keyword, newtree)).first;
       }
 
-      BOOST_FOREACH (Spine::LocationPtr &ptr, locs)
+      for (Spine::LocationPtr &ptr : locs)
       {
         std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
         auto names = to_treewords(preprocess_name(ptr->name), specifier);
-        BOOST_FOREACH (const auto &name, names)
+        for (const auto &name : names)
         {
           it->second->insert(name, ptr);
         }
@@ -1601,11 +1600,11 @@ void Engine::Impl::build_ternarytrees()
     auto newtree = boost::make_shared<TernaryTree>();
     auto it = itsTernaryTrees.insert(make_pair(FMINAMES_DEFAULT_KEYWORD, newtree)).first;
 
-    BOOST_FOREACH (Spine::LocationPtr &ptr, itsLocations)
+    for (Spine::LocationPtr &ptr : itsLocations)
     {
       std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
       auto names = to_treewords(preprocess_name(ptr->name), specifier);
-      BOOST_FOREACH (const auto &name, names)
+      for (const auto &name : names)
       {
         it->second->insert(name, ptr);
       }
@@ -1660,7 +1659,7 @@ void Engine::Impl::build_lang_ternarytrees_all()
     if (itsVerbose)
       cout << "build_lang_ternarytrees_all: " << itsAlternateNames.size() << " names" << endl;
 
-    BOOST_FOREACH (const auto &gt, itsAlternateNames)
+    for (const auto &gt : itsAlternateNames)
     {
       int geoid = gt.first;
       const Translations &translations = gt.second;
@@ -1678,7 +1677,7 @@ void Engine::Impl::build_lang_ternarytrees_all()
 
       // Now process all translations for the geoid
 
-      BOOST_FOREACH (const auto &tt, translations)
+      for (const auto &tt : translations)
       {
         const string &lang = tt.first;
         const string &name = tt.second;
@@ -1708,7 +1707,7 @@ void Engine::Impl::build_lang_ternarytrees_all()
         std::string specifier = loc->area + "," + Fmi::to_string(loc->geoid);
         auto treenames = to_treewords(preprocess_name(name), specifier);
 
-        BOOST_FOREACH (const auto &treename, treenames)
+        for (const auto &treename : treenames)
         {
           if (!tree.insert(treename, *git->second))
           {
@@ -1744,13 +1743,13 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
     if (itsVerbose)
       cout << "build_lang_ternarytrees_keywords()" << endl;
 
-    BOOST_FOREACH (auto &kloc, itsKeywords)
+    for (auto &kloc : itsKeywords)
     {
       const string &keyword = kloc.first;
 
       int ntranslations = 0;
 
-      BOOST_FOREACH (Spine::LocationPtr &loc, kloc.second)
+      for (Spine::LocationPtr &loc : kloc.second)
       {
         int geoid = loc->geoid;
 
@@ -1767,7 +1766,7 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
 
         Spine::LocationPtr &ptr = *git->second;
 
-        BOOST_FOREACH (const auto &tt, ait->second)
+        for (const auto &tt : ait->second)
         {
           const string &lang = tt.first;
           const string &translation = tt.second;
@@ -1802,7 +1801,7 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
           std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
           auto names = to_treewords(preprocess_name(translation), specifier);
 
-          BOOST_FOREACH (const auto &name, names)
+          for (const auto &name : names)
           {
             if (!tree.insert(name, loc))
             {
@@ -1939,7 +1938,7 @@ void Engine::Impl::translate(Spine::LocationList &locs, const string &lang) cons
 {
   try
   {
-    BOOST_FOREACH (Spine::LocationPtr &loc, locs)
+    for (Spine::LocationPtr &loc : locs)
       translate(loc, lang);
   }
   catch (...)
@@ -2147,7 +2146,7 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
       if (tit != lt->second->end())
       {
         list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
-        BOOST_FOREACH (const Spine::LocationPtr &ptr, tmpx)
+        for (const Spine::LocationPtr &ptr : tmpx)
         {
           ret.push_back(ptr);
         }
@@ -2213,7 +2212,7 @@ Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_typ
   try
   {
     Spine::LocationList ret;
-    BOOST_FOREACH (const auto &loc, theList)
+    for (const auto &loc : theList)
     {
       double dem = elevation(loc.lon, loc.lat);
       auto covertype = coverType(loc.lon, loc.lat);
@@ -2462,7 +2461,7 @@ void Engine::Impl::name_cache_status(boost::shared_ptr<Spine::Table> tablePtr,
     theNames.push_back("Geoid");
 
     unsigned int row = 0;
-    BOOST_FOREACH (const auto &ReportObject, contentList)
+    for (const auto &ReportObject : contentList)
     {
       const std::size_t count = ReportObject.itsHits;
       const std::size_t key = ReportObject.itsKey;

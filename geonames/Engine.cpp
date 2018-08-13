@@ -61,7 +61,7 @@ string parse_radius(const string& inputStr, double& radius)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 

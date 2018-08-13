@@ -81,8 +81,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
-* Mon Aug 13 2018 Mika Heiskanen <mika.heiskanen@fmi.fi> - 18.8.13-1.fmi
-- WKT support
+* Mon Aug 13 2018 Anssi Reponen <anssi.reponen@fmi.fi> - 18.8.13-1.fmi
+- Support for 'wkt' parameter added
 
 * Fri Aug 10 2018 Mika Heiskanen <mika.heiskanen@fmi.fi> - 18.8.10-1.fmi
 - Silenced several CodeChecker warnings

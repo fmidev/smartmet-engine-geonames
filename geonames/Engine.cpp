@@ -41,23 +41,23 @@ namespace Geonames
 static const std::string default_language = "fi";
 static const double default_maxdistance = 15.0;  // km
 
-string parse_radius(const string& lat_string, double& radius)
+string parse_radius(const string& inputStr, double& radius)
 {
   try
   {
     string radius_string("0.0");
-    string latitude_string(lat_string);
+    string output_string(inputStr);
 
-    const string::size_type pos = latitude_string.find(':');
+    const string::size_type pos = output_string.find(':');
     if (pos != string::npos)
     {
-      radius_string = latitude_string.substr(pos + 1);
-      latitude_string = latitude_string.substr(0, pos);
+      radius_string = output_string.substr(pos + 1);
+      output_string = output_string.substr(0, pos);
     }
 
     radius = Fmi::stod(radius_string);
 
-    return latitude_string;
+    return output_string;
   }
   catch (...)
   {
@@ -904,6 +904,45 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         {
           options.add(place->name, place);
         }
+      }
+    }
+
+    searchName = theReq.getParameterList("wkt");
+    if (!searchName.empty())
+    {
+      for (const string& wkt : searchName)
+      {
+        double radius(0.0);
+        size_t aliasPos = wkt.find(" as ");
+        if (aliasPos != std::string::npos && wkt.size() - aliasPos < 5)
+          throw Spine::Exception(BCP, "Invalid WKT-parameter: " + wkt);
+        string wktStr = wkt.substr(0, aliasPos);
+        wktStr = parse_radius(wktStr, radius);
+        // find first coordinate and do a lonlat search with it
+        std::size_t firstNumberPos = wktStr.find_first_of("123456789");
+        if (firstNumberPos == std::string::npos)
+          throw Spine::Exception(BCP, "Invalid WKT: " + wktStr);
+
+        std::size_t firstCharacterAfterNumberPos = wktStr.find_first_of(",)");
+        if (firstCharacterAfterNumberPos == std::string::npos)
+          throw Spine::Exception(BCP, "Invalid WKT: " + wktStr);
+        std::string firstCoordinate =
+            wktStr.substr(firstNumberPos, firstCharacterAfterNumberPos - firstNumberPos);
+        std::size_t spacePos = firstCoordinate.find(' ');
+        if (spacePos == std::string::npos)
+          throw Spine::Exception(BCP, "Invalid WKT: " + wktStr);
+
+        std::string lonStr = firstCoordinate.substr(0, spacePos);
+        std::string latStr = firstCoordinate.substr(spacePos + 1);
+        double lon = Fmi::stod(lonStr);
+        double lat = Fmi::stod(latStr);
+
+        Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
+        std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
+        loc2->type = Spine::Location::Wkt;
+        loc2->name = wkt;
+        loc2->radius = radius;
+        options.add(wktStr, loc2);
       }
     }
 

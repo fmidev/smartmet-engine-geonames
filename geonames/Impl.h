@@ -209,6 +209,7 @@ class Engine::Impl : private boost::noncopyable
   typedef std::map<std::string, int> Priorities;
   typedef std::map<std::string, Priorities> FeaturePriorities;
 
+  int itsNameMatchPriority = 50;
   Priorities itsPopulationPriorities;
   Priorities itsAreaPriorities;
   Priorities itsCountryPriorities;

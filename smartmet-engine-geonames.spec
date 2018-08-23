@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 18.8.13
+Version: 18.8.23
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -22,10 +22,10 @@ BuildRequires: mariadb-devel
 BuildRequires: mysql++-devel
 BuildRequires: postgresql95-libs
 BuildRequires: postgresql95-devel
-BuildRequires: smartmet-library-gis-devel >= 18.8.2
-BuildRequires: smartmet-library-locus-devel >= 18.8.6
-BuildRequires: smartmet-library-macgyver-devel >= 18.8.4
-BuildRequires: smartmet-library-spine-devel >= 18.8.13
+BuildRequires: smartmet-library-gis-devel >= 18.8.15
+BuildRequires: smartmet-library-locus-devel >= 18.8.21
+BuildRequires: smartmet-library-macgyver-devel >= 18.8.20
+BuildRequires: smartmet-library-spine-devel >= 18.8.20
 Requires: boost-date-time
 Requires: boost-filesystem
 Requires: boost-iostreams
@@ -35,11 +35,11 @@ Requires: boost-thread
 Requires: libatomic
 Requires: libicu
 Requires: mariadb-libs
-Requires: smartmet-library-gis >= 18.8.2
-Requires: smartmet-library-locus >= 18.8.6
-Requires: smartmet-library-macgyver >= 18.8.4
-Requires: smartmet-library-spine >= 18.8.13
-Requires: smartmet-server >= 18.8.8
+Requires: smartmet-library-gis >= 18.8.15
+Requires: smartmet-library-locus >= 18.8.21
+Requires: smartmet-library-macgyver >= 18.8.20
+Requires: smartmet-library-spine >= 18.8.20
+Requires: smartmet-server >= 18.8.22
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
@@ -81,6 +81,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Thu Aug 23 2018 Mika Heiskanen <mika.heiskanen@fmi.fi> - 18.8.23-1.fmi
+- Added priorities.match setting to give extra autocomplete credit to exact matches
+- Add extra credit to all exact matches, not just the first one
+- Scale autocomplete scores to enable finer sorting based on populations
+
 * Mon Aug 13 2018 Anssi Reponen <anssi.reponen@fmi.fi> - 18.8.13-1.fmi
 - Support for 'wkt' parameter added
 

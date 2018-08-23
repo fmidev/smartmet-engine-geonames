@@ -27,6 +27,12 @@ using namespace std;
 
 const int default_port = 5432;
 
+// We'd prefer priority to be a float, but that would require changing Spine::Location.
+// We don't want to break the ABI, but to get finer control over population sort we
+// scale all scores by this number.
+
+const int priority_scale = 1000;
+
 #ifndef NDEBUG
 
 void print(const SmartMet::Spine::LocationPtr &ptr)
@@ -782,6 +788,8 @@ void Engine::Impl::read_config_priorities()
       if (!itsConfig.exists("priorities"))
         return;
 
+      itsConfig.lookupValue("priorities.match", itsNameMatchPriority);
+
       read_config_prioritymap("populations", itsPopulationPriorities);
       read_config_prioritymap("areas", itsAreaPriorities);
       read_config_prioritymap("countries", itsCountryPriorities);
@@ -1362,11 +1370,11 @@ int Engine::Impl::country_priority(const Spine::Location &loc) const
   {
     auto it = itsCountryPriorities.find(loc.iso2);
     if (it != itsCountryPriorities.end())
-      return it->second;
+      return it->second * priority_scale;
 
     it = itsCountryPriorities.find("default");
     if (it != itsCountryPriorities.end())
-      return it->second;
+      return it->second * priority_scale;
 
     return 0;
   }
@@ -1382,11 +1390,11 @@ int Engine::Impl::area_priority(const Spine::Location &loc) const
   {
     auto it = itsAreaPriorities.find(loc.area);
     if (it != itsAreaPriorities.end())
-      return it->second;
+      return it->second * priority_scale;
 
     it = itsAreaPriorities.find("default");
     if (it != itsAreaPriorities.end())
-      return it->second;
+      return it->second * priority_scale;
 
     return 0;
   }
@@ -1402,11 +1410,11 @@ int Engine::Impl::population_priority(const Spine::Location &loc) const
   {
     auto it = itsPopulationPriorities.find(loc.iso2);
     if (it != itsPopulationPriorities.end())
-      return static_cast<int>(round(static_cast<float>(loc.population) / it->second));
+      return lround(1.0 * priority_scale * loc.population / it->second);
 
     it = itsPopulationPriorities.find("default");
     if (it != itsPopulationPriorities.end())
-      return static_cast<int>(round(static_cast<float>(loc.population) / it->second));
+      return lround(1.0 * priority_scale * loc.population / it->second);
 
     return 0;
   }
@@ -1432,11 +1440,11 @@ int Engine::Impl::feature_priority(const Spine::Location &loc) const
     auto jt = priomap.find(loc.feature);
 
     if (jt != priomap.end())
-      return jt->second;
+      return jt->second * priority_scale;
 
     jt = priomap.find("default");
     if (jt != priomap.end())
-      return jt->second;
+      return jt->second * priority_scale;
 
     return 0;
   }
@@ -2133,15 +2141,37 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
       }
     }
 
+    // Translate the names
+
+    translate(ret, lang);
+
+    // Give an extra bonus for exact matches
+
+    for (auto &loc : ret)
+    {
+      string tmpname = to_treeword(loc->name);
+      if (tmpname == name)
+      {
+        std::unique_ptr<Spine::Location> newloc(new Spine::Location(*loc));
+        newloc->priority += itsNameMatchPriority * priority_scale;
+        loc.reset(newloc.release());
+      }
+    }
+
+    // Sort duplicates away, language specific trees may create them
+
     ret.sort(basicSort);
-    ret.unique(closeEnough);  // needed because language specific trees create
-                              // duplicates
+    ret.unique(closeEnough);
 
     // Sort based on priorities
 
     ret.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
 
-    // Keep the desired part
+    // Keep the desired part. We do this after moving exact matches to the front,
+    // otherwise for example "Spa, Belgium" is not very high on the list of
+    // matches for "Spa". Translating everything first is expensive, but the
+    // results are cached.
+
     if (maxresults > 0)
     {
       // should do this using erase
@@ -2150,25 +2180,6 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
         ret.pop_front();
       while (ret.size() > maxresults)
         ret.pop_back();
-    }
-
-    // Translate and finish up
-    translate(ret, lang);
-
-    // If there is an exact name match, move it to first place.
-    // This will move only the first match though!
-
-    for (auto iter = ret.begin(); iter != ret.end(); ++iter)
-    {
-      string tmpname = to_treeword((*iter)->name);
-
-      if (tmpname == name)
-      {
-        Spine::LocationPtr ptr = *iter;
-        ret.erase(iter);
-        ret.push_front(ptr);
-        break;
-      }
     }
 
     itsSuggestCache->insert(key, ret);

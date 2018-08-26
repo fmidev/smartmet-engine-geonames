@@ -2267,26 +2267,22 @@ Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOpti
 
     auto pos = itsNameSearchCache.find(key);
     if (pos)
-    {
       return *pos;
-    }
-    else
-    {
-      Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
-      Spine::LocationList ptrs = to_locationlist(lq.FetchByName(theOptions, theName));
-      assign_priorities(ptrs);
-      ptrs.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
 
-      // Do not cache empty results
-      if (ptrs.empty())
-        return ptrs;
+    Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
+    Spine::LocationList ptrs = to_locationlist(lq.FetchByName(theOptions, theName));
+    assign_priorities(ptrs);
+    ptrs.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
 
-      // Update the cache
-
-      itsNameSearchCache.insert(key, ptrs);
-
+    // Do not cache empty results
+    if (ptrs.empty())
       return ptrs;
-    }
+
+    // Update the cache
+
+    itsNameSearchCache.insert(key, ptrs);
+
+    return ptrs;
   }
   catch (...)
   {
@@ -2318,24 +2314,20 @@ Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOptions &theOp
 
     auto pos = itsNameSearchCache.find(key);
     if (pos)
-    {
       return *pos;
-    }
-    else
-    {
-      Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
 
-      Spine::LocationList ptrs =
-          to_locationlist(lq.FetchByLonLat(theOptions, theLongitude, theLatitude, theRadius));
+    Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
 
-      // Do not cache empty results
-      if (ptrs.empty())
-        return ptrs;
+    Spine::LocationList ptrs =
+        to_locationlist(lq.FetchByLonLat(theOptions, theLongitude, theLatitude, theRadius));
 
-      // Update the cache
-      itsNameSearchCache.insert(key, ptrs);
+    // Do not cache empty results
+    if (ptrs.empty())
       return ptrs;
-    }
+
+    // Update the cache
+    itsNameSearchCache.insert(key, ptrs);
+    return ptrs;
   }
   catch (...)
   {
@@ -2361,25 +2353,21 @@ Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions &theOption
 
     auto pos = itsNameSearchCache.find(key);
     if (pos)
-    {
       return *pos;
-    }
-    else
-    {
-      Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
 
-      Spine::LocationList ptrs = to_locationlist(lq.FetchById(theOptions, theId));
+    Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
 
-      // Do not cache empty results
-      if (ptrs.empty())
-        return ptrs;
+    Spine::LocationList ptrs = to_locationlist(lq.FetchById(theOptions, theId));
 
-      // Update the cache
-
-      itsNameSearchCache.insert(key, ptrs);
-
+    // Do not cache empty results
+    if (ptrs.empty())
       return ptrs;
-    }
+
+    // Update the cache
+
+    itsNameSearchCache.insert(key, ptrs);
+
+    return ptrs;
   }
   catch (...)
   {
@@ -2409,24 +2397,20 @@ Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theO
 
     auto pos = itsNameSearchCache.find(key);
     if (pos)
-    {
       return *pos;
-    }
-    else
-    {
-      Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
 
-      Spine::LocationList ptrs = to_locationlist(lq.FetchByKeyword(theOptions, theKeyword));
+    Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
 
-      // Do not cache empty results
-      if (ptrs.empty())
-        return ptrs;
+    Spine::LocationList ptrs = to_locationlist(lq.FetchByKeyword(theOptions, theKeyword));
 
-      // Update the cache
-      itsNameSearchCache.insert(key, ptrs);
-
+    // Do not cache empty results
+    if (ptrs.empty())
       return ptrs;
-    }
+
+    // Update the cache
+    itsNameSearchCache.insert(key, ptrs);
+
+    return ptrs;
   }
   catch (...)
   {

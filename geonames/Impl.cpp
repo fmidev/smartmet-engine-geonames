@@ -304,11 +304,11 @@ std::list<std::string> Engine::Impl::to_treewords(const std::string &name,
 
     // Extract the remaining name starting from all word boundaries
 
-    for (bb::ssegment_index::iterator p = map.begin(), e = map.end(); p != e; ++p)
+    for (const auto &p : map)
     {
-      if (p->rule() != 0)
+      if (p.rule() != 0)
       {
-        const auto &it = p->begin();
+        const auto &it = p.begin();
         if (it != name.end())
         {
           // From word beginning to end of the original input location name
@@ -316,7 +316,7 @@ std::list<std::string> Engine::Impl::to_treewords(const std::string &name,
 
           // Normalize for collation. Note that we collate area and comma too
           // just like when searching for a "name,area"
-          ret.push_back(to_treeword(subname, area));
+          ret.emplace_back(to_treeword(subname, area));
         }
       }
     }
@@ -1320,10 +1320,10 @@ void Engine::Impl::build_geoid_map()
     if (itsVerbose)
       std::cout << "build_geoid_map()" << std::endl;
 
-    assert(!itsGeoIdMap.empty());
+    assert(itsGeoIdMap.empty());
     for (Spine::LocationPtr &v : itsLocations)
     {
-      itsGeoIdMap.insert(GeoIdMap::value_type(v->geoid, &v));
+      itsGeoIdMap.emplace(GeoIdMap::value_type(v->geoid, &v));
     }
   }
   catch (...)
@@ -1520,7 +1520,7 @@ void Engine::Impl::build_geotrees()
 {
   try
   {
-    for (const KeywordMap::value_type &name_locs : itsKeywords)
+    for (const auto &name_locs : itsKeywords)
     {
       const std::string &keyword = name_locs.first;
       const Spine::LocationList &locs = name_locs.second;

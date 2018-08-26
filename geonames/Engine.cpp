@@ -7,6 +7,7 @@
 #include "Engine.h"
 #include "Impl.h"
 #include <boost/date_time/posix_time/posix_time_io.hpp>
+#include <fmt/format.h>
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
 #include <locus/Query.h>
@@ -583,7 +584,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     {
       for (const std::string& city : searchName)
       {
-        double radius(0.0);
+        double radius = 0.0;
         std::string city_string = parse_radius(city, radius);
         Spine::LocationPtr loc =
             this->nameSearch(city_string, language);  // throws for empty result
@@ -605,7 +606,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
 
         for (const std::string& city : parts)
         {
-          double radius(0.0);
+          double radius = 0.0;
           std::string city_string = parse_radius(city, radius);
           Spine::LocationPtr loc =
               this->nameSearch(city_string, language);  // throws for empty result
@@ -623,7 +624,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     {
       for (const std::string& area : searchName)
       {
-        double radius(0.0);
+        double radius = 0.0;
         std::string area_string = parse_radius(area, radius);
         std::unique_ptr<Spine::Location> loc(new Spine::Location(area_string, radius));
         loc->radius = radius;
@@ -642,7 +643,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
 
         for (const std::string& area : area_list)
         {
-          double radius(0.0);
+          double radius = 0.0;
           std::string area_string = parse_radius(area, radius);
           std::unique_ptr<Spine::Location> loc(new Spine::Location(area_string, radius));
           loc->radius = radius;
@@ -664,7 +665,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         std::string tag = "path" + Fmi::to_string(path_counter++);
 
         // radius handling added if we want to extend path to area
-        double radius(0.0);
+        double radius = 0.0;
         std::string path_name = parse_radius(path, radius);
 
         std::unique_ptr<Spine::Location> loc(new Spine::Location(path_name, radius));
@@ -708,7 +709,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
                                  "Invalid bbox parameter " + bbox +
                                      ", should be in format 'lon,lat,lon,lat[:radius]'!");
 
-        double radius(0.0);
+        double radius = 0.0;
         std::string bbox_string = parse_radius(bbox, radius);
 
         std::unique_ptr<Spine::Location> loc(new Spine::Location(bbox_string, radius));
@@ -733,13 +734,13 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
 
         for (unsigned int i = 0; i < coordinates.size(); i += 4)
         {
-          std::string lonstr1(coordinates[i]);
-          std::string latstr1(coordinates[i + 1]);
-          std::string lonstr2(coordinates[i + 2]);
-          std::string latstr2(coordinates[i + 3]);
-          std::string bbox_name(lonstr1 + "," + latstr1 + "," + lonstr2 + "," + latstr2);
-          double radius(0.0);
-          latstr2 = parse_radius(latstr2, radius);
+          std::string bbox_name = fmt::sprintf("{},{},{},{}",
+                                               coordinates[i],
+                                               coordinates[i + 1],
+                                               coordinates[i + 2],
+                                               coordinates[i + 3]);
+          double radius = 0.0;
+          parse_radius(coordinates[i + 3], radius);
           std::unique_ptr<Spine::Location> loc(new Spine::Location(bbox_name, radius));
           loc->type = Spine::Location::BoundingBox;
           options.add(bbox_name, loc);
@@ -760,7 +761,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
           // handle radius
-          double radius(0.0);
+          double radius = 0.0;
           std::string latstr = parse_radius(parts[j + 1], radius);
           double lon = Fmi::stod(parts[j]);
           double lat = Fmi::stod(latstr);
@@ -785,7 +786,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
 
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
-          double radius(0.0);
+          double radius = 0.0;
           std::string latstr = parse_radius(parts[j + 1], radius);
           double lon = Fmi::stod(parts[j]);
           double lat = Fmi::stod(latstr);
@@ -812,7 +813,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
           // Handle radius
-          double radius(0.0);
+          double radius = 0.0;
           std::string latstr = parse_radius(parts[j + 1], radius);
           double lon = Fmi::stod(parts[j]);
           double lat = Fmi::stod(latstr);
@@ -839,7 +840,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
 
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
-          double radius(0.0);
+          double radius = 0.0;
           std::string latstr = parse_radius(parts[j + 1], radius);
           double lon = Fmi::stod(parts[j]);
           double lat = Fmi::stod(latstr);
@@ -910,7 +911,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     {
       for (const std::string& wkt : searchName)
       {
-        double radius(0.0);
+        double radius = 0.0;
         size_t aliasPos = wkt.find(" as ");
         if (aliasPos != std::string::npos && wkt.size() - aliasPos < 5)
           throw Spine::Exception(BCP, "Invalid WKT-parameter: " + wkt);

@@ -85,6 +85,7 @@ LIBS = -L$(libdir) \
 	-lboost_locale \
 	-lboost_thread \
 	-lboost_system \
+	-lfmt \
 	`pkg-config --libs icu-i18n` \
 	-latomic
 

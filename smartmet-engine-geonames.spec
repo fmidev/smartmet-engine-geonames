@@ -15,6 +15,7 @@ BuildRequires: gcc-c++
 BuildRequires: make
 BuildRequires: boost-devel
 BuildRequires: libatomic
+BuildRequires: libfmt-devel
 BuildRequires: libicu-devel
 BuildRequires: libpqxx
 BuildRequires: libpqxx-devel
@@ -33,6 +34,7 @@ Requires: boost-locale
 Requires: boost-system
 Requires: boost-thread
 Requires: libatomic
+Requires: libfmt
 Requires: libicu
 Requires: mariadb-libs
 Requires: smartmet-library-gis >= 18.8.15

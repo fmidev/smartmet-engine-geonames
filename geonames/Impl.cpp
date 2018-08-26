@@ -121,7 +121,6 @@ Engine::Impl::Impl(const std::string &configfile, bool reloading)
       itsMockEngine(false),
       itsRemoveUnderscores(false),
       itsConfigFile(configfile),
-      itsCollator(0),
       itsHashValue(0),
       itsShutdownRequested(false)
 {

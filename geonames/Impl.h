@@ -226,7 +226,7 @@ class Engine::Impl : private boost::noncopyable
 
   boost::locale::generator itsLocaleGenerator;
   std::locale itsLocale;
-  const Collator* itsCollator;  // perhaps should delete in destructor?
+  const Collator* itsCollator = nullptr;  // perhaps should delete in destructor?
 
   // DEM data
   boost::shared_ptr<Fmi::DEM> itsDEM;

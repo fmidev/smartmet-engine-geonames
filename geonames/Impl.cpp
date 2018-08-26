@@ -115,8 +115,6 @@ Engine::Impl::Impl(const std::string &configfile, bool reloading)
     : itsReady(false),
       itsReloading(reloading),
       itsReloadOK(false),
-      itsReloadError(),
-      itsGeoTrees(),
       itsVerbose(false),
       itsMockEngine(false),
       itsRemoveUnderscores(false),

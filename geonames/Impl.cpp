@@ -141,7 +141,7 @@ Engine::Impl::Impl(const std::string &configfile, bool reloading)
       // Suggest cache settings
       unsigned int suggestCacheSize = 10000;
       itsConfig.lookupValue("cache.suggest_max_size", suggestCacheSize);
-      itsSuggestCache.reset(new SuggestCache(suggestCacheSize));
+      itsSuggestCache = boost::movelib::make_unique<SuggestCache>(suggestCacheSize);
 
       // Establish collator
 
@@ -577,7 +577,7 @@ void Engine::Impl::initDEM()
   std::string demdir;
   itsConfig.lookupValue("demdir", demdir);
   if (!demdir.empty())
-    itsDEM.reset(new Fmi::DEM(demdir));
+    itsDEM = boost::make_shared<Fmi::DEM>(demdir);
 }
 
 // ----------------------------------------------------------------------
@@ -591,7 +591,7 @@ void Engine::Impl::initLandCover()
   std::string landcoverdir;
   itsConfig.lookupValue("landcoverdir", landcoverdir);
   if (!landcoverdir.empty())
-    itsLandCover.reset(new Fmi::LandCover(landcoverdir));
+    itsLandCover = boost::make_shared<Fmi::LandCover>(landcoverdir);
 }
 
 // ----------------------------------------------------------------------
@@ -613,8 +613,9 @@ void Engine::Impl::init(bool first_construction)
     itsConfig.lookupValue("landcoverdir", landcoverdir);
 
     boost::thread_group threads;
-    threads.add_thread(new boost::thread(boost::bind(&Engine::Impl::initDEM, this)));
-    threads.add_thread(new boost::thread(boost::bind(&Engine::Impl::initLandCover, this)));
+    threads.add_thread(new boost::thread(boost::bind(&Engine::Impl::initDEM, this)));  // NOLINT
+    threads.add_thread(
+        new boost::thread(boost::bind(&Engine::Impl::initLandCover, this)));  // NOLINT
     threads.join_all();
 
     // Early abort if so requested

@@ -7,22 +7,19 @@
 #pragma once
 
 #include "Engine.h"
-
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/locale.hpp>
+#include <boost/locale/collator.hpp>
+#include <boost/move/unique_ptr.hpp>
+#include <boost/thread.hpp>
+#include <gis/LandCover.h>
 #include <macgyver/Cache.h>
 #include <macgyver/Geometry.h>
 #include <macgyver/NearTree.h>
 #include <macgyver/TernarySearchTree.h>
 #include <macgyver/TimedCache.h>
-#include <libconfig.h++>
-
-#include <gis/LandCover.h>
-
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/locale.hpp>
-#include <boost/locale/collator.hpp>
-#include <boost/thread.hpp>
-
 #include <cmath>
+#include <libconfig.h++>
 #include <list>
 #include <map>
 #include <memory>
@@ -98,7 +95,7 @@ class Engine::Impl : private boost::noncopyable
 
   // Suggest cache
   using SuggestCache = Fmi::TimedCache::Cache<std::size_t, Spine::LocationList>;
-  std::unique_ptr<SuggestCache> itsSuggestCache;
+  boost::movelib::unique_ptr<SuggestCache> itsSuggestCache;
 
  public:
   Impl(const std::string& configfile, bool reloading);

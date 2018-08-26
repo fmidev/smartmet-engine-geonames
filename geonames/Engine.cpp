@@ -116,7 +116,8 @@ Engine::Engine(const string& theConfigFile)
  */
 // ----------------------------------------------------------------------
 
-Engine::~Engine() {}
+Engine::~Engine() = default;
+
 // ----------------------------------------------------------------------
 /*!
  * \brief Nontrivial construction happens here

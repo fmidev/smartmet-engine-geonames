@@ -23,8 +23,6 @@
 #include <stdexcept>
 #include <string>
 
-using namespace std;
-
 const int default_port = 5432;
 
 // We'd prefer priority to be a float, but that would require changing Spine::Location.
@@ -40,21 +38,21 @@ void print(const SmartMet::Spine::LocationPtr &ptr)
   try
   {
     if (!ptr)
-      cout << "No location to print" << endl;
+      std::cout << "No location to print" << std::endl;
     else
     {
-      cout << "Geoid:\t" << ptr->geoid << endl
-           << "Name:\t" << ptr->name << endl
-           << "Feature:\t" << ptr->feature << endl
-           << "ISO2:\t" << ptr->iso2 << endl
-           << "Area:\t" << ptr->area << endl
-           << "Lon:\t" << ptr->longitude << endl
-           << "Lat:\t" << ptr->latitude << endl
-           << "TZ:\t" << ptr->timezone << endl
-           << "Popu:\t" << ptr->population << endl
-           << "Elev:\t" << ptr->elevation << endl
-           << "DEM:\t" << ptr->dem << endl
-           << "Priority:\t" << ptr->priority << endl;
+      std::cout << "Geoid:\t" << ptr->geoid << std::endl
+                << "Name:\t" << ptr->name << std::endl
+                << "Feature:\t" << ptr->feature << std::endl
+                << "ISO2:\t" << ptr->iso2 << std::endl
+                << "Area:\t" << ptr->area << std::endl
+                << "Lon:\t" << ptr->longitude << std::endl
+                << "Lat:\t" << ptr->latitude << std::endl
+                << "TZ:\t" << ptr->timezone << std::endl
+                << "Popu:\t" << ptr->population << std::endl
+                << "Elev:\t" << ptr->elevation << std::endl
+                << "DEM:\t" << ptr->dem << std::endl
+                << "Priority:\t" << ptr->priority << std::endl;
     }
   }
   catch (...)
@@ -63,14 +61,14 @@ void print(const SmartMet::Spine::LocationPtr &ptr)
   }
 }
 
-void print(const list<SmartMet::Spine::LocationPtr *> &ptrs)
+void print(const std::list<SmartMet::Spine::LocationPtr *> &ptrs)
 {
   try
   {
     for (const SmartMet::Spine::LocationPtr *ptr : ptrs)
     {
       print(*ptr);
-      cout << endl;
+      std::cout << std::endl;
     }
   }
   catch (...)
@@ -113,7 +111,7 @@ Engine::Impl::~Impl()
  */
 // ----------------------------------------------------------------------
 
-Engine::Impl::Impl(const string &configfile, bool reloading)
+Engine::Impl::Impl(const std::string &configfile, bool reloading)
     : itsReady(false),
       itsReloading(reloading),
       itsReloadOK(false),
@@ -149,7 +147,7 @@ Engine::Impl::Impl(const string &configfile, bool reloading)
 
       const libconfig::Setting &locale = itsConfig.lookup("locale");
       itsLocale = itsLocaleGenerator(locale);
-      itsCollator = &use_facet<Collator>(itsLocale);
+      itsCollator = &std::use_facet<Collator>(itsLocale);
     }
     catch (const libconfig::SettingException &e)
     {
@@ -257,7 +255,7 @@ Fmi::LandCover::Type Engine::Impl::coverType(double lon, double lat) const
  */
 // ----------------------------------------------------------------------
 
-string Engine::Impl::preprocess_name(const string &name) const
+std::string Engine::Impl::preprocess_name(const std::string &name) const
 {
   try
   {
@@ -291,13 +289,14 @@ string Engine::Impl::preprocess_name(const string &name) const
  */
 // ----------------------------------------------------------------------
 
-list<string> Engine::Impl::to_treewords(const string &name, const string &area) const
+std::list<std::string> Engine::Impl::to_treewords(const std::string &name,
+                                                  const std::string &area) const
 {
   try
   {
     namespace bb = boost::locale::boundary;
 
-    list<string> ret;
+    std::list<std::string> ret;
 
     // Create a mapping
 
@@ -316,7 +315,7 @@ list<string> Engine::Impl::to_treewords(const string &name, const string &area) 
         if (it != name.end())
         {
           // From word beginning to end of the original input location name
-          string subname(it, name.end());
+          std::string subname(it, name.end());
 
           // Normalize for collation. Note that we collate area and comma too
           // just like when searching for a "name,area"
@@ -339,16 +338,16 @@ list<string> Engine::Impl::to_treewords(const string &name, const string &area) 
  */
 // ----------------------------------------------------------------------
 
-string Engine::Impl::to_treeword(const string &name) const
+std::string Engine::Impl::to_treeword(const std::string &name) const
 {
   try
   {
-    string tmp = name;
+    std::string tmp = name;
     boost::algorithm::erase_all(tmp, " ");
     tmp = itsCollator->transform(boost::locale::collator_base::primary, tmp);
 
     // The standard library std::string provided in RHEL6 cannot handle
-    // string comparisons if there are 0-bytes in the strings. The collator
+    // std::string comparisons if there are 0-bytes in the std::strings. The collator
     // in boost always ends the result in 0-byte.
 
     if (!tmp.empty() && tmp[tmp.size() - 1] == '\0')
@@ -368,7 +367,7 @@ string Engine::Impl::to_treeword(const string &name) const
  */
 // ----------------------------------------------------------------------
 
-string Engine::Impl::to_treeword(const string &name, const string &area) const
+std::string Engine::Impl::to_treeword(const std::string &name, const std::string &area) const
 {
   try
   {
@@ -389,7 +388,7 @@ string Engine::Impl::to_treeword(const string &name, const string &area) const
  */
 // ----------------------------------------------------------------------
 
-string Engine::Impl::to_language(const string &lang) const
+std::string Engine::Impl::to_language(const std::string &lang) const
 {
   return Fmi::ascii_tolower_copy(lang);
 }
@@ -706,7 +705,7 @@ void Engine::Impl::read_config()
     try
     {
       if (itsVerbose)
-        cout << "Reading fminames configuration file '" << itsConfigFile << "'" << endl;
+        std::cout << "Reading fminames configuration file '" << itsConfigFile << "'" << std::endl;
 
       itsConfig.readFile(itsConfigFile.c_str());
 
@@ -808,10 +807,10 @@ void Engine::Impl::read_config_priorities()
       }
       for (int i = 0; i < tmp.getLength(); ++i)
       {
-        string countryname = tmp[i].getName();
-        string featurename = tmp[i];
+        std::string countryname = tmp[i].getName();
+        std::string featurename = tmp[i];
 
-        string mapname = "priorities." + featurename;
+        std::string mapname = "priorities." + featurename;
 
         if (!itsConfig.exists(mapname))
         {
@@ -824,7 +823,7 @@ void Engine::Impl::read_config_priorities()
 
         for (int j = 0; j < tmpmap.getLength(); ++j)
         {
-          string name = tmpmap[j].getName();
+          std::string name = tmpmap[j].getName();
           int value = tmpmap[j];
           itsFeaturePriorities[countryname][name] = value;
         }
@@ -851,13 +850,13 @@ void Engine::Impl::read_config_priorities()
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_config_prioritymap(const string &partname, Priorities &priomap)
+void Engine::Impl::read_config_prioritymap(const std::string &partname, Priorities &priomap)
 {
   try
   {
     try
     {
-      string name = "priorities." + partname;
+      std::string name = "priorities." + partname;
 
       if (!itsConfig.exists(name))
         return;
@@ -873,7 +872,7 @@ void Engine::Impl::read_config_prioritymap(const string &partname, Priorities &p
 
       for (int i = 0; i < tmp.getLength(); ++i)
       {
-        string varname = tmp[i].getName();
+        std::string varname = tmp[i].getName();
         int value = tmp[i];
         priomap[varname] = value;
       }
@@ -950,7 +949,7 @@ void Engine::Impl::read_countries(Locus::Connection &conn)
         "('PCLD','PCLF','PCLI') ORDER BY features_code ASC");
 
     if (itsVerbose)
-      cout << "read_countries: " << query << endl;
+      std::cout << "read_countries: " << query << std::endl;
 
     pqxx::result res = conn.executeNonTransaction(query);
 
@@ -959,13 +958,13 @@ void Engine::Impl::read_countries(Locus::Connection &conn)
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      string name = row["name"].as<std::string>();
-      string iso2 = row["iso2"].as<std::string>();
+      std::string name = row["name"].as<std::string>();
+      std::string iso2 = row["iso2"].as<std::string>();
       itsCountries[iso2] = name;
     }
 
     if (itsVerbose)
-      cout << "read_countries: " << res.size() << " countries" << endl;
+      std::cout << "read_countries: " << res.size() << " countries" << std::endl;
   }
   catch (...)
   {
@@ -993,7 +992,7 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
         "a.preferred DESC, length ASC, alt_gname ASC");
 
     if (itsVerbose)
-      cout << "read_alternate_countries: " << query << endl;
+      std::cout << "read_alternate_countries: " << query << std::endl;
 
     pqxx::result res = conn.executeNonTransaction(query);
 
@@ -1002,9 +1001,9 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      string lang = row["language"].as<std::string>();
-      string name = row["gname"].as<std::string>();
-      string translation = row["alt_gname"].as<std::string>();
+      std::string lang = row["language"].as<std::string>();
+      std::string name = row["gname"].as<std::string>();
+      std::string translation = row["alt_gname"].as<std::string>();
 
       auto it = itsAlternateCountries.find(name);
       if (it == itsAlternateCountries.end())
@@ -1021,7 +1020,7 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
     }
 
     if (itsVerbose)
-      cout << "read_alternate_countries: " << res.size() << " translations" << endl;
+      std::cout << "read_alternate_countries: " << res.size() << " translations" << std::endl;
   }
   catch (...)
   {
@@ -1042,7 +1041,7 @@ void Engine::Impl::read_municipalities(Locus::Connection &conn)
     std::string query("SELECT id, name FROM municipalities");
 
     if (itsVerbose)
-      cout << "read_municipalities: " << query << endl;
+      std::cout << "read_municipalities: " << query << std::endl;
 
     pqxx::result res = conn.executeNonTransaction(query);
 
@@ -1053,12 +1052,13 @@ void Engine::Impl::read_municipalities(Locus::Connection &conn)
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
       int id = row["id"].as<int>();
-      string name = row["name"].as<string>();
+      std::string name = row["name"].as<std::string>();
       itsMunicipalities[id] = name;
     }
 
     if (itsVerbose)
-      cout << "read_municipalities: " << itsMunicipalities.size() << " municipalities" << endl;
+      std::cout << "read_municipalities: " << itsMunicipalities.size() << " municipalities"
+                << std::endl;
   }
   catch (...)
   {
@@ -1092,7 +1092,7 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
     }
 
     if (itsVerbose)
-      cout << "read_geonames: " << sql << endl;
+      std::cout << "read_geonames: " << sql << std::endl;
 
     pqxx::result res = conn.executeNonTransaction(sql);
 
@@ -1101,8 +1101,8 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      Spine::GeoId geoid = Fmi::stoi(row["id"].as<string>());
-      string name = row["name"].as<string>();
+      Spine::GeoId geoid = Fmi::stoi(row["id"].as<std::string>());
+      std::string name = row["name"].as<std::string>();
 
       if (row["timezone"].is_null())
       {
@@ -1111,21 +1111,21 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
       }
       else
       {
-        string iso2 = (row["iso2"].is_null() ? "" : row["iso2"].as<string>());
-        string feature = (row["feature"].is_null() ? "" : row["feature"].as<string>());
+        std::string iso2 = (row["iso2"].is_null() ? "" : row["iso2"].as<std::string>());
+        std::string feature = (row["feature"].is_null() ? "" : row["feature"].as<std::string>());
         int munip = row["munip"].as<int>();
         double lon = row["lon"].as<double>();
         double lat = row["lat"].as<double>();
-        string tz = row["timezone"].as<string>();
+        std::string tz = row["timezone"].as<std::string>();
         int pop = (!row["population"].is_null() ? row["population"].as<int>() : 0);
         double ele = (!row["elevation"].is_null() ? row["elevation"].as<double>()
-                                                  : numeric_limits<float>::quiet_NaN());
+                                                  : std::numeric_limits<float>::quiet_NaN());
         double dem = (!row["dem"].is_null() ? row["dem"].as<int>() : elevation(lon, lat));
-        string admin = (!row["admin1"].is_null() ? row["admin1"].as<string>() : "");
+        std::string admin = (!row["admin1"].is_null() ? row["admin1"].as<std::string>() : "");
         auto covertype = Fmi::LandCover::Type(
             (!row["landcover"].is_null() ? row["landcover"].as<int>() : coverType(lon, lat)));
 
-        string area;
+        std::string area;
         if (munip != 0)
         {
           auto it = itsMunicipalities.find(munip);
@@ -1147,7 +1147,7 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
 #endif
         }
 
-        string country("");  // country will be filled in upon request
+        std::string country("");  // country will be filled in upon request
         Spine::LocationPtr loc(new Spine::Location(geoid,
                                                    name,
                                                    iso2,
@@ -1167,7 +1167,7 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
     }
 
     if (itsVerbose)
-      cout << "read_geonames: " << itsLocations.size() << " locations" << endl;
+      std::cout << "read_geonames: " << itsLocations.size() << " locations" << std::endl;
   }
   catch (...)
   {
@@ -1216,7 +1216,7 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
 #endif
 
     if (itsVerbose)
-      cout << "read_alternate_geonames: " << sql << endl;
+      std::cout << "read_alternate_geonames: " << sql << std::endl;
 
     pqxx::result res = conn.executeNonTransaction(sql);
 
@@ -1224,13 +1224,13 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
       throw Spine::Exception(BCP, "FmiNames: Found nothing from alternate_fminames database");
 
     if (itsVerbose)
-      cout << "read_alternate_geonames: " << res.size() << " translations" << endl;
+      std::cout << "read_alternate_geonames: " << res.size() << " translations" << std::endl;
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      Spine::GeoId geoid = Fmi::stoi(row["geonames_id"].as<string>());
-      string name = row["name"].as<string>();
-      string lang = row["language"].as<string>();
+      Spine::GeoId geoid = Fmi::stoi(row["geonames_id"].as<std::string>());
+      std::string name = row["name"].as<std::string>();
+      std::string lang = row["language"].as<std::string>();
 
       auto it = itsAlternateNames.find(geoid);
       if (it == itsAlternateNames.end())
@@ -1248,7 +1248,7 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
     }
 
     if (itsVerbose)
-      cout << "read_alternate_geonames done" << endl;
+      std::cout << "read_alternate_geonames done" << std::endl;
   }
   catch (...)
   {
@@ -1271,7 +1271,7 @@ void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn)
         "alternate_municipalities");
 
     if (itsVerbose)
-      cout << "read_alternate_municipalities: " << query << endl;
+      std::cout << "read_alternate_municipalities: " << query << std::endl;
 
     pqxx::result res = conn.executeNonTransaction(query);
 
@@ -1280,13 +1280,13 @@ void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn)
     // alternate_municipalities database");
 
     if (itsVerbose)
-      cout << "read_alternate_geonames: " << res.size() << " translations" << endl;
+      std::cout << "read_alternate_geonames: " << res.size() << " translations" << std::endl;
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
       int munip = row["id"].as<int>();
-      string name = row["name"].as<string>();
-      string lang = row["language"].as<string>();
+      std::string name = row["name"].as<std::string>();
+      std::string lang = row["language"].as<std::string>();
 
       auto it = itsAlternateMunicipalities.find(munip);
       if (it == itsAlternateMunicipalities.end())
@@ -1299,7 +1299,7 @@ void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn)
     }
 
     if (itsVerbose)
-      cout << "read_alternate_municipalities: " << res.size() << " translations" << endl;
+      std::cout << "read_alternate_municipalities: " << res.size() << " translations" << std::endl;
   }
   catch (...)
   {
@@ -1320,7 +1320,7 @@ void Engine::Impl::build_geoid_map()
   try
   {
     if (itsVerbose)
-      cout << "build_geoid_map()" << endl;
+      std::cout << "build_geoid_map()" << std::endl;
 
     assert(itsGeoIdMap.size() == 0);
     for (Spine::LocationPtr &v : itsLocations)
@@ -1345,7 +1345,7 @@ void Engine::Impl::assign_priorities(Spine::LocationList &locs) const
   try
   {
     if (itsVerbose)
-      cout << "assign_priorities" << endl;
+      std::cout << "assign_priorities" << std::endl;
 
     for (Spine::LocationPtr &v : locs)
     {
@@ -1467,7 +1467,7 @@ void Engine::Impl::read_keywords(Locus::Connection &conn)
     std::string query("SELECT keyword, geonames_id as id FROM keywords_has_geonames");
 
     if (itsVerbose)
-      cout << "read_keywords: " << query << endl;
+      std::cout << "read_keywords: " << query << std::endl;
 
     pqxx::result res = conn.executeNonTransaction(query);
 
@@ -1481,8 +1481,8 @@ void Engine::Impl::read_keywords(Locus::Connection &conn)
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      string key = row["keyword"].as<string>();
-      Spine::GeoId geoid = Fmi::stoi(row["id"].as<string>());
+      std::string key = row["keyword"].as<std::string>();
+      Spine::GeoId geoid = Fmi::stoi(row["id"].as<std::string>());
 
       auto it = itsGeoIdMap.find(geoid);
       if (it != itsGeoIdMap.end())
@@ -1495,14 +1495,16 @@ void Engine::Impl::read_keywords(Locus::Connection &conn)
         ++count_bad;
         if (!limited_db)
         {
-          cerr << "  warning: keyword " << key << " uses nonexistent geoid " << geoid << endl;
+          std::cerr << "  warning: keyword " << key << " uses nonexistent geoid " << geoid
+                    << std::endl;
         }
       }
     }
 
     if (itsVerbose)
-      cout << "read_keywords: attached " << count_ok << " keywords to locations succesfully" << endl
-           << "read_keywords: found " << count_bad << " unknown locations" << endl;
+      std::cout << "read_keywords: attached " << count_ok << " keywords to locations succesfully"
+                << std::endl
+                << "read_keywords: found " << count_bad << " unknown locations" << std::endl;
   }
   catch (...)
   {
@@ -1522,11 +1524,12 @@ void Engine::Impl::build_geotrees()
   {
     for (const KeywordMap::value_type &name_locs : itsKeywords)
     {
-      const string &keyword = name_locs.first;
+      const std::string &keyword = name_locs.first;
       const Spine::LocationList &locs = name_locs.second;
 
       if (itsVerbose)
-        cout << "build_geotrees:  keyword '" << keyword << "' of size " << locs.size() << endl;
+        std::cout << "build_geotrees:  keyword '" << keyword << "' of size " << locs.size()
+                  << std::endl;
 
       auto it = itsGeoTrees.find(keyword);
       if (it == itsGeoTrees.end())
@@ -1541,10 +1544,10 @@ void Engine::Impl::build_geotrees()
     // global tree
 
     if (itsVerbose)
-      cout << "build_geotrees: keyword '" << FMINAMES_DEFAULT_KEYWORD << "' of size "
-           << itsLocations.size() << endl;
+      std::cout << "build_geotrees: keyword '" << FMINAMES_DEFAULT_KEYWORD << "' of size "
+                << itsLocations.size() << std::endl;
 
-    auto it = itsGeoTrees.insert(make_pair(FMINAMES_DEFAULT_KEYWORD, new GeoTree())).first;
+    auto it = itsGeoTrees.insert(std::make_pair(FMINAMES_DEFAULT_KEYWORD, new GeoTree())).first;
     for (Spine::LocationPtr &ptr : itsLocations)
       it->second->insert(ptr);
   }
@@ -1568,11 +1571,12 @@ void Engine::Impl::build_ternarytrees()
 
     for (auto &name_locs : itsKeywords)
     {
-      const string &keyword = name_locs.first;
+      const std::string &keyword = name_locs.first;
       Spine::LocationList &locs = name_locs.second;
 
       if (itsVerbose)
-        cout << "build_ternarytrees: keyword '" << keyword << "' of size " << locs.size() << endl;
+        std::cout << "build_ternarytrees: keyword '" << keyword << "' of size " << locs.size()
+                  << std::endl;
 
       auto it = itsTernaryTrees.find(keyword);
       if (it == itsTernaryTrees.end())
@@ -1595,11 +1599,11 @@ void Engine::Impl::build_ternarytrees()
     // all geonames
 
     if (itsVerbose)
-      cout << "build_ternarytrees: keyword '" << FMINAMES_DEFAULT_KEYWORD << "' of size "
-           << itsLocations.size() << endl;
+      std::cout << "build_ternarytrees: keyword '" << FMINAMES_DEFAULT_KEYWORD << "' of size "
+                << itsLocations.size() << std::endl;
 
     auto newtree = boost::make_shared<TernaryTree>();
-    auto it = itsTernaryTrees.insert(make_pair(FMINAMES_DEFAULT_KEYWORD, newtree)).first;
+    auto it = itsTernaryTrees.insert(std::make_pair(FMINAMES_DEFAULT_KEYWORD, newtree)).first;
 
     for (Spine::LocationPtr &ptr : itsLocations)
     {
@@ -1628,7 +1632,7 @@ void Engine::Impl::build_lang_ternarytrees()
   try
   {
     if (itsVerbose)
-      cout << "build_lang_ternarytrees" << endl;
+      std::cout << "build_lang_ternarytrees" << std::endl;
 
     build_lang_ternarytrees_all();
     build_lang_ternarytrees_keywords();
@@ -1658,7 +1662,8 @@ void Engine::Impl::build_lang_ternarytrees_all()
     // traverse all alternate names
 
     if (itsVerbose)
-      cout << "build_lang_ternarytrees_all: " << itsAlternateNames.size() << " names" << endl;
+      std::cout << "build_lang_ternarytrees_all: " << itsAlternateNames.size() << " names"
+                << std::endl;
 
     for (const auto &gt : itsAlternateNames)
     {
@@ -1680,8 +1685,8 @@ void Engine::Impl::build_lang_ternarytrees_all()
 
       for (const auto &tt : translations)
       {
-        const string &lang = tt.first;
-        const string &name = tt.second;
+        const std::string &lang = tt.first;
+        const std::string &name = tt.second;
 
         // Find the language specific tree
 
@@ -1690,7 +1695,8 @@ void Engine::Impl::build_lang_ternarytrees_all()
         // If there isn't one, create it now
 
         if (it == itsLangTernaryTreeMap.end())
-          it = itsLangTernaryTreeMap.insert(make_pair(lang, boost::make_shared<TernaryTreeMap>()))
+          it = itsLangTernaryTreeMap
+                   .insert(std::make_pair(lang, boost::make_shared<TernaryTreeMap>()))
                    .first;
         // Then find keyword specific map, keyword being "all"
 
@@ -1712,7 +1718,7 @@ void Engine::Impl::build_lang_ternarytrees_all()
         {
           if (!tree.insert(treename, *git->second))
           {
-            // cout << "Failed to insert " << treename << endl;
+            // std::cout << "Failed to insert " << treename << std::endl;
           }
         }
       }
@@ -1742,11 +1748,11 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
     // Traverse all alternate names
 
     if (itsVerbose)
-      cout << "build_lang_ternarytrees_keywords()" << endl;
+      std::cout << "build_lang_ternarytrees_keywords()" << std::endl;
 
     for (auto &kloc : itsKeywords)
     {
-      const string &keyword = kloc.first;
+      const std::string &keyword = kloc.first;
 
       int ntranslations = 0;
 
@@ -1769,8 +1775,8 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
 
         for (const auto &tt : ait->second)
         {
-          const string &lang = tt.first;
-          const string &translation = tt.second;
+          const std::string &lang = tt.first;
+          const std::string &translation = tt.second;
 
           // Find the language specific tree
 
@@ -1779,7 +1785,8 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
           // If there isn't one, create it now
 
           if (it == itsLangTernaryTreeMap.end())
-            it = itsLangTernaryTreeMap.insert(make_pair(lang, boost::make_shared<TernaryTreeMap>()))
+            it = itsLangTernaryTreeMap
+                     .insert(std::make_pair(lang, boost::make_shared<TernaryTreeMap>()))
                      .first;
 
           // Then find keyword specific map
@@ -1806,15 +1813,15 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
           {
             if (!tree.insert(name, loc))
             {
-              // cout << "Failed to insert " << name << endl;
+              // std::cout << "Failed to insert " << name << std::endl;
             }
           }
         }
       }
 
       if (itsVerbose)
-        cout << "build_lang_ternarytrees_keywords: " << keyword << " with " << ntranslations
-             << " translations" << endl;
+        std::cout << "build_lang_ternarytrees_keywords: " << keyword << " with " << ntranslations
+                  << " translations" << std::endl;
     }
   }
   catch (...)
@@ -1829,7 +1836,7 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::translate_name(Spine::Location &loc, const string &lang) const
+void Engine::Impl::translate_name(Spine::Location &loc, const std::string &lang) const
 {
   try
   {
@@ -1841,7 +1848,7 @@ void Engine::Impl::translate_name(Spine::Location &loc, const string &lang) cons
 
     // is there a translation?
 
-    string lg = to_language(lang);
+    std::string lg = to_language(lang);
 
     auto &translations = trans->second;
     auto pos = translations.find(lg);
@@ -1863,11 +1870,11 @@ void Engine::Impl::translate_name(Spine::Location &loc, const string &lang) cons
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::translate_area(Spine::Location &loc, const string &lang) const
+void Engine::Impl::translate_area(Spine::Location &loc, const std::string &lang) const
 {
   try
   {
-    string lg = to_language(lang);
+    std::string lg = to_language(lang);
 
     // are there any municipality translations?
 
@@ -1913,7 +1920,7 @@ void Engine::Impl::translate_area(Spine::Location &loc, const string &lang) cons
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::translate(Spine::LocationPtr &loc, const string &lang) const
+void Engine::Impl::translate(Spine::LocationPtr &loc, const std::string &lang) const
 {
   try
   {
@@ -1935,7 +1942,7 @@ void Engine::Impl::translate(Spine::LocationPtr &loc, const string &lang) const
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::translate(Spine::LocationList &locs, const string &lang) const
+void Engine::Impl::translate(Spine::LocationList &locs, const std::string &lang) const
 {
   try
   {
@@ -1954,11 +1961,11 @@ void Engine::Impl::translate(Spine::LocationList &locs, const string &lang) cons
  */
 // ----------------------------------------------------------------------
 
-string Engine::Impl::translate_country(const string &iso2, const string &lang) const
+std::string Engine::Impl::translate_country(const std::string &iso2, const std::string &lang) const
 {
   try
   {
-    string lg = to_language(lang);
+    std::string lg = to_language(lang);
 
     // iso2 to official name
 
@@ -2002,8 +2009,8 @@ bool Engine::Impl::prioritySort(const Spine::LocationPtr &a, const Spine::Locati
 
     // Last use alphabetical sort.
 
-    string aname = to_treeword(a->name);
-    string bname = to_treeword(b->name);
+    std::string aname = to_treeword(a->name);
+    std::string bname = to_treeword(b->name);
 
     if (aname != bname)
       return (aname < bname);
@@ -2090,9 +2097,9 @@ void Engine::Impl::sort(Spine::LocationList &theLocations) const
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationList Engine::Impl::suggest(const string &pattern,
-                                          const string &lang,
-                                          const string &keyword,
+Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
+                                          const std::string &lang,
+                                          const std::string &keyword,
                                           unsigned int page,
                                           unsigned int maxresults) const
 {
@@ -2117,7 +2124,7 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
 
     // transform to collated form
 
-    string name = to_treeword(pattern);
+    std::string name = to_treeword(pattern);
 
     // find it
 
@@ -2125,7 +2132,7 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
 
     // check if there are language specific translations
 
-    string lg = to_language(lang);
+    std::string lg = to_language(lang);
 
     auto lt = itsLangTernaryTreeMap.find(lg);
     if (lt != itsLangTernaryTreeMap.end())
@@ -2133,7 +2140,7 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
       auto tit = lt->second->find(keyword);
       if (tit != lt->second->end())
       {
-        list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
+        std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
         for (const Spine::LocationPtr &ptr : tmpx)
         {
           ret.push_back(ptr);
@@ -2149,7 +2156,7 @@ Spine::LocationList Engine::Impl::suggest(const string &pattern,
 
     for (auto &loc : ret)
     {
-      string tmpname = to_treeword(loc->name);
+      std::string tmpname = to_treeword(loc->name);
       if (tmpname == name)
       {
         std::unique_ptr<Spine::Location> newloc(new Spine::Location(*loc));
@@ -2212,7 +2219,7 @@ Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_typ
       // administrative
       // area itself, select the country instead.
 
-      string area = loc.admin;
+      std::string area = loc.admin;
       if (area == loc.name || area.empty())
         area = loc.country;
 
@@ -2248,7 +2255,7 @@ Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_typ
 // ----------------------------------------------------------------------
 
 Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOptions,
-                                              const string &theName)
+                                              const std::string &theName)
 {
   if (itsDatabaseDisabled)
     return {};

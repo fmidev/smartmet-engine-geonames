@@ -24,8 +24,6 @@
 #include <string>
 #include <unistd.h>
 
-using namespace std;
-
 namespace SmartMet
 {
 namespace Engine
@@ -36,15 +34,15 @@ namespace Geonames
 static const std::string default_language = "fi";
 static const double default_maxdistance = 15.0;  // km
 
-string parse_radius(const string& inputStr, double& radius)
+std::string parse_radius(const std::string& inputStr, double& radius)
 {
   try
   {
-    string radius_string("0.0");
-    string output_string(inputStr);
+    std::string radius_string("0.0");
+    std::string output_string(inputStr);
 
-    const string::size_type pos = output_string.find(':');
-    if (pos != string::npos)
+    const std::string::size_type pos = output_string.find(':');
+    if (pos != std::string::npos)
     {
       radius_string = output_string.substr(pos + 1);
       output_string = output_string.substr(0, pos);
@@ -97,7 +95,7 @@ Fmi::LandCover::Type covertype(const boost::shared_ptr<Fmi::LandCover>& theLandC
  */
 // ----------------------------------------------------------------------
 
-Engine::Engine(const string& theConfigFile)
+Engine::Engine(const std::string& theConfigFile)
     : SmartMetEngine(),
       itsStartTime(boost::posix_time::second_clock::local_time()),
       itsReloading(false),
@@ -229,7 +227,7 @@ std::size_t Engine::hash_value() const
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationPtr Engine::nameSearch(const string& theName, const string& theLang) const
+Spine::LocationPtr Engine::nameSearch(const std::string& theName, const std::string& theLang) const
 {
   try
   {
@@ -263,7 +261,7 @@ Spine::LocationPtr Engine::nameSearch(const string& theName, const string& theLa
 
 Spine::LocationPtr Engine::lonlatSearch(double theLongitude,
                                         double theLatitude,
-                                        const string& theLang,
+                                        const std::string& theLang,
                                         double theMaxDistance) const
 {
   try
@@ -309,7 +307,7 @@ Spine::LocationPtr Engine::lonlatSearch(double theLongitude,
 
     std::string name = Fmi::to_string(theLongitude) + "," + Fmi::to_string(theLatitude);
 
-    string timezone = Fmi::TimeZoneFactory::instance().zone_name_from_coordinate(
+    std::string timezone = Fmi::TimeZoneFactory::instance().zone_name_from_coordinate(
         boost::numeric_cast<float>(theLongitude), boost::numeric_cast<float>(theLatitude));
 
     return Spine::LocationPtr(
@@ -340,7 +338,7 @@ Spine::LocationPtr Engine::lonlatSearch(double theLongitude,
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationPtr Engine::idSearch(long theGeoID, const string& theLang) const
+Spine::LocationPtr Engine::idSearch(long theGeoID, const std::string& theLang) const
 {
   try
   {
@@ -374,7 +372,7 @@ Spine::LocationPtr Engine::idSearch(long theGeoID, const string& theLang) const
 // ----------------------------------------------------------------------
 
 Spine::LocationList Engine::nameSearch(const Locus::QueryOptions& theOptions,
-                                       const string& theName) const
+                                       const std::string& theName) const
 {
   try
   {
@@ -460,7 +458,7 @@ Spine::LocationList Engine::idSearch(const Locus::QueryOptions& theOptions, int 
 // ----------------------------------------------------------------------
 
 Spine::LocationList Engine::keywordSearch(const Locus::QueryOptions& theOptions,
-                                          const string& theKeyword) const
+                                          const std::string& theKeyword) const
 {
   try
   {
@@ -480,9 +478,9 @@ Spine::LocationList Engine::keywordSearch(const Locus::QueryOptions& theOptions,
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationList Engine::suggest(const string& thePattern,
-                                    const string& theLang,
-                                    const string& theKeyword,
+Spine::LocationList Engine::suggest(const std::string& thePattern,
+                                    const std::string& theLang,
+                                    const std::string& theKeyword,
                                     unsigned int thePage,
                                     unsigned int theMaxResults) const
 {
@@ -510,8 +508,11 @@ Spine::LocationList Engine::suggest(const string& thePattern,
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationPtr Engine::keywordSearch(
-    double lon, double lat, double radius, const string& lang, const string& keyword) const
+Spine::LocationPtr Engine::keywordSearch(double lon,
+                                         double lat,
+                                         double radius,
+                                         const std::string& lang,
+                                         const std::string& keyword) const
 {
   try
   {
@@ -565,7 +566,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
   {
     // Language selection (default -> config -> querystring order)
 
-    string language = default_language;
+    std::string language = default_language;
     language = Spine::optional_string(theReq.getParameter("lang"), language);
 
     // Maximum distance for latlon searches
@@ -580,10 +581,10 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     auto searchName = theReq.getParameterList("place");
     if (!searchName.empty())
     {
-      for (const string& city : searchName)
+      for (const std::string& city : searchName)
       {
         double radius(0.0);
-        string city_string = parse_radius(city, radius);
+        std::string city_string = parse_radius(city, radius);
         Spine::LocationPtr loc =
             this->nameSearch(city_string, language);  // throws for empty result
         std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
@@ -597,15 +598,15 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("places");
     if (!searchName.empty())
     {
-      for (const string& places : searchName)
+      for (const std::string& places : searchName)
       {
-        list<string> parts;
+        std::list<std::string> parts;
         boost::algorithm::split(parts, places, boost::algorithm::is_any_of(","));
 
-        for (const string& city : parts)
+        for (const std::string& city : parts)
         {
           double radius(0.0);
-          string city_string = parse_radius(city, radius);
+          std::string city_string = parse_radius(city, radius);
           Spine::LocationPtr loc =
               this->nameSearch(city_string, language);  // throws for empty result
           // in order to make difference between e.g. Helsinki, Helsinki:50
@@ -620,10 +621,10 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("area");
     if (!searchName.empty())
     {
-      for (const string& area : searchName)
+      for (const std::string& area : searchName)
       {
         double radius(0.0);
-        string area_string = parse_radius(area, radius);
+        std::string area_string = parse_radius(area, radius);
         std::unique_ptr<Spine::Location> loc(new Spine::Location(area_string, radius));
         loc->radius = radius;
         loc->type = Spine::Location::Area;
@@ -634,15 +635,15 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("areas");
     if (!searchName.empty())
     {
-      for (const string& areas : searchName)
+      for (const std::string& areas : searchName)
       {
-        list<string> area_list;
+        std::list<std::string> area_list;
         boost::algorithm::split(area_list, areas, boost::algorithm::is_any_of(","));
 
-        for (const string& area : area_list)
+        for (const std::string& area : area_list)
         {
           double radius(0.0);
-          string area_string = parse_radius(area, radius);
+          std::string area_string = parse_radius(area, radius);
           std::unique_ptr<Spine::Location> loc(new Spine::Location(area_string, radius));
           loc->radius = radius;
           loc->type = Spine::Location::Area;
@@ -655,7 +656,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     unsigned int path_counter(1);  // numer is added to the end of pathname
     if (!searchName.empty())
     {
-      for (const string& path : searchName)
+      for (const std::string& path : searchName)
       {
         if (path.find(' ') != std::string::npos)
           throw Spine::Exception(BCP, "Invalid path parameter " + path + ", no spaces allowed!");
@@ -664,7 +665,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
 
         // radius handling added if we want to extend path to area
         double radius(0.0);
-        string path_name = parse_radius(path, radius);
+        std::string path_name = parse_radius(path, radius);
 
         std::unique_ptr<Spine::Location> loc(new Spine::Location(path_name, radius));
         loc->type = Spine::Location::Path;
@@ -676,12 +677,12 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     unsigned int paths_counter(1);  // numer is added to the end of pathname
     if (!searchName.empty())
     {
-      for (const string& paths : searchName)
+      for (const std::string& paths : searchName)
       {
-        list<string> path_list;
+        std::list<std::string> path_list;
         boost::algorithm::split(path_list, paths, boost::algorithm::is_any_of(" "));
 
-        for (const string& path : path_list)
+        for (const std::string& path : path_list)
         {
           if (path.find(':') != std::string::npos)
             throw Spine::Exception(BCP, "Invalid path parameter " + path + ", no radius allowed!");
@@ -698,9 +699,9 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("bbox");
     if (!searchName.empty())
     {
-      for (const string& bbox : searchName)
+      for (const std::string& bbox : searchName)
       {
-        list<string> parts;
+        std::list<std::string> parts;
         boost::algorithm::split(parts, bbox, boost::algorithm::is_any_of(","));
         if (parts.size() != 4)
           throw Spine::Exception(BCP,
@@ -708,7 +709,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
                                      ", should be in format 'lon,lat,lon,lat[:radius]'!");
 
         double radius(0.0);
-        string bbox_string = parse_radius(bbox, radius);
+        std::string bbox_string = parse_radius(bbox, radius);
 
         std::unique_ptr<Spine::Location> loc(new Spine::Location(bbox_string, radius));
         loc->type = Spine::Location::BoundingBox;
@@ -720,23 +721,23 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("bboxes");
     if (!searchName.empty())
     {
-      for (const string& bboxes : searchName)
+      for (const std::string& bboxes : searchName)
       {
-        vector<string> coordinates;
+        std::vector<std::string> coordinates;
         boost::algorithm::split(coordinates, bboxes, boost::algorithm::is_any_of(","));
         if (coordinates.size() % 4 != 0)
-          throw Spine::Exception(
-              BCP,
-              "Invalid bboxes parameter " + bboxes +
-                  ", should be in format 'lon,lat,lon,lat[:radius],lon,lat,lon,lat[:radius],...'!");
+          throw Spine::Exception(BCP,
+                                 "Invalid bboxes parameter " + bboxes +
+                                     ", should be in format "
+                                     "'lon,lat,lon,lat[:radius],lon,lat,lon,lat[:radius],...'!");
 
         for (unsigned int i = 0; i < coordinates.size(); i += 4)
         {
-          string lonstr1(coordinates[i]);
-          string latstr1(coordinates[i + 1]);
-          string lonstr2(coordinates[i + 2]);
-          string latstr2(coordinates[i + 3]);
-          string bbox_name(lonstr1 + "," + latstr1 + "," + lonstr2 + "," + latstr2);
+          std::string lonstr1(coordinates[i]);
+          std::string latstr1(coordinates[i + 1]);
+          std::string lonstr2(coordinates[i + 2]);
+          std::string latstr2(coordinates[i + 3]);
+          std::string bbox_name(lonstr1 + "," + latstr1 + "," + lonstr2 + "," + latstr2);
           double radius(0.0);
           latstr2 = parse_radius(latstr2, radius);
           std::unique_ptr<Spine::Location> loc(new Spine::Location(bbox_name, radius));
@@ -749,12 +750,12 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("lonlat");
     if (!searchName.empty())
     {
-      for (const string& coords : searchName)
+      for (const std::string& coords : searchName)
       {
-        vector<string> parts;
+        std::vector<std::string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
         if (parts.size() % 2 != 0)
-          throw Spine::Exception(BCP, "Invalid lonlat list: " + string(coords));
+          throw Spine::Exception(BCP, "Invalid lonlat list: " + std::string(coords));
 
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
@@ -763,7 +764,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
           std::string latstr = parse_radius(parts[j + 1], radius);
           double lon = Fmi::stod(parts[j]);
           double lat = Fmi::stod(latstr);
-          string tag = parts[j] + ',' + parts[j + 1];
+          std::string tag = parts[j] + ',' + parts[j + 1];
           Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
           std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
           loc2->radius = radius;
@@ -775,12 +776,12 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("lonlats");
     if (!searchName.empty())
     {
-      for (const string& coords : searchName)
+      for (const std::string& coords : searchName)
       {
-        vector<string> parts;
+        std::vector<std::string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
         if (parts.size() % 2 != 0)
-          throw Spine::Exception(BCP, "Invalid lonlats list: " + string(coords));
+          throw Spine::Exception(BCP, "Invalid lonlats list: " + std::string(coords));
 
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
@@ -788,7 +789,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
           std::string latstr = parse_radius(parts[j + 1], radius);
           double lon = Fmi::stod(parts[j]);
           double lat = Fmi::stod(latstr);
-          string tag = parts[j] + ',' + parts[j + 1];
+          std::string tag = parts[j] + ',' + parts[j + 1];
           Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
           std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
           loc2->type = Spine::Location::CoordinatePoint;
@@ -801,12 +802,12 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("latlon");
     if (!searchName.empty())
     {
-      for (const string& coords : searchName)
+      for (const std::string& coords : searchName)
       {
-        vector<string> parts;
+        std::vector<std::string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
         if (parts.size() % 2 != 0)
-          throw Spine::Exception(BCP, "Invalid latlon list: " + string(coords));
+          throw Spine::Exception(BCP, "Invalid latlon list: " + std::string(coords));
 
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
@@ -815,8 +816,8 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
           std::string latstr = parse_radius(parts[j + 1], radius);
           double lon = Fmi::stod(parts[j]);
           double lat = Fmi::stod(latstr);
-          swap(lon, lat);
-          string tag = parts[j] + ',' + parts[j + 1];
+          std::swap(lon, lat);
+          std::string tag = parts[j] + ',' + parts[j + 1];
           Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
           std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
           loc2->type = Spine::Location::CoordinatePoint;
@@ -829,12 +830,12 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("latlons");
     if (!searchName.empty())
     {
-      for (const string& coords : searchName)
+      for (const std::string& coords : searchName)
       {
-        vector<string> parts;
+        std::vector<std::string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
         if (parts.size() % 2 != 0)
-          throw Spine::Exception(BCP, "Invalid latlons list: " + string(coords));
+          throw Spine::Exception(BCP, "Invalid latlons list: " + std::string(coords));
 
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
@@ -842,8 +843,8 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
           std::string latstr = parse_radius(parts[j + 1], radius);
           double lon = Fmi::stod(parts[j]);
           double lat = Fmi::stod(latstr);
-          swap(lon, lat);
-          string tag = parts[j] + ',' + parts[j + 1];
+          std::swap(lon, lat);
+          std::string tag = parts[j] + ',' + parts[j + 1];
           Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
           std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
           loc2->type = Spine::Location::CoordinatePoint;
@@ -856,11 +857,11 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("geoid");
     if (!searchName.empty())
     {
-      for (const string& geoids : searchName)
+      for (const std::string& geoids : searchName)
       {
-        list<string> parts;
+        std::list<std::string> parts;
         boost::algorithm::split(parts, geoids, boost::algorithm::is_any_of(","));
-        for (const string& geoid : parts)
+        for (const std::string& geoid : parts)
         {
           long number = Fmi::stol(geoid);
           Spine::LocationPtr loc = this->idSearch(number, language);
@@ -872,11 +873,11 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("geoids");
     if (!searchName.empty())
     {
-      for (const string& geoids : searchName)
+      for (const std::string& geoids : searchName)
       {
-        list<string> parts;
+        std::list<std::string> parts;
         boost::algorithm::split(parts, geoids, boost::algorithm::is_any_of(","));
-        for (const string& geoid : parts)
+        for (const std::string& geoid : parts)
         {
           long number = Fmi::stol(geoid);
           Spine::LocationPtr loc = this->idSearch(number, language);
@@ -888,13 +889,14 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("keyword");
     if (!searchName.empty())
     {
-      for (const string& keyword : searchName)
+      for (const std::string& keyword : searchName)
       {
         Locus::QueryOptions opts;
         opts.SetLanguage(language);
         Spine::LocationList places = this->keywordSearch(opts, keyword);
         if (places.empty())
-          throw Spine::Exception(BCP, "No locations for keyword " + string(keyword) + " found");
+          throw Spine::Exception(BCP,
+                                 "No locations for keyword " + std::string(keyword) + " found");
 
         for (Spine::LocationPtr& place : places)
         {
@@ -906,13 +908,13 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     searchName = theReq.getParameterList("wkt");
     if (!searchName.empty())
     {
-      for (const string& wkt : searchName)
+      for (const std::string& wkt : searchName)
       {
         double radius(0.0);
         size_t aliasPos = wkt.find(" as ");
         if (aliasPos != std::string::npos && wkt.size() - aliasPos < 5)
           throw Spine::Exception(BCP, "Invalid WKT-parameter: " + wkt);
-        string wktStr = wkt.substr(0, aliasPos);
+        std::string wktStr = wkt.substr(0, aliasPos);
         wktStr = parse_radius(wktStr, radius);
         // find first coordinate and do a lonlat search with it
         std::size_t firstNumberPos = wktStr.find_first_of("123456789");
@@ -956,7 +958,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
  */
 // ----------------------------------------------------------------------
 
-string Engine::countryName(const string& theIso2, const string& theLang) const
+std::string Engine::countryName(const std::string& theIso2, const std::string& theLang) const
 {
   try
   {
@@ -1082,8 +1084,8 @@ bool Engine::reload()
 
     itsReloading = true;
 
-    cerr << boost::posix_time::second_clock::local_time() << " Geonames reloading initiated"
-         << endl;
+    std::cerr << boost::posix_time::second_clock::local_time() << " Geonames reloading initiated"
+              << std::endl;
 
     auto p = boost::make_shared<Impl>(itsConfigFile, true);  // reload=true
     bool first_construction = false;
@@ -1092,8 +1094,8 @@ bool Engine::reload()
     if (!p->itsReloadOK)
     {
       itsErrorMessage = p->itsReloadError;
-      cerr << boost::posix_time::second_clock::local_time()
-           << " Geonames reloading failed: " << p->itsReloadError << endl;
+      std::cerr << boost::posix_time::second_clock::local_time()
+                << " Geonames reloading failed: " << p->itsReloadError << std::endl;
       itsReloading = false;
       return false;
     }
@@ -1104,7 +1106,7 @@ bool Engine::reload()
     itsErrorMessage = "";
     itsReloading = false;
 
-    cerr << itsLastReload << " Geonames reloading finished" << endl;
+    std::cerr << itsLastReload << " Geonames reloading finished" << std::endl;
 
     return true;
   }
@@ -1124,10 +1126,11 @@ std::string printrate(long count, long secs)
 {
   try
   {
-    ostringstream out;
+    std::ostringstream out;
     if (secs > 0)
     {
-      out << setprecision(6) << 1.0 * count / secs << "/sec, " << 60.0 * count / secs << "/min";
+      out << std::setprecision(6) << 1.0 * count / secs << "/sec, " << 60.0 * count / secs
+          << "/min";
     }
     else
     {

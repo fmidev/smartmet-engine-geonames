@@ -6,27 +6,22 @@
 
 #include "Engine.h"
 #include "Impl.h"
-
-#include <spine/Convenience.h>
-#include <spine/DebugFormatter.h>
-#include <spine/Exception.h>
-#include <spine/Location.h>
-#include <spine/TableFormatterOptions.h>
-
+#include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
 #include <locus/Query.h>
 #include <macgyver/StringConversion.h>
 #include <macgyver/TimeZoneFactory.h>
-
-#include <boost/date_time/posix_time/posix_time_io.hpp>
-
+#include <spine/Convenience.h>
+#include <spine/DebugFormatter.h>
+#include <spine/Exception.h>
+#include <spine/Location.h>
+#include <spine/TableFormatterOptions.h>
 #include <algorithm>
 #include <iterator>
 #include <limits>
 #include <sstream>
 #include <string>
-
 #include <unistd.h>
 
 using namespace std;
@@ -87,7 +82,7 @@ double demheight(const boost::shared_ptr<Fmi::DEM>& theDem,
  */
 // ----------------------------------------------------------------------
 
-Fmi::LandCover::Type covertype(const boost::shared_ptr<Fmi::LandCover> theLandCover,
+Fmi::LandCover::Type covertype(const boost::shared_ptr<Fmi::LandCover>& theLandCover,
                                double theLongitude,
                                double theLatitude)
 {

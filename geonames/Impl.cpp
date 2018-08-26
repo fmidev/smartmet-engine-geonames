@@ -1334,7 +1334,7 @@ void Engine::Impl::build_geoid_map()
 
 // ----------------------------------------------------------------------
 /*!
- *�\brief Assign priorities
+ * \brief Assign priorities
  */
 // ----------------------------------------------------------------------
 
@@ -1352,7 +1352,7 @@ void Engine::Impl::assign_priorities(Spine::LocationList &locs) const
       score += country_priority(*v);
       score += feature_priority(*v);
 
-      Spine::Location &myloc = const_cast<Spine::Location &>(*v);
+      Spine::Location &myloc = const_cast<Spine::Location &>(*v);  // NOLINT
       myloc.priority = score;
     }
   }

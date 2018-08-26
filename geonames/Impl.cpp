@@ -1806,7 +1806,7 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
 
           TernaryTree &tree = *tit->second;
 
-          // TODO: translate area
+          // TODO(mheiskan): translate area
           std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
           auto names = to_treewords(preprocess_name(translation), specifier);
 

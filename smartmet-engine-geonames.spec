@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 18.8.23
+Version: 18.8.26
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -15,7 +15,7 @@ BuildRequires: gcc-c++
 BuildRequires: make
 BuildRequires: boost-devel
 BuildRequires: libatomic
-BuildRequires: libfmt-devel
+BuildRequires: fmt-devel
 BuildRequires: libicu-devel
 BuildRequires: libpqxx
 BuildRequires: libpqxx-devel
@@ -34,7 +34,7 @@ Requires: boost-locale
 Requires: boost-system
 Requires: boost-thread
 Requires: libatomic
-Requires: libfmt
+Requires: fmt
 Requires: libicu
 Requires: mariadb-libs
 Requires: smartmet-library-gis >= 18.8.15
@@ -83,6 +83,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Sun Aug 26 2018 Mika Heiskanen <mika.heiskanen@fmi.fi> - 18.8.26-1.fmi
+- Silenced CodeChecker warnings
+- Use libfmt for formatting
+
 * Thu Aug 23 2018 Mika Heiskanen <mika.heiskanen@fmi.fi> - 18.8.23-1.fmi
 - Added priorities.match setting to give extra autocomplete credit to exact matches
 - Add extra credit to all exact matches, not just the first one

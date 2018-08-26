@@ -264,10 +264,10 @@ void suggest()
   if (ptrs.size() < 15)
     TEST_FAILED("Should find at least 15 places starting with 'ii'");
   if (ptrs.front()->name != "Ii")
-    TEST_FAILED("Should find exact match 'Ii' in 1st place");
+    TEST_FAILED("Should find exact match 'Ii' in 1st place, not '" + ptrs.front()->name + "'");
   ptrs.pop_front();
   if (ptrs.front()->name != "Iisalmi")
-    TEST_FAILED("Should find Iisalmi for 'Ii' in 2nd place");
+    TEST_FAILED("Should find Iisalmi for 'Ii' in 2nd place, not '" + ptrs.front()->name + "'");
 
   // Vaasa is the preferred name over Nikolainkaupunki
 
@@ -275,7 +275,7 @@ void suggest()
   if (ptrs.size() < 1)
     TEST_FAILED("Should find at least 1 place starting with 'vaasa'");
   if (ptrs.front()->name != "Vaasa")
-    TEST_FAILED("Should find exact match 'Vaasa' in 1st place");
+    TEST_FAILED("Should find exact match 'Vaasa' in 1st place, not '" + ptrs.front()->name + "'");
 
   // Test words within location names
 
@@ -283,19 +283,19 @@ void suggest()
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 1 York and New York");
   if (ptrs.front()->name != "York")
-    TEST_FAILED("First match should be York exactly");
+    TEST_FAILED("First match should be York exactly, not '" + ptrs.front()->name + "'");
   ptrs.pop_front();
   if (ptrs.front()->name != "New York")
-    TEST_FAILED("Second match should be New York");
+    TEST_FAILED("Second match should be New York, not '" + ptrs.front()->name + "'");
 
   ptrs = names->suggest("Orlea");
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 *Orlea* matches");
   if (ptrs.front()->name != "New Orleans")
-    TEST_FAILED("First match should be New Orleans");
+    TEST_FAILED("First match should be New Orleans, not '" + ptrs.front()->name + "'");
   ptrs.pop_front();
   if (ptrs.front()->name != "Orléans")
-    TEST_FAILED("Second match should be Orléans");
+    TEST_FAILED("Second match should be Orléans, not '" + ptrs.front()->name + "'");
 
   // Test comma
 

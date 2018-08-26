@@ -2029,7 +2029,7 @@ bool Engine::Impl::prioritySort(const Spine::LocationPtr &a, const Spine::Locati
  */
 // ----------------------------------------------------------------------
 
-bool basicSort(Spine::LocationPtr a, Spine::LocationPtr b)
+bool basicSort(const Spine::LocationPtr &a, const Spine::LocationPtr &b)
 {
   try
   {
@@ -2056,7 +2056,7 @@ bool basicSort(Spine::LocationPtr a, Spine::LocationPtr b)
  */
 // ----------------------------------------------------------------------
 
-bool closeEnough(Spine::LocationPtr a, Spine::LocationPtr b)
+bool closeEnough(const Spine::LocationPtr &a, const Spine::LocationPtr &b)
 {
   try
   {

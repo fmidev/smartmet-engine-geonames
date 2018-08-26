@@ -18,7 +18,7 @@
 #include <sys/types.h>
 #include <cassert>
 #include <cmath>
-#include <signal.h>
+#include <csignal>
 #include <sstream>
 #include <stdexcept>
 #include <string>

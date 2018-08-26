@@ -1145,7 +1145,7 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
 #endif
         }
 
-        std::string country("");  // country will be filled in upon request
+        std::string country;  // country will be filled in upon request
         Spine::LocationPtr loc(new Spine::Location(geoid,
                                                    name,
                                                    iso2,

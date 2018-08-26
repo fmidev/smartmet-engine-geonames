@@ -1352,7 +1352,7 @@ void Engine::Impl::assign_priorities(Spine::LocationList &locs) const
       score += country_priority(*v);
       score += feature_priority(*v);
 
-      Spine::Location &myloc = const_cast<Spine::Location &>(*v);  // NOLINT
+      auto &myloc = const_cast<Spine::Location &>(*v);  // NOLINT
       myloc.priority = score;
     }
   }

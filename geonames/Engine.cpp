@@ -508,11 +508,11 @@ Spine::LocationList Engine::suggest(const std::string& thePattern,
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationPtr Engine::keywordSearch(double lon,
-                                         double lat,
-                                         double radius,
-                                         const std::string& lang,
-                                         const std::string& keyword) const
+Spine::LocationPtr Engine::keywordSearch(double theLongitude,
+                                         double theLatitude,
+                                         double theRadius,
+                                         const std::string& theLang,
+                                         const std::string& theKeyword) const
 {
   try
   {
@@ -529,23 +529,23 @@ Spine::LocationPtr Engine::keywordSearch(double lon,
 
     // return null if keyword is wrong
 
-    const auto it = mycopy->itsGeoTrees.find(keyword);
+    const auto it = mycopy->itsGeoTrees.find(theKeyword);
     if (it == mycopy->itsGeoTrees.end())
       return Spine::LocationPtr();
 
     // this is unfortunate - we must allocate new Location just to
     // get NearTree comparisons working
 
-    Spine::LocationPtr dummy(new Spine::Location(lon, lat));
+    Spine::LocationPtr dummy(new Spine::Location(theLongitude, theLatitude));
 
     // result will be here, if there is one
 
-    boost::optional<Spine::LocationPtr> ptr = it->second->nearest(dummy, radius);
+    boost::optional<Spine::LocationPtr> ptr = it->second->nearest(dummy, theRadius);
     if (!ptr)
       return Spine::LocationPtr();
 
     Spine::LocationPtr newptr(new Spine::Location(**ptr));
-    mycopy->translate(newptr, lang);
+    mycopy->translate(newptr, theLang);
     return newptr;
   }
   catch (...)

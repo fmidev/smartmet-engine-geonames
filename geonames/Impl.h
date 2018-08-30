@@ -230,7 +230,7 @@ class Engine::Impl : private boost::noncopyable
 
   // DEM data
   boost::shared_ptr<Fmi::DEM> itsDEM;
-  unsigned int itsMaxDemResolution;
+  unsigned int itsMaxDemResolution = 0;  // allow highest possible resolution
 
   // LandCover data
   boost::shared_ptr<Fmi::LandCover> itsLandCover;

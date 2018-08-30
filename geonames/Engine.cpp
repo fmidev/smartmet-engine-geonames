@@ -97,8 +97,7 @@ Fmi::LandCover::Type covertype(const boost::shared_ptr<Fmi::LandCover>& theLandC
 // ----------------------------------------------------------------------
 
 Engine::Engine(const std::string& theConfigFile)
-    : SmartMetEngine(),
-      itsStartTime(boost::posix_time::second_clock::local_time()),
+    : itsStartTime(boost::posix_time::second_clock::local_time()),
       itsReloading(false),
       itsNameSearchCount(0),
       itsLonLatSearchCount(0),

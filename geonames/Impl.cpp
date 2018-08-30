@@ -1528,11 +1528,9 @@ void Engine::Impl::build_geotrees()
 
       auto it = itsGeoTrees.find(keyword);
       if (it == itsGeoTrees.end())
-      {
         it = itsGeoTrees.insert(make_pair(keyword, new GeoTree())).first;
-      }
 
-      for (Spine::LocationPtr ptr : locs)
+      for (const auto &ptr : locs)
         it->second->insert(ptr);
     }
 
@@ -1543,7 +1541,7 @@ void Engine::Impl::build_geotrees()
                 << itsLocations.size() << std::endl;
 
     auto it = itsGeoTrees.insert(std::make_pair(FMINAMES_DEFAULT_KEYWORD, new GeoTree())).first;
-    for (Spine::LocationPtr &ptr : itsLocations)
+    for (const auto &ptr : itsLocations)
       it->second->insert(ptr);
   }
   catch (...)

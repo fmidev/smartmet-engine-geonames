@@ -1100,7 +1100,7 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
       Spine::GeoId geoid = Fmi::stoi(row["id"].as<std::string>());
-      std::string name = row["name"].as<std::string>();
+      auto name = row["name"].as<std::string>();
 
       if (row["timezone"].is_null())
       {
@@ -1109,17 +1109,17 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
       }
       else
       {
-        std::string iso2 = (row["iso2"].is_null() ? "" : row["iso2"].as<std::string>());
-        std::string feature = (row["feature"].is_null() ? "" : row["feature"].as<std::string>());
-        int munip = row["munip"].as<int>();
-        double lon = row["lon"].as<double>();
-        double lat = row["lat"].as<double>();
-        std::string tz = row["timezone"].as<std::string>();
-        int pop = (!row["population"].is_null() ? row["population"].as<int>() : 0);
-        double ele = (!row["elevation"].is_null() ? row["elevation"].as<double>()
-                                                  : std::numeric_limits<float>::quiet_NaN());
+        auto iso2 = (row["iso2"].is_null() ? "" : row["iso2"].as<std::string>());
+        auto feature = (row["feature"].is_null() ? "" : row["feature"].as<std::string>());
+        auto munip = row["munip"].as<int>();
+        auto lon = row["lon"].as<double>();
+        auto lat = row["lat"].as<double>();
+        auto tz = row["timezone"].as<std::string>();
+        auto pop = (!row["population"].is_null() ? row["population"].as<int>() : 0);
+        auto ele = (!row["elevation"].is_null() ? row["elevation"].as<double>()
+                                                : std::numeric_limits<float>::quiet_NaN());
         double dem = (!row["dem"].is_null() ? row["dem"].as<int>() : elevation(lon, lat));
-        std::string admin = (!row["admin1"].is_null() ? row["admin1"].as<std::string>() : "");
+        auto admin = (!row["admin1"].is_null() ? row["admin1"].as<std::string>() : "");
         auto covertype = Fmi::LandCover::Type(
             (!row["landcover"].is_null() ? row["landcover"].as<int>() : coverType(lon, lat)));
 

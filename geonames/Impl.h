@@ -98,7 +98,7 @@ class Engine::Impl : private boost::noncopyable
   boost::movelib::unique_ptr<SuggestCache> itsSuggestCache;
 
  public:
-  Impl(const std::string& configfile, bool reloading);
+  Impl(std::string configfile, bool reloading);
   ~Impl();
 
   void init(bool first_construction);

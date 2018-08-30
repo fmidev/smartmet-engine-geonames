@@ -111,14 +111,14 @@ Engine::Impl::~Impl()
  */
 // ----------------------------------------------------------------------
 
-Engine::Impl::Impl(const std::string &configfile, bool reloading)
+Engine::Impl::Impl(std::string configfile, bool reloading)
     : itsReady(false),
       itsReloading(reloading),
       itsReloadOK(false),
       itsVerbose(false),
       itsMockEngine(false),
       itsRemoveUnderscores(false),
-      itsConfigFile(configfile),
+      itsConfigFile(std::move(configfile)),
       itsHashValue(0),
       itsShutdownRequested(false)
 {

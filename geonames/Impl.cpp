@@ -1320,11 +1320,8 @@ void Engine::Impl::build_geoid_map()
     if (itsVerbose)
       std::cout << "build_geoid_map()" << std::endl;
 
-    assert(itsGeoIdMap.empty());
     for (Spine::LocationPtr &v : itsLocations)
-    {
       itsGeoIdMap.emplace(GeoIdMap::value_type(v->geoid, &v));
-    }
   }
   catch (...)
   {

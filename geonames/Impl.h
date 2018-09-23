@@ -61,37 +61,37 @@ struct LocationPtrDistance
 class Engine::Impl : private boost::noncopyable
 {
  public:
-  typedef std::map<int, std::string> Municipalities;  // kunnat
+  using Municipalities = std::map<int, std::string>;
 
-  typedef std::map<std::string, std::string> Translations;
+  using Translations = std::map<std::string, std::string>;
 
-  typedef std::map<std::string, std::string> Countries;  // valtiot
-  typedef std::map<std::string, Translations> AlternateCountries;
+  using Countries = std::map<std::string, std::string>;
+  using AlternateCountries = std::map<std::string, Translations>;
 
-  typedef std::map<Spine::GeoId, Translations> AlternateNames;  // localized names
-  typedef std::map<int, Translations> AlternateMunicipalities;
+  using AlternateNames = std::map<Spine::GeoId, Translations>;
+  using AlternateMunicipalities = std::map<int, Translations>;
 
-  typedef std::map<Spine::GeoId, Spine::LocationPtr*> GeoIdMap;   // map from
+  using GeoIdMap = std::map<Spine::GeoId, Spine::LocationPtr*>;   // map from
                                                                   // geoid to
                                                                   // location
-  typedef std::map<std::string, Spine::LocationList> KeywordMap;  // geoids belonging to
+  using KeywordMap = std::map<std::string, Spine::LocationList>;  // geoids belonging to
                                                                   // keywords
 
-  typedef Fmi::NearTree<Spine::LocationPtr, LocationPtrDistance> GeoTree;
-  typedef GeoTree* GeoTreePtr;
-  typedef std::map<std::string, GeoTreePtr> GeoTreeMap;  // nearest point searches
+  using GeoTree = Fmi::NearTree<Spine::LocationPtr, LocationPtrDistance>;
+  using GeoTreePtr = boost::movelib::unique_ptr<GeoTree>;
+  using GeoTreeMap = std::map<std::string, GeoTreePtr>;  // nearest point searches
 
   // default name search trees per keyword
-  typedef Fmi::TernarySearchTree<const Spine::Location> TernaryTree;
-  typedef boost::shared_ptr<TernaryTree> TernaryTreePtr;
-  typedef std::map<std::string, TernaryTreePtr> TernaryTreeMap;
+  using TernaryTree = Fmi::TernarySearchTree<const Spine::Location>;
+  using TernaryTreePtr = boost::shared_ptr<TernaryTree>;
+  using TernaryTreeMap = std::map<std::string, TernaryTreePtr>;
 
   // alternate language search trees per language per keyword
-  typedef boost::shared_ptr<TernaryTreeMap> TernaryTreeMapPtr;
-  typedef std::map<std::string, TernaryTreeMapPtr> LangTernaryTreeMap;
+  using TernaryTreeMapPtr = boost::shared_ptr<TernaryTreeMap>;
+  using LangTernaryTreeMap = std::map<std::string, TernaryTreeMapPtr>;
 
   // From search hash key to result
-  typedef Fmi::Cache::Cache<std::size_t, Spine::LocationList> NameSearchCache;
+  using NameSearchCache = Fmi::Cache::Cache<std::size_t, Spine::LocationList>;
 
   // Suggest cache
   using SuggestCache = Fmi::TimedCache::Cache<std::size_t, Spine::LocationList>;
@@ -99,7 +99,7 @@ class Engine::Impl : private boost::noncopyable
 
  public:
   Impl(std::string configfile, bool reloading);
-  ~Impl();
+  ~Impl() = default;
 
   void init(bool first_construction);
 
@@ -147,7 +147,7 @@ class Engine::Impl : private boost::noncopyable
 
   Spine::LocationList to_locationlist(const Locus::Query::return_type& theList);
 
-  void name_cache_status(boost::shared_ptr<Spine::Table> tablePtr,
+  void name_cache_status(const boost::shared_ptr<Spine::Table>& tablePtr,
                          Spine::TableFormatter::Names& theNames);
 
   void shutdown();
@@ -203,8 +203,8 @@ class Engine::Impl : private boost::noncopyable
 
   // priority info
 
-  typedef std::map<std::string, int> Priorities;
-  typedef std::map<std::string, Priorities> FeaturePriorities;
+  using Priorities = std::map<std::string, int>;
+  using FeaturePriorities = std::map<std::string, Priorities>;
 
   int itsNameMatchPriority = 50;
   Priorities itsPopulationPriorities;
@@ -222,7 +222,7 @@ class Engine::Impl : private boost::noncopyable
  private:
   // locale handling for autocomplete
 
-  typedef boost::locale::collator<char> Collator;
+  using Collator = boost::locale::collator<char>;
 
   boost::locale::generator itsLocaleGenerator;
   std::locale itsLocale;

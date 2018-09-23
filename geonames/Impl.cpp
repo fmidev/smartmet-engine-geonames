@@ -86,18 +86,6 @@ namespace Geonames
 {
 // ----------------------------------------------------------------------
 /*!
- * \brief Impl destructor
- */
-// ----------------------------------------------------------------------
-
-Engine::Impl::~Impl()
-{
-  for (auto &pp : itsGeoTrees)
-    delete pp.second;
-}
-
-// ----------------------------------------------------------------------
-/*!
  * \brief Impl constructor
  *
  * 1. Read configfile
@@ -451,8 +439,7 @@ void Engine::Impl::initSuggest(bool threaded)
   {
     try
     {
-      itsMaxDemResolution = itsConfig.lookupValue("maxdemresolution", itsMaxDemResolution);
-
+      itsConfig.lookupValue("maxdemresolution", itsMaxDemResolution);
       itsConfig.lookupValue("database.disable", itsDatabaseDisabled);
 
       if (itsDatabaseDisabled)
@@ -1528,7 +1515,7 @@ void Engine::Impl::build_geotrees()
 
       auto it = itsGeoTrees.find(keyword);
       if (it == itsGeoTrees.end())
-        it = itsGeoTrees.insert(make_pair(keyword, new GeoTree())).first;
+        it = itsGeoTrees.insert(make_pair(keyword, boost::movelib::make_unique<GeoTree>())).first;
 
       for (const auto &ptr : locs)
         it->second->insert(ptr);
@@ -1540,7 +1527,10 @@ void Engine::Impl::build_geotrees()
       std::cout << "build_geotrees: keyword '" << FMINAMES_DEFAULT_KEYWORD << "' of size "
                 << itsLocations.size() << std::endl;
 
-    auto it = itsGeoTrees.insert(std::make_pair(FMINAMES_DEFAULT_KEYWORD, new GeoTree())).first;
+    auto it = itsGeoTrees
+                  .insert(std::make_pair(FMINAMES_DEFAULT_KEYWORD,
+                                         boost::movelib::make_unique<GeoTree>()))
+                  .first;
     for (const auto &ptr : itsLocations)
       it->second->insert(ptr);
   }
@@ -2417,7 +2407,7 @@ Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theO
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::name_cache_status(boost::shared_ptr<Spine::Table> tablePtr,
+void Engine::Impl::name_cache_status(const boost::shared_ptr<Spine::Table> &tablePtr,
                                      Spine::TableFormatter::Names &theNames)
 {
   try

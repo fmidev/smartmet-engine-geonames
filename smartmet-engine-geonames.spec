@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 18.9.23
+Version: 18.9.29
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -15,7 +15,7 @@ BuildRequires: gcc-c++
 BuildRequires: make
 BuildRequires: boost-devel
 BuildRequires: libatomic
-BuildRequires: fmt-devel
+BuildRequires: fmt-devel >= 5.2.0
 BuildRequires: libicu-devel
 BuildRequires: libpqxx
 BuildRequires: libpqxx-devel
@@ -23,10 +23,10 @@ BuildRequires: mariadb-devel
 BuildRequires: mysql++-devel
 BuildRequires: postgresql95-libs
 BuildRequires: postgresql95-devel
-BuildRequires: smartmet-library-gis-devel >= 18.9.17
+BuildRequires: smartmet-library-gis-devel >= 18.9.29
 BuildRequires: smartmet-library-locus-devel >= 18.8.21
-BuildRequires: smartmet-library-macgyver-devel >= 18.9.5
-BuildRequires: smartmet-library-spine-devel >= 18.9.13
+BuildRequires: smartmet-library-macgyver-devel >= 18.9.29
+BuildRequires: smartmet-library-spine-devel >= 18.9.29
 Requires: boost-date-time
 Requires: boost-filesystem
 Requires: boost-iostreams
@@ -34,14 +34,14 @@ Requires: boost-locale
 Requires: boost-system
 Requires: boost-thread
 Requires: libatomic
-Requires: fmt
+Requires: fmt >= 5.2.0
 Requires: libicu
 Requires: mariadb-libs
-Requires: smartmet-library-gis >= 18.9.17
+Requires: smartmet-library-gis >= 18.9.29
 Requires: smartmet-library-locus >= 18.8.21
-Requires: smartmet-library-macgyver >= 18.9.5
-Requires: smartmet-library-spine >= 18.9.13
-Requires: smartmet-server >= 18.9.12
+Requires: smartmet-library-macgyver >= 18.9.29
+Requires: smartmet-library-spine >= 18.9.29
+Requires: smartmet-server >= 18.9.29
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
@@ -83,6 +83,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Sat Sep 29 2018 Mika Heiskanen <mika.heiskanen@fmi.fi> - 18.9.29-1.fmi
+- Upgraded to latest fmt
+
 * Sun Sep 23 2018 Mika Heiskanen <mika.heiskanen@fmi.fi> - 18.9.23-1.fmi
 - Silenced CodeChecker warnings
 

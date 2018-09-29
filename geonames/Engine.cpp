@@ -8,6 +8,7 @@
 #include "Impl.h"
 #include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <fmt/format.h>
+#include <fmt/printf.h>
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
 #include <locus/Query.h>

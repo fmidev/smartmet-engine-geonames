@@ -721,6 +721,10 @@ int main(void)
   opts.configfile = "cnf/reactor.conf";
   opts.parseConfig();
 
+  // Set output unbuffered - otherwise, output is lost in crash (like segfault)
+  cout.setf(ios::unitbuf);
+  cerr.setf(ios::unitbuf);
+
   reactor = new SmartMet::Spine::Reactor(opts);
   names = reinterpret_cast<SmartMet::Engine::Geonames::Engine *>(
       reactor->getSingleton("Geonames", NULL));

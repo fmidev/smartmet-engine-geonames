@@ -5,7 +5,6 @@ Dependencies*
 *.so
 doc/
 obj/
-*Test
 .sconsign.dblite
 *.pb.h
 *.pb.cpp

@@ -21,8 +21,6 @@ BuildRequires: libpqxx
 BuildRequires: libpqxx-devel
 BuildRequires: mariadb-devel
 BuildRequires: mysql++-devel
-BuildRequires: postgresql95-libs
-BuildRequires: postgresql95-devel
 BuildRequires: smartmet-library-gis-devel >= 18.9.29
 BuildRequires: smartmet-library-locus-devel >= 18.8.21
 BuildRequires: smartmet-library-macgyver-devel >= 18.9.29
@@ -45,6 +43,14 @@ Requires: smartmet-server >= 18.9.29
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
+#TestRequires: bzip2-devel
+#TestRequires: make
+#TestRequires: gcc-c++
+#TestRequires: smartmet-library-spine-devel
+#TestRequires: smartmet-library-regression
+#TestRequires: smartmet-test-data-gis
+#TestRequires: smartmet-test-db
+#TestRequires: zlib-devel
 
 %description
 SmartMet geonames engine

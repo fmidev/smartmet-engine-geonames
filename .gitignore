@@ -11,3 +11,11 @@ obj/
 *.pb.cpp
 *.c2t
 compile_commands.json
+
+# Eclipse may create these
+.project
+.cproject
+.settings/
+
+# Distribution files in CI
+dist/

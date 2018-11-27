@@ -78,7 +78,7 @@ endif
 
 LIBS = -L$(libdir) \
 	-lsmartmet-locus \
-	-lpqxx /usr/pgsql-9.5/lib/libpq.a \
+	-lpqxx \
 	-lsmartmet-macgyver \
 	-lsmartmet-gis \
 	-lsmartmet-spine \

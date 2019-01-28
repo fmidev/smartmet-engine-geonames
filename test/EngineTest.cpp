@@ -625,9 +625,15 @@ void lonlatSearch()
     TEST_FAILED("Elevation for Kumpula should be 11, not " +
                 boost::lexical_cast<std::string>(ptrs.front()->elevation));
 
+#ifdef SMALL_DEM_DATA_IN_USE_IN_MASTER
   if (ptrs.front()->dem != 24)
     TEST_FAILED("DEM for Kumpula should be 24, not " +
                 boost::lexical_cast<std::string>(ptrs.front()->dem));
+#else
+  if (ptrs.front()->dem != 11)
+    TEST_FAILED("DEM for Kumpula should be 11, not " +
+                boost::lexical_cast<std::string>(ptrs.front()->dem));
+#endif
 
   // Rooma
 

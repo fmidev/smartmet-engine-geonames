@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 18.12.4
+Version: 19.1.28
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -21,10 +21,10 @@ BuildRequires: libpqxx
 BuildRequires: libpqxx-devel
 BuildRequires: mariadb-devel
 BuildRequires: mysql++-devel
-BuildRequires: smartmet-library-gis-devel >= 18.9.29
+BuildRequires: smartmet-library-gis-devel >= 18.12.10
 BuildRequires: smartmet-library-locus-devel >= 18.11.16
 BuildRequires: smartmet-library-macgyver-devel >= 18.11.24
-BuildRequires: smartmet-library-spine-devel >= 18.12.4
+BuildRequires: smartmet-library-spine-devel >= 18.12.13
 Requires: boost-date-time
 Requires: boost-filesystem
 Requires: boost-iostreams
@@ -35,11 +35,11 @@ Requires: libatomic
 Requires: fmt >= 5.2.0
 Requires: libicu
 Requires: mariadb-libs
-Requires: smartmet-library-gis >= 18.9.29
+Requires: smartmet-library-gis >= 18.12.10
 Requires: smartmet-library-locus >= 18.11.16
 Requires: smartmet-library-macgyver >= 18.11.24
-Requires: smartmet-library-spine >= 18.12.4
-Requires: smartmet-server >= 18.11.8
+Requires: smartmet-library-spine >= 18.12.13
+Requires: smartmet-server >= 18.12.14
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
@@ -89,7 +89,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
-* Upcoming
+* Mon Jan 28 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.1.28-1.fmi
+- Allow the database to be empty to make it easier to build it from scratch while also testing
 - Added "disable_autocomplete" setting, "mock" is deprecated
 
 * Tue Dec  4 2018 Pertti Kinnia <pertti.kinnia@fmi.fi> - 18.12.4-1.fmi

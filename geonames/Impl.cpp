@@ -23,6 +23,11 @@
 #include <stdexcept>
 #include <string>
 
+// We want to allow empty databases in order to be able to build it one part a time while testing
+// the engine too
+
+// #define DISALLOW_EMPTY_DATABASE 1
+
 const int default_port = 5432;
 
 // We'd prefer priority to be a float, but that would require changing Spine::Location.
@@ -935,7 +940,12 @@ void Engine::Impl::read_countries(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
+#ifdef DISALLOW_EMPTY_DATABASE
       throw Spine::Exception(BCP, "FmiNames: Found no PCLI/PCLF/PCLD places from geonames table");
+#else
+      std::cerr << "Warning: FmiNames: Found no PCLI/PCLF/PCLD places from geonames table"
+                << std::endl;
+#endif
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
@@ -978,7 +988,11 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
-      throw Spine::Exception(BCP, "FmiNames: Found no country translations");
+#ifdef DISALLOW_EMPTY_DATABASE
+      throw Spine::Exception(BCP, "Found no country translations");
+#else
+      std::cerr << "Warning: Found no country translations" << std::endl;
+#endif
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
@@ -1078,7 +1092,11 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(sql);
 
     if (res.empty())
-      throw Spine::Exception(BCP, "FmiNames: Found nothing from fminames database");
+#ifdef DISALLOW_EMPTY_DATABASE
+      throw Spine::Exception(BCP, "Found nothing from fminames database");
+#else
+      std::cerr << "Warning: Found nothing from fminames database" << std::endl;
+#endif
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
@@ -1202,7 +1220,11 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(sql);
 
     if (res.empty())
-      throw Spine::Exception(BCP, "FmiNames: Found nothing from alternate_fminames database");
+#ifdef DISALLOW_EMPTY_DATABASE
+      throw Spine::Exception(BCP, "Found nothing from alternate_geonames database");
+#else
+      std::cerr << "Warning: Found nothing from alternate_geonames database" << std::endl;
+#endif
 
     if (itsVerbose)
       std::cout << "read_alternate_geonames: " << res.size() << " translations" << std::endl;

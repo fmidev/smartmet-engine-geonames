@@ -115,13 +115,10 @@ INCLUDES := -Iinclude $(INCLUDES)
 
 # The rules
 
-all: configtest objdir $(LIBFILE)
+all: objdir $(LIBFILE)
 debug: all
 release: all
 profile: all
-
-configtest:
-	@if [ -x "$$(command -v cfgvalidate)" ]; then cfgvalidate -v test/cnf/geonames.conf; fi
 
 $(LIBFILE): $(OBJS)
 	$(CXX) $(CFLAGS) -shared -rdynamic -o $(LIBFILE) $(OBJS) $(LIBS)

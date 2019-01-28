@@ -155,9 +155,9 @@ class Engine::Impl : private boost::noncopyable
 
   bool isSuggestReady() const;
 
-  bool itsReady;
-  bool itsReloading;
-  bool itsReloadOK;
+  bool itsReady = false;
+  bool itsReloading = false;
+  bool itsReloadOK = false;
   std::string itsReloadError;
   GeoTreeMap itsGeoTrees;
 
@@ -182,10 +182,10 @@ class Engine::Impl : private boost::noncopyable
 
   const libconfig::Setting& lookup_database(const std::string& setting,
                                             const std::string& name) const;
-  bool itsVerbose;
+  bool itsVerbose = false;
   bool itsDatabaseDisabled = false;
-  bool itsMockEngine;
-  bool itsRemoveUnderscores;
+  bool itsAutocompleteDisabled = false;
+  bool itsRemoveUnderscores = false;
   const std::string itsConfigFile;
   libconfig::Config itsConfig;
 
@@ -236,9 +236,9 @@ class Engine::Impl : private boost::noncopyable
   boost::shared_ptr<Fmi::LandCover> itsLandCover;
 
   // Hash value
-  std::size_t itsHashValue;
+  std::size_t itsHashValue = 0;
 
-  bool itsShutdownRequested;
+  bool itsShutdownRequested = false;
 
   // We store these as data members to avoid calling libconfig which
   // uses exceptions for normal control flow

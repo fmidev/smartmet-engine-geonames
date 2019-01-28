@@ -89,6 +89,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Upcoming
+- Added "disable_autocomplete" setting, "mock" is deprecated
+
 * Tue Dec  4 2018 Pertti Kinnia <pertti.kinnia@fmi.fi> - 18.12.4-1.fmi
 - Repackaged since Spine::Table size changed
 

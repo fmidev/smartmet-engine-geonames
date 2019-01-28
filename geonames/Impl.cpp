@@ -100,15 +100,7 @@ namespace Geonames
 // ----------------------------------------------------------------------
 
 Engine::Impl::Impl(std::string configfile, bool reloading)
-    : itsReady(false),
-      itsReloading(reloading),
-      itsReloadOK(false),
-      itsVerbose(false),
-      itsMockEngine(false),
-      itsRemoveUnderscores(false),
-      itsConfigFile(std::move(configfile)),
-      itsHashValue(0),
-      itsShutdownRequested(false)
+    : itsReloading(reloading), itsConfigFile(std::move(configfile))
 {
   try
   {
@@ -460,7 +452,7 @@ void Engine::Impl::initSuggest(bool threaded)
         read_countries(conn);
         read_alternate_countries(conn);
 
-        if (!itsMockEngine)
+        if (!itsAutocompleteDisabled)
         {
           if (handleShutDownRequest())
             return;
@@ -711,7 +703,11 @@ void Engine::Impl::read_config()
       }
 
       itsConfig.lookupValue("verbose", itsVerbose);
-      itsConfig.lookupValue("mock", itsMockEngine);
+
+      // "mock" is deprecated
+      if (!itsConfig.lookupValue("disable_autocomplete", itsAutocompleteDisabled))
+        itsConfig.lookupValue("mock", itsAutocompleteDisabled);
+
       itsConfig.lookupValue("remove_underscores", itsRemoveUnderscores);
 
       read_config_priorities();

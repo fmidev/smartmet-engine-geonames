@@ -90,8 +90,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %changelog
 * Mon Jan 28 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.1.28-1.fmi
-- Allow the database to be empty to make it easier to build it from scratch while also testing
 - Added "disable_autocomplete" setting, "mock" is deprecated
+- Added "strict" setting with default value true
+- Allow the database to be empty in non-strict mode to make it easier to build it from scratch while also testing
 
 * Tue Dec  4 2018 Pertti Kinnia <pertti.kinnia@fmi.fi> - 18.12.4-1.fmi
 - Repackaged since Spine::Table size changed

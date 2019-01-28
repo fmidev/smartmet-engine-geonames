@@ -185,6 +185,7 @@ class Engine::Impl : private boost::noncopyable
   bool itsVerbose = false;
   bool itsDatabaseDisabled = false;
   bool itsAutocompleteDisabled = false;
+  bool itsStrict = true;
   bool itsRemoveUnderscores = false;
   const std::string itsConfigFile;
   libconfig::Config itsConfig;

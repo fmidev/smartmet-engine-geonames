@@ -492,7 +492,34 @@ Spine::LocationList Engine::suggest(const std::string& thePattern,
     ++itsSuggestCount;
 
     auto mycopy = boost::atomic_load(&impl);
-    return mycopy->suggest(thePattern, theLang, theKeyword, thePage, theMaxResults);
+    return mycopy->suggest(thePattern, theLang, theKeyword, thePage, theMaxResults, false);
+  }
+  catch (...)
+  {
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Find alphabetical completions
+ */
+// ----------------------------------------------------------------------
+
+Spine::LocationList Engine::suggestDuplicates(const std::string& thePattern,
+                                              const std::string& theLang,
+                                              const std::string& theKeyword,
+                                              unsigned int thePage,
+                                              unsigned int theMaxResults) const
+{
+  try
+  {
+    Spine::LocationList ret;
+
+    ++itsSuggestCount;
+
+    auto mycopy = boost::atomic_load(&impl);
+    return mycopy->suggest(thePattern, theLang, theKeyword, thePage, theMaxResults, true);
   }
   catch (...)
   {

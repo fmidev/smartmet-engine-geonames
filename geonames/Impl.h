@@ -118,7 +118,8 @@ class Engine::Impl : private boost::noncopyable
                               const std::string& lang,
                               const std::string& keyword,
                               unsigned int page,
-                              unsigned int maxresults) const;
+                              unsigned int maxresults,
+                              bool duplicates) const;
 
   Spine::LocationList name_search(const Locus::QueryOptions& theOptions,
                                   const std::string& theName);
@@ -285,7 +286,8 @@ class Engine::Impl : private boost::noncopyable
                         const std::string& lang,
                         const std::string& keyword,
                         unsigned int page,
-                        unsigned int maxresults) const;
+                        unsigned int maxresults,
+                        bool duplicates) const;
 
 };  // Impl
 

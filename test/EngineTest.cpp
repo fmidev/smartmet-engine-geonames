@@ -400,6 +400,127 @@ void suggest()
   TEST_PASSED();
 }
 
+void suggest_duplicates()
+{
+  // Wait for autocomplete data to be loaded
+  // Technically this is not needed as long as we run the "nearest" test first,
+  // since internally the engine will then wait for autocomplete to be ready.
+
+  while (!names->isSuggestReady())
+  {
+    boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+  }
+
+  SmartMet::Spine::LocationList ptrs;
+
+  // Match he
+
+  ptrs = names->suggestDuplicates("he");
+
+  if (ptrs.size() != 15)
+    TEST_FAILED("Should find 15 places starting with 'he', not " +
+                boost::lexical_cast<string>(ptrs.size()));
+
+  if (ptrs.front()->name != "Helsinki")
+    TEST_FAILED("First match for 'he' should be Helsinki PPLC, not " + ptrs.front()->name);
+  if (ptrs.front()->area != "")
+    TEST_FAILED("Helsinki area should be ''");
+  if (ptrs.front()->country != "Suomi")
+    TEST_FAILED("Helsinki country should be 'Finland'");
+
+  ptrs.pop_front();
+  if (ptrs.front()->name != "Helsinki")
+    TEST_FAILED("Second match for 'he' should be Helsinki ADM3, not " + ptrs.front()->name);
+
+  // Match hAm
+
+  ptrs = names->suggestDuplicates("hAm");
+  if (ptrs.size() != 15)
+    TEST_FAILED("Should find 15 places starting with 'hAm', not " +
+                boost::lexical_cast<string>(ptrs.size()));
+  if (ptrs.front()->name != "Hamina")
+    TEST_FAILED("First match for 'hAm' should be Hamina, not " + ptrs.front()->name);
+
+  // Match Äänekoski
+
+  ptrs = names->suggestDuplicates("Äänekoski");
+  if (ptrs.size() < 2)
+    TEST_FAILED("Should find at least 2 places starting with 'Äänekoski', not " +
+                boost::lexical_cast<string>(ptrs.size()));
+  if (ptrs.front()->name != "Äänekoski")
+    TEST_FAILED("First match for 'Äänekoski' should be Äänekoski, not " + ptrs.front()->name);
+
+  ptrs = names->suggestDuplicates("Ääne");
+  if (ptrs.size() < 2)
+    TEST_FAILED("Should find at least 2 places starting with 'Ääne', not " +
+                boost::lexical_cast<string>(ptrs.size()));
+  if (ptrs.front()->name != "Äänekoski")
+    TEST_FAILED("First match for 'Ääne' should be Äänekoski, not " + ptrs.front()->name);
+
+  // Match helsinki in swedish
+
+  ptrs = names->suggestDuplicates("helsinki", "sv");
+
+  if (ptrs.size() < 2)
+    TEST_FAILED("Should find at least 2 places starting with 'helsinki', not " +
+                boost::lexical_cast<string>(ptrs.size()));
+
+  // Match Åbo in Swedish
+
+  ptrs = names->suggestDuplicates("Åb", "sv");
+
+  if (ptrs.size() < 7)
+    TEST_FAILED("Should find at least 7 places starting with 'Åbo', not " +
+                boost::lexical_cast<string>(ptrs.size()));
+
+  if (ptrs.front()->name != "Åbo")
+    TEST_FAILED("Should find Åbo with lang=sv for 'Åbo'");
+
+  // Match Helsingfors in Swedish
+
+  ptrs = names->suggestDuplicates("helsi", "sv");
+
+  if (ptrs.size() != 15)
+    TEST_FAILED("Should find 15 place starting with 'helsi' in lang=sv, not " +
+                boost::lexical_cast<string>(ptrs.size()));
+
+  if (ptrs.front()->name != "Helsingfors")
+    TEST_FAILED("Should find Helsingfors with lang=sv for 'helsi");
+
+  // Test words within location names
+
+  ptrs = names->suggestDuplicates("York");
+  if (ptrs.size() < 2)
+    TEST_FAILED("Should find at least 1 York and New York");
+  if (ptrs.front()->name != "York")
+    TEST_FAILED("First match should be York exactly, not '" + ptrs.front()->name + "'");
+  ptrs.pop_front();
+  if (ptrs.front()->name != "New York")
+    TEST_FAILED("Second match should be New York, not '" + ptrs.front()->name + "'");
+
+  ptrs = names->suggestDuplicates("Orlea");
+  if (ptrs.size() < 2)
+    TEST_FAILED("Should find at least 2 *Orlea* matches");
+  if (ptrs.front()->name != "New Orleans")
+    TEST_FAILED("First match should be New Orleans, not '" + ptrs.front()->name + "'");
+  ptrs.pop_front();
+  if (ptrs.front()->name != "Orléans")
+    TEST_FAILED("Second match should be Orléans, not '" + ptrs.front()->name + "'");
+
+  // Kaisaniemi station
+
+  ptrs = names->suggestDuplicates("Kaisaniemi", "fi", "all");
+  if (ptrs.size() < 2)
+    TEST_FAILED("Should find at least 2 matches for Kaisaniemi with keyword 'all'");
+  if (ptrs.front()->feature != "PPL")
+    TEST_FAILED("First match should PPL, not '" + ptrs.front()->feature + "'");
+  ptrs.pop_front();
+  if (ptrs.front()->feature != "SYNOP")
+    TEST_FAILED("Second match should be SYNOP, not '" + ptrs.front()->feature + "'");
+
+  TEST_PASSED();
+}
+
 // ----------------------------------------------------------------------
 
 void nameSearch()
@@ -714,6 +835,7 @@ class tests : public tframe::tests
     // Test the next last since they require autocomplete to be initialized
     TEST(keywordSearch);
     TEST(suggest);
+    TEST(suggest_duplicates);
     // TEST(reload);
   }
 

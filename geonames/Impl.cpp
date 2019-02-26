@@ -467,7 +467,11 @@ void Engine::Impl::initSuggest(bool threaded)
 
           if (handleShutDownRequest())
             return;
-          read_alternate_geonames(conn);
+          build_geoid_map();  // requires read_geonames
+
+          if (handleShutDownRequest())
+            return;
+          read_alternate_geonames(conn);  // requires build_geoid_map
 
           if (handleShutDownRequest())
             return;
@@ -475,7 +479,6 @@ void Engine::Impl::initSuggest(bool threaded)
 
           if (handleShutDownRequest())
             return;
-          build_geoid_map();  // requires read_geonames
 
           if (handleShutDownRequest())
             return;
@@ -1205,14 +1208,14 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
 
 #if 0
     // Works only in MySQL
-    sql.append(" GROUP BY a.id HAVING count(*) > 1 ORDER BY a.geonames_id, a.priority ASC, a.preferred DESC, length ASC, name ASC");
+    sql.append(" GROUP BY a.id HAVING count(*) > 1 ORDER BY a.geonames_id, a.language, a.priority ASC, a.preferred DESC, length ASC, name ASC");
 #else
     // PostGreSQL requires all the names to be mentioned
     sql.append(
         " GROUP BY "
         "a.id,a.geonames_id,a.name,a.language,a.priority,a.preferred "
         "HAVING count(*) > 0 "
-        "ORDER BY a.geonames_id, a.priority ASC, a.preferred DESC, "
+        "ORDER BY a.geonames_id, a.language, a.priority ASC, a.preferred DESC, "
         "length ASC, name ASC");
 #endif
 
@@ -1232,19 +1235,39 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
     if (itsVerbose)
       std::cout << "read_alternate_geonames: " << res.size() << " translations" << std::endl;
 
+    // We assume sort order is geoid,language for the ifs to work
+    Spine::GeoId last_handled_geoid = 0;
+    std::string last_lang = "";
+
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
       Spine::GeoId geoid = Fmi::stoi(row["geonames_id"].as<std::string>());
       std::string name = row["name"].as<std::string>();
       std::string lang = row["language"].as<std::string>();
 
-      auto it = itsAlternateNames.find(geoid);
-      if (it == itsAlternateNames.end())
+      Fmi::ascii_tolower(lang);
+
+      // Handle only the first translation for each place
+      if (geoid == last_handled_geoid && lang == last_lang)
+        continue;
+
+      last_handled_geoid = geoid;
+      last_lang = lang;
+
+      // Discard translations which do not change anything to save memory and to avoid
+      // duplicates more easily
+
+      auto idinfo = itsGeoIdMap.find(geoid);
+      if (idinfo != itsGeoIdMap.end())
       {
-        it = itsAlternateNames.insert(make_pair(geoid, Translations())).first;
+        auto locptr = *idinfo->second;
+        if (locptr->name == name)
+          continue;
       }
 
-      Fmi::ascii_tolower(lang);
+      auto it = itsAlternateNames.find(geoid);
+      if (it == itsAlternateNames.end())
+        it = itsAlternateNames.insert(make_pair(geoid, Translations())).first;
 
       auto &translations = it->second;
 
@@ -2064,7 +2087,26 @@ bool closeEnough(const Spine::LocationPtr &a, const Spine::LocationPtr &b)
 {
   try
   {
+    // testing a->geoid == b->geoid would be redundant here
     return (((a->name == b->name)) && (a->iso2 == b->iso2) && (a->area == b->area));
+  }
+  catch (...)
+  {
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Definition of unique for Spine::LocationPtr*
+ */
+// ----------------------------------------------------------------------
+
+bool reallyClose(const Spine::LocationPtr &a, const Spine::LocationPtr &b)
+{
+  try
+  {
+    return (a->geoid == b->geoid);
   }
   catch (...)
   {
@@ -2105,7 +2147,8 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
                                           const std::string &lang,
                                           const std::string &keyword,
                                           unsigned int page,
-                                          unsigned int maxresults) const
+                                          unsigned int maxresults,
+                                          bool duplicates) const
 {
   if (!itsSuggestReadyFlag)
     throw Spine::Exception(BCP, "Attempt to use geonames suggest before it is ready!");
@@ -2113,7 +2156,7 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
   try
   {
     // Try using the cache first
-    auto key = cache_key(pattern, lang, keyword, page, maxresults);
+    auto key = cache_key(pattern, lang, keyword, page, maxresults, duplicates);
     auto cached_result = itsSuggestCache->find(key);
     if (cached_result)
       return *cached_result;
@@ -2169,10 +2212,13 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
       }
     }
 
-    // Sort duplicates away, language specific trees may create them
+    // Remove duplicates
 
     ret.sort(basicSort);
-    ret.unique(closeEnough);
+    if (!duplicates)
+      ret.unique(closeEnough);  // remove duplicate name,area matches
+    else
+      ret.unique(reallyClose);  // remove duplicate geoids
 
     // Sort based on priorities
 
@@ -2495,13 +2541,15 @@ std::size_t Engine::Impl::cache_key(const std::string &pattern,
                                     const std::string &lang,
                                     const std::string &keyword,
                                     unsigned int page,
-                                    unsigned int maxresults) const
+                                    unsigned int maxresults,
+                                    bool duplicates) const
 {
   auto hash = boost::hash_value(pattern);
   boost::hash_combine(hash, boost::hash_value(lang));
   boost::hash_combine(hash, boost::hash_value(keyword));
   boost::hash_combine(hash, boost::hash_value(page));
   boost::hash_combine(hash, boost::hash_value(maxresults));
+  boost::hash_combine(hash, boost::hash_value(duplicates));
   return hash;
 }
 

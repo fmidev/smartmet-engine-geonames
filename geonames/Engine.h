@@ -137,6 +137,13 @@ class Engine : public Spine::SmartMetEngine
                               unsigned int thePage = 0,
                               unsigned int theMaxResults = fminames_default_maxresults) const;
 
+  Spine::LocationList suggestDuplicates(
+      const std::string& thePattern,
+      const std::string& theLang = "fi",
+      const std::string& theKeyword = FMINAMES_DEFAULT_KEYWORD,
+      unsigned int thePage = 0,
+      unsigned int theMaxResults = fminames_default_maxresults) const;
+
   // find name of country
 
   std::string countryName(const std::string& theIso2, const std::string& theLang = "fi") const;

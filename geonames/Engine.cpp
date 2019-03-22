@@ -615,6 +615,9 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     std::string language = default_language;
     language = Spine::optional_string(theReq.getParameter("lang"), language);
 
+    // Default feature list is empty, meaning Locus defaults will be used
+    std::string features = Spine::optional_string(theReq.getParameter("feature"), "");
+
     // Maximum distance for latlon searches
 
     double maxdistance = default_maxdistance;
@@ -811,7 +814,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
           double lon = Fmi::stod(parts[j]);
           double lat = Fmi::stod(latstr);
           std::string tag = parts[j] + ',' + parts[j + 1];
-          Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
+          Spine::LocationPtr loc = this->featureSearch(lon, lat, language, features, maxdistance);
           std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
           loc2->radius = radius;
           loc2->type = Spine::Location::CoordinatePoint;
@@ -836,7 +839,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
           double lon = Fmi::stod(parts[j]);
           double lat = Fmi::stod(latstr);
           std::string tag = parts[j] + ',' + parts[j + 1];
-          Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
+          Spine::LocationPtr loc = this->featureSearch(lon, lat, language, features, maxdistance);
           std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
           loc2->type = Spine::Location::CoordinatePoint;
           loc2->radius = radius;
@@ -864,7 +867,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
           double lat = Fmi::stod(latstr);
           std::swap(lon, lat);
           std::string tag = parts[j] + ',' + parts[j + 1];
-          Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
+          Spine::LocationPtr loc = this->featureSearch(lon, lat, language, features, maxdistance);
           std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
           loc2->type = Spine::Location::CoordinatePoint;
           loc2->radius = radius;
@@ -891,7 +894,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
           double lat = Fmi::stod(latstr);
           std::swap(lon, lat);
           std::string tag = parts[j] + ',' + parts[j + 1];
-          Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
+          Spine::LocationPtr loc = this->featureSearch(lon, lat, language, features, maxdistance);
           std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
           loc2->type = Spine::Location::CoordinatePoint;
           loc2->radius = radius;
@@ -981,7 +984,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         double lon = Fmi::stod(lonStr);
         double lat = Fmi::stod(latStr);
 
-        Spine::LocationPtr loc = this->lonlatSearch(lon, lat, language, maxdistance);
+        Spine::LocationPtr loc = this->featureSearch(lon, lat, language, features, maxdistance);
         std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
         loc2->type = Spine::Location::Wkt;
         loc2->name = wkt;

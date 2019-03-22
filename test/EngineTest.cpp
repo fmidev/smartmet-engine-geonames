@@ -817,6 +817,33 @@ void reload()
 
 // ----------------------------------------------------------------------
 
+void featureSearch()
+{
+  // Kumpula, Helsinki
+
+  auto ptr = names->featureSearch(24.9642, 60.2089, "fi", "SYNOP");
+  if (ptr->feature != "SYNOP")
+    TEST_FAILED("Did not find a SYNOP station");
+  if (ptr->name != "Kumpula")
+    TEST_FAILED("Did not find Kumpula, Helsinki but " + ptr->name);
+
+  ptr = names->featureSearch(24.9642, 60.2089, "fi", "PPL");
+  if (ptr->name != "Hermanni")
+    TEST_FAILED("Did not find Hermanni PPL, Helsinki but " + ptr->name);
+  if (ptr->feature != "PPL")
+    TEST_FAILED("Did not find hermanni PPL, Helsinki but " + ptr->name);
+
+  ptr = names->featureSearch(24.9642, 60.2089, "fi", "PPL,PPLX");
+  if (ptr->name != "Kumpula")
+    TEST_FAILED("Did not find Kumpula, Helsinki but " + ptr->name);
+  if (ptr->feature != "PPLX")
+    TEST_FAILED("Did not find Kumpula PPLX, Helsinki but " + ptr->name);
+
+  TEST_PASSED();
+}
+
+// ----------------------------------------------------------------------
+
 // The actual test driver
 class tests : public tframe::tests
 {
@@ -831,6 +858,7 @@ class tests : public tframe::tests
     TEST(nearest);
     TEST(nearestplaces);
     TEST(countryName);
+    TEST(featureSearch);
 
     // Test the next last since they require autocomplete to be initialized
     TEST(keywordSearch);

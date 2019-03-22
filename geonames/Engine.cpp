@@ -265,6 +265,22 @@ Spine::LocationPtr Engine::lonlatSearch(double theLongitude,
                                         const std::string& theLang,
                                         double theMaxDistance) const
 {
+  std::string features = "";  // use defaults
+  return featureSearch(theLongitude, theLatitude, theLang, features, theMaxDistance);
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Do a simple lonlat search
+ */
+// ----------------------------------------------------------------------
+
+Spine::LocationPtr Engine::featureSearch(double theLongitude,
+                                         double theLatitude,
+                                         const std::string& theLang,
+                                         const std::string& theFeatures,
+                                         double theMaxDistance) const
+{
   try
   {
     // Search the location only if there is a search distance
@@ -276,6 +292,8 @@ Spine::LocationPtr Engine::lonlatSearch(double theLongitude,
       opts.SetSearchVariants(true);
       opts.SetLanguage(theLang);
       opts.SetResultLimit(1);
+      if (!theFeatures.empty())
+        opts.SetFeatures(theFeatures);
 
       Spine::LocationList result = lonlatSearch(opts,
                                                 boost::numeric_cast<float>(theLongitude),

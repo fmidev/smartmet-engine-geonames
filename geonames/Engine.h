@@ -101,6 +101,12 @@ class Engine : public Spine::SmartMetEngine
                                   const std::string& theLang,
                                   double theMaxDistance = Locus::Query::default_radius) const;
 
+  Spine::LocationPtr featureSearch(double theLongitude,
+                                   double theLatitude,
+                                   const std::string& theLang,
+                                   const std::string& theFeatures,
+                                   double theMaxDistance = Locus::Query::default_radius) const;
+
   Spine::LocationPtr idSearch(long theGeoID, const std::string& theLang) const;
 
   // Find locations with options

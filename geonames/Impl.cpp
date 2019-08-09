@@ -5,10 +5,13 @@
 // ======================================================================
 
 #include "Impl.h"
+
 #include "Engine.h"
+
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/asio/ip/host_name.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/locale.hpp>
 #include <boost/thread.hpp>
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
@@ -16,9 +19,11 @@
 #include <spine/Exception.h>
 #include <spine/Location.h>
 #include <sys/types.h>
+
 #include <cassert>
 #include <cmath>
 #include <csignal>
+#include <errno.h>  // iconv uses errno
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -89,16 +94,69 @@ namespace Geonames
 {
 // ----------------------------------------------------------------------
 /*!
+ * \brief Characterset Conversion
+ *
+ * Note: boost::locale::from_utf does not do translitteration for ASCII
+ * or ASCII//TRANSLIT
+ */
+// ----------------------------------------------------------------------
+
+std::string Engine::Impl::iconvName(const std::string &name) const
+{
+  std::vector<char> input(name.begin(), name.end());
+
+  char *addr = &input[0];
+  size_t len = name.size();
+  size_t outlen = 0;
+
+  std::vector<char> output(1024);  // should be enough for all location names
+  char *outptr = nullptr;
+
+  std::string result;
+
+  while (len > 0)
+  {
+    outptr = &output[0];
+    outlen = output.size();
+    size_t n = ::iconv(itsIconv, &addr, &len, &outptr, &outlen);
+
+    if (n == (size_t)-1)
+    {
+      result = "";  // do not permit question marks or similar kludges in autocomplete
+      break;
+    }
+    result.append(&output[0], output.size() - outlen);
+  }
+
+  return result;
+}
+// ---------------------------------------------------------------------
+/*!
+ * \brief Impl destructor
+ */
+// ----------------------------------------------------------------------
+
+Engine::Impl::~Impl()
+{
+  if (itsAsciiAutocomplete)
+    iconv_close(itsIconv);
+}
+
+// ----------------------------------------------------------------------
+/*!
  * \brief Impl constructor
  *
  * 1. Read configfile
  * 2. Read locations from DB
  * 3. Read keywords from DB
- * 4. For each keyword and the full db
- *    a) Construct map of geoids
- *    b) Construct neartree of locations using geoid map
- *    c) Construct autocomplete search tree using geoid map
- * 5. Construct map from keywords to above constructs
+ * 4. For each keyword and the
+ * full db a) Construct map of
+ * geoids b) Construct neartree
+ * of locations using geoid map
+ *    c) Construct autocomplete
+ * search tree using geoid map
+ * 5. Construct map from
+ * keywords to above constructs
  */
 // ----------------------------------------------------------------------
 
@@ -128,6 +186,19 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
       const libconfig::Setting &locale = itsConfig.lookup("locale");
       itsLocale = itsLocaleGenerator(locale);
       itsCollator = &std::use_facet<Collator>(itsLocale);
+
+      // Optional second encoding for autocomplete, usually ASCII
+
+      itsConfig.lookupValue("ascii_autocomplete", itsAsciiAutocomplete);
+
+      if (itsAsciiAutocomplete)
+      {
+        itsIconv = ::iconv_open("ascii//translit", "utf-8");
+        if (itsIconv == (iconv_t)-1)
+          throw std::runtime_error(
+              "Initializing iconv from UTF-8 to ascii//translit failed. Set "
+              "ascii_autocomplete=false to solve the problem.");
+      }
     }
     catch (const libconfig::SettingException &e)
     {
@@ -142,7 +213,7 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
   {
     throw Spine::Exception::Trace(BCP, "Constructor failed!");
   }
-}
+}  // namespace Geonames
 
 // ----------------------------------------------------------------------
 /*!
@@ -258,27 +329,21 @@ std::string Engine::Impl::preprocess_name(const std::string &name) const
   }
 }
 
-// ----------------------------------------------------------------------
+// ---------------------------------------------------------
 /*!
- * \brief Transform pattern to partial normal forms
- *
- * 1. Tranform to normal form
- * 2. Build partial matches by splitting from potential word boundaries
- *    For example: Ho Chi Minh City ==> Ho Chi Minh City, Chi Minh City,
- *                                      Minh City and City
+ * \brief Return partial normal forms for to_treewords
  */
 // ----------------------------------------------------------------------
-
-std::list<std::string> Engine::Impl::to_treewords(const std::string &name,
-                                                  const std::string &area) const
+//
+void Engine::Impl::add_treewords(std::set<std::string> &words,
+                                 const std::string &name,
+                                 const std::string &area) const
 {
   try
   {
-    namespace bb = boost::locale::boundary;
-
-    std::list<std::string> ret;
-
     // Create a mapping
+
+    namespace bb = boost::locale::boundary;
 
     bb::ssegment_index map(bb::word, name.begin(), name.end(), itsLocale);
 
@@ -299,11 +364,51 @@ std::list<std::string> Engine::Impl::to_treewords(const std::string &name,
 
           // Normalize for collation. Note that we collate area and comma too
           // just like when searching for a "name,area"
-          ret.emplace_back(to_treeword(subname, area));
+          words.insert(to_treeword(subname, area));
         }
       }
     }
+  }
+  catch (...)
+  {
+    throw Spine::Exception::Trace(BCP, "Operation failed!");
+  }
+}
 
+// ----------------------------------------------------------------------
+/*!
+ * \brief Transform pattern to partial normal forms
+ *
+ * 1. Tranform to normal form
+ * 2. Build partial matches by splitting from potential
+ * word boundaries For example: Ho Chi Minh City ==> Ho
+ * Chi Minh City, Chi Minh City, Minh City and City
+ */
+// ----------------------------------------------------------------------
+
+std::set<std::string> Engine::Impl::to_treewords(const std::string &name,
+                                                 const std::string &area) const
+{
+  try
+  {
+    std::set<std::string> ret;
+    add_treewords(ret, name, area);
+
+    if (!itsAsciiAutocomplete)
+      return ret;
+
+    // Try a second encoding
+
+    auto name2 = iconvName(name);
+
+    // Does not do proper transliteration:
+    // auto name2 = boost::locale::conv::from_utf(name, itsExtraEncoding);
+
+    if (name2 == name)
+      return ret;
+
+    // It differs, must have made translitterations then
+    add_treewords(ret, name2, area);
     return ret;
   }
   catch (...)
@@ -1615,11 +1720,11 @@ void Engine::Impl::build_ternarytrees()
       for (Spine::LocationPtr &ptr : locs)
       {
         std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
-        auto names = to_treewords(preprocess_name(ptr->name), specifier);
+        auto simple_name = preprocess_name(ptr->name);
+
+        auto names = to_treewords(simple_name, specifier);
         for (const auto &name : names)
-        {
           it->second->insert(name, ptr);
-        }
       }
     }
 
@@ -1635,11 +1740,11 @@ void Engine::Impl::build_ternarytrees()
     for (Spine::LocationPtr &ptr : itsLocations)
     {
       std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
-      auto names = to_treewords(preprocess_name(ptr->name), specifier);
+      auto simple_name = preprocess_name(ptr->name);
+
+      auto names = to_treewords(simple_name, specifier);
       for (const auto &name : names)
-      {
         it->second->insert(name, ptr);
-      }
     }
   }
   catch (...)
@@ -1739,15 +1844,11 @@ void Engine::Impl::build_lang_ternarytrees_all()
         auto &tree = *tit->second;
 
         std::string specifier = loc->area + "," + Fmi::to_string(loc->geoid);
-        auto treenames = to_treewords(preprocess_name(name), specifier);
+        auto simple_name = preprocess_name(name);
 
-        for (const auto &treename : treenames)
-        {
-          if (!tree.insert(treename, *git->second))
-          {
-            // std::cout << "Failed to insert " << treename << std::endl;
-          }
-        }
+        auto names = to_treewords(simple_name, specifier);
+        for (const auto &treename : names)
+          tree.insert(treename, *git->second);
       }
     }
   }
@@ -1833,16 +1934,13 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
           TernaryTree &tree = *tit->second;
 
           // TODO(mheiskan): translate area
-          std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
-          auto names = to_treewords(preprocess_name(translation), specifier);
 
+          std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
+          auto simple_name = preprocess_name(translation);
+
+          auto names = to_treewords(simple_name, specifier);
           for (const auto &name : names)
-          {
-            if (!tree.insert(name, loc))
-            {
-              // std::cout << "Failed to insert " << name << std::endl;
-            }
-          }
+            tree.insert(name, loc);
         }
       }
 

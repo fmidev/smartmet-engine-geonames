@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Engine.h"
+
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/locale.hpp>
 #include <boost/locale/collator.hpp>
@@ -18,7 +19,9 @@
 #include <macgyver/NearTree.h>
 #include <macgyver/TernarySearchTree.h>
 #include <macgyver/TimedCache.h>
+
 #include <cmath>
+#include <iconv.h>
 #include <libconfig.h++>
 #include <list>
 #include <map>
@@ -99,7 +102,7 @@ class Engine::Impl : private boost::noncopyable
 
  public:
   Impl(std::string configfile, bool reloading);
-  ~Impl() = default;
+  ~Impl();
 
   void init(bool first_construction);
 
@@ -167,7 +170,11 @@ class Engine::Impl : private boost::noncopyable
   std::string preprocess_name(const std::string& name) const;
 
   // Convert an autocomplete name to all possible partial unaccented matches
-  std::list<std::string> to_treewords(const std::string& name, const std::string& area) const;
+  std::set<std::string> to_treewords(const std::string& name, const std::string& area) const;
+  void add_treewords(std::set<std::string>& words,
+                     const std::string& name,
+                     const std::string& area) const;
+  std::string iconvName(const std::string& name) const;
 
   // Convert an autocomplete name to all possible unaccented matches
   std::string to_treeword(const std::string& name) const;
@@ -227,8 +234,12 @@ class Engine::Impl : private boost::noncopyable
   using Collator = boost::locale::collator<char>;
 
   boost::locale::generator itsLocaleGenerator;
+
   std::locale itsLocale;
   const Collator* itsCollator = nullptr;  // perhaps should delete in destructor?
+
+  bool itsAsciiAutocomplete = false;
+  iconv_t itsIconv;  // Note:: boost::locale from_utf does not handle translitteration
 
   // DEM data
   boost::shared_ptr<Fmi::DEM> itsDEM;

@@ -5,7 +5,9 @@
 // ======================================================================
 
 #include "Engine.h"
+
 #include "Impl.h"
+
 #include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <fmt/format.h>
 #include <fmt/printf.h>
@@ -19,6 +21,7 @@
 #include <spine/Exception.h>
 #include <spine/Location.h>
 #include <spine/TableFormatterOptions.h>
+
 #include <algorithm>
 #include <iterator>
 #include <limits>
@@ -303,24 +306,12 @@ Spine::LocationPtr Engine::featureSearch(double theLongitude,
       if (!result.empty())
       {
         // Keep original coordinates, dem and landcover for the named location we found
-        Spine::LocationPtr loc = result.front();
-
-        return Spine::LocationPtr(
-            new Spine::Location(loc->geoid,
-                                loc->name,
-                                loc->iso2,
-                                loc->municipality,
-                                loc->area,
-                                loc->feature,
-                                loc->country,
-                                theLongitude,
-                                theLatitude,
-                                loc->timezone,
-                                loc->population,
-                                loc->elevation,
-                                demheight(dem(), theLongitude, theLatitude, maxDemResolution()),
-                                covertype(landCover(), theLongitude, theLatitude),
-                                loc->priority));
+        Spine::Location newloc(*result.front());
+        newloc.longitude = theLongitude;
+        newloc.latitude = theLatitude;
+        newloc.dem = demheight(dem(), theLongitude, theLatitude, maxDemResolution());
+        newloc.covertype = covertype(landCover(), theLongitude, theLatitude);
+        return Spine::LocationPtr(new Spine::Location(newloc));
       }
     }
 

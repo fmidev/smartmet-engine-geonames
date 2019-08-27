@@ -2371,22 +2371,23 @@ Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_typ
       if (area == loc.name || area.empty())
         area = loc.country;
 
-      Spine::LocationPtr ptr(new Spine::Location(loc.id,
-                                                 loc.name,
-                                                 loc.iso2,
-                                                 0,
-                                                 area,
-                                                 loc.feature,
-                                                 loc.country,
-                                                 loc.lon,
-                                                 loc.lat,
-                                                 loc.timezone,
-                                                 boost::numeric_cast<int>(loc.population),
-                                                 loc.elevation,
-                                                 dem,
-                                                 covertype));
+      Spine::Location newloc(loc.id,
+                             loc.name,
+                             loc.iso2,
+                             0,
+                             area,
+                             loc.feature,
+                             loc.country,
+                             loc.lon,
+                             loc.lat,
+                             loc.timezone,
+                             boost::numeric_cast<int>(loc.population),
+                             loc.elevation,
+                             dem,
+                             covertype);
+      newloc.fmisid = loc.fmisid;
 
-      ret.push_back(ptr);
+      ret.push_back(Spine::LocationPtr(new Spine::Location(newloc)));
     }
     return ret;
   }

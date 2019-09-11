@@ -20,7 +20,6 @@ BuildRequires: libicu-devel
 BuildRequires: libpqxx
 BuildRequires: libpqxx-devel
 BuildRequires: mariadb-devel
-BuildRequires: mysql++-devel
 BuildRequires: smartmet-library-gis-devel >= 19.3.14
 BuildRequires: smartmet-library-locus-devel >= 19.8.28
 BuildRequires: smartmet-library-macgyver-devel >= 19.8.2

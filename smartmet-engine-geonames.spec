@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 19.8.28
+Version: 19.9.26
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -20,10 +20,10 @@ BuildRequires: libicu-devel
 BuildRequires: libpqxx
 BuildRequires: libpqxx-devel
 BuildRequires: mariadb-devel
-BuildRequires: smartmet-library-gis-devel >= 19.3.14
-BuildRequires: smartmet-library-locus-devel >= 19.8.28
-BuildRequires: smartmet-library-macgyver-devel >= 19.8.2
-BuildRequires: smartmet-library-spine-devel >= 19.8.28
+BuildRequires: smartmet-library-gis-devel >= 19.9.26
+BuildRequires: smartmet-library-locus-devel >= 19.9.26
+BuildRequires: smartmet-library-macgyver-devel >= 19.9.26
+BuildRequires: smartmet-library-spine-devel >= 19.9.26
 Requires: boost-date-time
 Requires: boost-filesystem
 Requires: boost-iostreams
@@ -33,12 +33,12 @@ Requires: boost-thread
 Requires: libatomic
 Requires: fmt >= 5.2.0
 Requires: libicu
-Requires: mariadb-libs
-Requires: smartmet-library-gis >= 19.3.14
-Requires: smartmet-library-locus >= 19.8.28
-Requires: smartmet-library-macgyver >= 19.8.2
-Requires: smartmet-library-spine >= 19.8.28
-Requires: smartmet-server >= 19.8.9
+Requires: mariadb-embedded
+Requires: smartmet-library-gis >= 19.9.26
+Requires: smartmet-library-locus >= 19.9.26
+Requires: smartmet-library-macgyver >= 19.9.26
+Requires: smartmet-library-spine >= 19.9.26
+Requires: smartmet-server >= 19.9.26
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
@@ -88,6 +88,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Thu Sep 26 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.9.26-1.fmi
+- Added support for ASAN & TSAN builds
+- Use atomic counters (TSAN)
+
 * Wed Aug 28 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.8.28-1.fmi
 - Added handling of fmisid for Location objects
 

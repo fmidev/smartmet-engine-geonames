@@ -76,11 +76,11 @@ class Engine : public Spine::SmartMetEngine
   boost::posix_time::ptime itsStartTime;
   boost::posix_time::ptime itsLastReload;
   bool itsReloading;
-  mutable long itsNameSearchCount;  // TODO: These should be made into std::atomics
-  mutable long itsLonLatSearchCount;
-  mutable long itsIdSearchCount;
-  mutable long itsKeywordSearchCount;
-  mutable long itsSuggestCount;
+  mutable std::atomic<long> itsNameSearchCount;  // TODO: These should be made into std::atomics
+  mutable std::atomic<long> itsLonLatSearchCount;
+  mutable std::atomic<long> itsIdSearchCount;
+  mutable std::atomic<long> itsKeywordSearchCount;
+  mutable std::atomic<long> itsSuggestCount;
   std::string itsConfigFile;
   std::string itsErrorMessage;
 

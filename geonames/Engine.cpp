@@ -21,8 +21,8 @@
 #include <spine/Exception.h>
 #include <spine/Location.h>
 #include <spine/TableFormatterOptions.h>
-
 #include <algorithm>
+#include <atomic>
 #include <iterator>
 #include <limits>
 #include <sstream>

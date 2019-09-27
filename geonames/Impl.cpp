@@ -515,7 +515,7 @@ const libconfig::Setting &Engine::Impl::lookup_database(const std::string &setti
           // If the start of the suggested host name matches current host name, accept override if
           // it has been set
           if (boost::algorithm::istarts_with(name, trial_host) && override[i].exists(setting))
-            return override[i][setting];
+            return override[i][setting.c_str()];
         }  // for int j
       }    // for int i
     }      // if
@@ -1257,20 +1257,20 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
         }
 
         std::string country;  // country will be filled in upon request
-        Spine::LocationPtr loc(new Spine::Location(geoid,
-                                                   name,
-                                                   iso2,
-                                                   munip,
-                                                   area,
-                                                   feature,
-                                                   country,
-                                                   lon,
-                                                   lat,
-                                                   tz,
-                                                   pop,
-                                                   boost::numeric_cast<float>(ele),
-                                                   boost::numeric_cast<float>(dem),
-                                                   covertype));
+        Spine::LocationPtr loc = boost::make_shared<Spine::Location>(geoid,
+								     name,
+								     iso2,
+								     munip,
+								     area,
+								     feature,
+								     country,
+								     lon,
+								     lat,
+								     tz,
+								     pop,
+								     boost::numeric_cast<float>(ele),
+								     boost::numeric_cast<float>(dem),
+								     covertype);
         itsLocations.push_back(loc);
       }
     }

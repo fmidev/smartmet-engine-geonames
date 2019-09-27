@@ -12,6 +12,7 @@
 #include <boost/locale.hpp>
 #include <boost/locale/collator.hpp>
 #include <boost/move/unique_ptr.hpp>
+#include <boost/atomic.hpp>
 #include <boost/thread.hpp>
 #include <gis/LandCover.h>
 #include <macgyver/Cache.h>
@@ -221,7 +222,7 @@ class Engine::Impl : private boost::noncopyable
   Priorities itsCountryPriorities;
   FeaturePriorities itsFeaturePriorities;
 
-  bool itsSuggestReadyFlag = false;
+  boost::atomic<bool> itsSuggestReadyFlag{false};
 
   // caches
 

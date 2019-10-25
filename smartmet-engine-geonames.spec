@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 19.9.26
+Version: 19.10.25
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -23,7 +23,7 @@ BuildRequires: mariadb-devel
 BuildRequires: smartmet-library-gis-devel >= 19.9.26
 BuildRequires: smartmet-library-locus-devel >= 19.9.26
 BuildRequires: smartmet-library-macgyver-devel >= 19.9.26
-BuildRequires: smartmet-library-spine-devel >= 19.9.26
+BuildRequires: smartmet-library-spine-devel >= 19.10.8
 Requires: boost-date-time
 Requires: boost-filesystem
 Requires: boost-iostreams
@@ -33,12 +33,12 @@ Requires: boost-thread
 Requires: libatomic
 Requires: fmt >= 5.2.0
 Requires: libicu
-Requires: mariadb-embedded
+Requires: mariadb-libs
 Requires: smartmet-library-gis >= 19.9.26
 Requires: smartmet-library-locus >= 19.9.26
 Requires: smartmet-library-macgyver >= 19.9.26
-Requires: smartmet-library-spine >= 19.9.26
-Requires: smartmet-server >= 19.9.26
+Requires: smartmet-library-spine >= 19.10.8
+Requires: smartmet-server >= 19.10.1
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
@@ -88,6 +88,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Fri Oct 25 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.10.25-1.fmi
+- Fixed mariadb-embedded dependency to mariadb-libs
+
 * Thu Sep 26 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.9.26-1.fmi
 - Added support for ASAN & TSAN builds
 - Use atomic counters (TSAN)

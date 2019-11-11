@@ -4,7 +4,7 @@
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
 Version: 19.11.11
-Release: 1%{?dist}.fmi
+Release: 2%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -88,6 +88,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Nov 11 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.11.11-2.fmi
+- Fixed non-strict mode to be silent if there are no keywords in the database
+
 * Mon Nov 11 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.11.11-1.fmi
 - Fixed non-strict mode to allow database hash value calculation to fail
 

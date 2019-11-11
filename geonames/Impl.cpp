@@ -1609,7 +1609,11 @@ void Engine::Impl::read_keywords(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
-      throw Spine::Exception(BCP, "FmiNames: Found nothing from keywords_has_geonames database");
+    {
+      if (!itsStrict)
+        return;
+      throw Spine::Exception(BCP, "GeoNames: Found nothing from keywords_has_geonames database");
+    }
 
     int count_ok = 0;
     int count_bad = 0;

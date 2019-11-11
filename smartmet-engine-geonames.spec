@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 19.10.25
+Version: 19.11.11
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -88,6 +88,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Nov 11 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.11.11-1.fmi
+- Fixed non-strict mode to allow database hash value calculation to fail
+
 * Fri Oct 25 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.10.25-1.fmi
 - Fixed mariadb-embedded dependency to mariadb-libs
 

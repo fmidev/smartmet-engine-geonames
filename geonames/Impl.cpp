@@ -1008,7 +1008,11 @@ void Engine::Impl::read_database_hash_value(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(query);
 
     if (res.empty())
+    {
+      if (!itsStrict)
+        return;
       throw Spine::Exception(BCP, "FmiNames: Failed to read database hash value");
+    }
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
@@ -1017,7 +1021,8 @@ void Engine::Impl::read_database_hash_value(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    if (itsStrict)
+      throw Spine::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1257,20 +1262,21 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
         }
 
         std::string country;  // country will be filled in upon request
-        Spine::LocationPtr loc = boost::make_shared<Spine::Location>(geoid,
-								     name,
-								     iso2,
-								     munip,
-								     area,
-								     feature,
-								     country,
-								     lon,
-								     lat,
-								     tz,
-								     pop,
-								     boost::numeric_cast<float>(ele),
-								     boost::numeric_cast<float>(dem),
-								     covertype);
+        Spine::LocationPtr loc =
+            boost::make_shared<Spine::Location>(geoid,
+                                                name,
+                                                iso2,
+                                                munip,
+                                                area,
+                                                feature,
+                                                country,
+                                                lon,
+                                                lat,
+                                                tz,
+                                                pop,
+                                                boost::numeric_cast<float>(ele),
+                                                boost::numeric_cast<float>(dem),
+                                                covertype);
         itsLocations.push_back(loc);
       }
     }

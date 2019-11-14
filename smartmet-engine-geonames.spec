@@ -23,7 +23,7 @@ BuildRequires: mariadb-devel
 BuildRequires: smartmet-library-gis-devel >= 19.9.26
 BuildRequires: smartmet-library-locus-devel >= 19.9.26
 BuildRequires: smartmet-library-macgyver-devel >= 19.9.26
-BuildRequires: smartmet-library-spine-devel >= 19.10.8
+BuildRequires: smartmet-library-spine-devel >= 19.10.31
 Requires: boost-date-time
 Requires: boost-filesystem
 Requires: boost-iostreams
@@ -37,7 +37,7 @@ Requires: mariadb-libs
 Requires: smartmet-library-gis >= 19.9.26
 Requires: smartmet-library-locus >= 19.9.26
 Requires: smartmet-library-macgyver >= 19.9.26
-Requires: smartmet-library-spine >= 19.10.8
+Requires: smartmet-library-spine >= 19.10.31
 Requires: smartmet-server >= 19.10.1
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1

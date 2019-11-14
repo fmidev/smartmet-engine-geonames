@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 19.11.11
+Version: 19.11.14
 Release: 2%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -88,6 +88,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Thu Nov 14 2019 Anssi Reponen <anssi.reponen@fmi.fi> - 19.11.14-1.fmi
+- WKT-related code moved here from timeseries plugin (BRAINSTORM-1720)
+- Bugfix for WKT-string parsing (BRAINSTORM-1725)
+
 * Mon Nov 11 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.11.11-2.fmi
 - Fixed non-strict mode to be silent if there are no keywords in the database
 

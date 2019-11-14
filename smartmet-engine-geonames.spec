@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 19.11.11
+Version: 19.11.14
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -23,7 +23,7 @@ BuildRequires: mariadb-devel
 BuildRequires: smartmet-library-gis-devel >= 19.9.26
 BuildRequires: smartmet-library-locus-devel >= 19.9.26
 BuildRequires: smartmet-library-macgyver-devel >= 19.9.26
-BuildRequires: smartmet-library-spine-devel >= 19.10.8
+BuildRequires: smartmet-library-spine-devel >= 19.10.31
 Requires: boost-date-time
 Requires: boost-filesystem
 Requires: boost-iostreams
@@ -37,7 +37,7 @@ Requires: mariadb-libs
 Requires: smartmet-library-gis >= 19.9.26
 Requires: smartmet-library-locus >= 19.9.26
 Requires: smartmet-library-macgyver >= 19.9.26
-Requires: smartmet-library-spine >= 19.10.8
+Requires: smartmet-library-spine >= 19.10.31
 Requires: smartmet-server >= 19.10.1
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
@@ -88,6 +88,13 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Thu Nov 14 2019 Anssi Reponen <anssi.reponen@fmi.fi> - 19.11.14-1.fmi
+- WKT-related code moved here from timeseries plugin (BRAINSTORM-1720)
+- Bugfix for WKT-string parsing (BRAINSTORM-1725)
+
+* Mon Nov 11 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.11.11-2.fmi
+- Fixed non-strict mode to be silent if there are no keywords in the database
+
 * Mon Nov 11 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.11.11-1.fmi
 - Fixed non-strict mode to allow database hash value calculation to fail
 

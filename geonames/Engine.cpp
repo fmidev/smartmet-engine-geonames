@@ -484,6 +484,64 @@ Spine::LocationList Engine::keywordSearch(const Locus::QueryOptions& theOptions,
 
 // ----------------------------------------------------------------------
 /*!
+ * \brief Do a search for wkt object
+ */
+// ----------------------------------------------------------------------
+
+Spine::LocationPtr Engine::wktSearch(const std::string& theWktString,
+                                     const std::string& theLangauge,
+                                     double theRadius /* = 0.0*/) const
+{
+  std::unique_ptr<OGRGeometry> geom;
+  geom.reset(Fmi::OGR::createFromWkt(theWktString, 4326));
+
+  if (geom)
+  {
+    if (theRadius > 0.0)
+    {
+      std::unique_ptr<OGRGeometry> poly;
+      geom.reset(Fmi::OGR::expandGeometry(geom.get(), theRadius * 1000));
+    }
+  }
+
+  OGREnvelope envelope;
+  geom->getEnvelope(&envelope);
+  double top = envelope.MaxY;
+  double bottom = envelope.MinY;
+  double left = envelope.MinX;
+  double right = envelope.MaxX;
+
+  double lon = (right + left) / 2.0;
+  double lat = (top + bottom) / 2.0;
+
+  return lonlatSearch(lon, lat, theLangauge);
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Get wkt geometries
+ */
+// ----------------------------------------------------------------------
+
+WktGeometries Engine::getWktGeometries(const LocationOptions& loptions,
+                                       const std::string& language) const
+{
+  WktGeometries ret;
+
+  // Store WKT-geometries
+  for (const auto& tloc : loptions.locations())
+  {
+    if (tloc.loc->type == Spine::Location::Wkt)
+    {
+      WktGeometryPtr wktGeometry(new WktGeometry(tloc.loc, language, *this));
+      ret.addWktGeometry(tloc.loc->name, wktGeometry);
+    }
+  }
+  return ret;
+}
+
+// ----------------------------------------------------------------------
+/*!
  * \brief Find alphabetical completions
  */
 // ----------------------------------------------------------------------
@@ -957,7 +1015,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         std::string wktStr = wkt.substr(0, aliasPos);
         wktStr = parse_radius(wktStr, radius);
         // find first coordinate and do a lonlat search with it
-        std::size_t firstNumberPos = wktStr.find_first_of("123456789");
+        std::size_t firstNumberPos = wktStr.find_first_of("+-.0123456789");
         if (firstNumberPos == std::string::npos)
           throw Spine::Exception(BCP, "Invalid WKT: " + wktStr);
 
@@ -974,7 +1032,6 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         std::string latStr = firstCoordinate.substr(spacePos + 1);
         double lon = Fmi::stod(lonStr);
         double lat = Fmi::stod(latStr);
-
         Spine::LocationPtr loc = this->featureSearch(lon, lat, language, features, maxdistance);
         std::unique_ptr<Spine::Location> loc2(new Spine::Location(*loc));
         loc2->type = Spine::Location::Wkt;

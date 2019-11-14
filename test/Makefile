@@ -32,6 +32,7 @@ LIBS = \
 	-lsmartmet-spine \
 	-lsmartmet-macgyver \
 	-lsmartmet-locus \
+	-lsmartmet-newbase \
 	`pkg-config --libs libconfig++` \
 	-lpqxx \
 	-lboost_date_time \

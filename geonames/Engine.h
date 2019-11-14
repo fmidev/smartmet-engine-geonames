@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "WktGeometry.h"
+#include <gis/OGR.h>
 #include <spine/HTTP.h>
 #include <spine/Location.h>
 #include <spine/SmartMetEngine.h>
@@ -135,6 +137,10 @@ class Engine : public Spine::SmartMetEngine
   Spine::LocationList keywordSearch(const Locus::QueryOptions& theOptions,
                                     const std::string& theKeyword) const;
 
+  Spine::LocationPtr wktSearch(const std::string& theWktString,
+                               const std::string& theLanguage,
+                               double theRadius = 0.0) const;
+
   // suggest alphabetical completions
 
   Spine::LocationList suggest(const std::string& thePattern,
@@ -157,7 +163,11 @@ class Engine : public Spine::SmartMetEngine
   // Parse location-related HTTP options
   LocationOptions parseLocations(const Spine::HTTP::Request& theReq) const;
 
-  // reload all data
+  // Get WKT geometries
+  WktGeometries getWktGeometries(const LocationOptions& loptions,
+                                 const std::string& language) const;
+
+  // Reload all data
 
   bool reload();
   const std::string& errorMessage() const;

@@ -1,7 +1,5 @@
 #include "WktGeometry.h"
-//#include "LocationTools.h"
-
-#include <engines/geonames/Engine.h>
+#include "Engine.h"
 #include <gis/Box.h>
 #include <spine/Exception.h>
 

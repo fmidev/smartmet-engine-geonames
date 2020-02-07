@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 19.11.14
+Version: 19.12.5
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -20,6 +20,7 @@ BuildRequires: libicu-devel
 BuildRequires: libpqxx
 BuildRequires: libpqxx-devel
 BuildRequires: mariadb-devel
+BuildRequires: gdal-devel
 BuildRequires: smartmet-library-gis-devel >= 19.9.26
 BuildRequires: smartmet-library-locus-devel >= 19.9.26
 BuildRequires: smartmet-library-macgyver-devel >= 19.9.26
@@ -39,6 +40,7 @@ Requires: smartmet-library-locus >= 19.9.26
 Requires: smartmet-library-macgyver >= 19.9.26
 Requires: smartmet-library-spine >= 19.10.31
 Requires: smartmet-server >= 19.10.1
+Requires: gdal
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
@@ -88,6 +90,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Thu Dec  5 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.12.5-1.fmi
+- Use -fno-omit-frame-pointer for a better profiling and debugging experience
+- Fixed system include to be local Engine.h include
+
 * Thu Nov 14 2019 Anssi Reponen <anssi.reponen@fmi.fi> - 19.11.14-1.fmi
 - WKT-related code moved here from timeseries plugin (BRAINSTORM-1720)
 - Bugfix for WKT-string parsing (BRAINSTORM-1725)

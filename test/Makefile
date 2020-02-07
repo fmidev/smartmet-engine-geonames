@@ -22,9 +22,10 @@ CC = g++
 CFLAGS = -DUNIX -O0 -g $(FLAGS)
 
 INCLUDES = \
-	-I ../geonames \
-	-I /usr/include/mysql \
-	-I /usr/include/smartmet \
+	-I/usr/gdal30/include \
+	-I../geonames \
+	-I/usr/include/mysql \
+	-I/usr/include/smartmet \
 	`pkg-config --cflags libconfig++`
 
 LIBS = \

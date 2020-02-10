@@ -20,6 +20,7 @@ BuildRequires: libicu-devel
 BuildRequires: libpqxx
 BuildRequires: libpqxx-devel
 BuildRequires: mariadb-devel
+BuildRequires: gdal-devel
 BuildRequires: smartmet-library-gis-devel >= 19.9.26
 BuildRequires: smartmet-library-locus-devel >= 19.9.26
 BuildRequires: smartmet-library-macgyver-devel >= 19.9.26
@@ -39,6 +40,7 @@ Requires: smartmet-library-locus >= 19.9.26
 Requires: smartmet-library-macgyver >= 19.9.26
 Requires: smartmet-library-spine >= 19.10.31
 Requires: smartmet-server >= 19.10.1
+Requires: gdal
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1

@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 20.2.7
+Version: 20.2.14
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -21,10 +21,10 @@ BuildRequires: libpqxx
 BuildRequires: libpqxx-devel
 BuildRequires: mariadb-devel
 BuildRequires: gdal30-devel
-BuildRequires: smartmet-library-gis-devel >= 20.2.5
-BuildRequires: smartmet-library-locus-devel >= 19.8.28
-BuildRequires: smartmet-library-macgyver-devel >= 20.2.5
-BuildRequires: smartmet-library-spine-devel >= 20.1.15
+BuildRequires: smartmet-library-gis-devel >= 20.2.14
+BuildRequires: smartmet-library-locus-devel >= 20.2.14
+BuildRequires: smartmet-library-macgyver-devel >= 20.2.14
+BuildRequires: smartmet-library-spine-devel >= 20.2.13
 Requires: boost-date-time
 Requires: boost-filesystem
 Requires: boost-iostreams
@@ -35,11 +35,11 @@ Requires: libatomic
 Requires: fmt >= 5.2.0
 Requires: libicu
 Requires: mariadb-libs
-Requires: smartmet-library-gis >= 20.2.5
-Requires: smartmet-library-locus >= 19.8.28
-Requires: smartmet-library-macgyver >= 20.2.5
-Requires: smartmet-library-spine >= 20.1.15
-Requires: smartmet-server >= 19.10.1
+Requires: smartmet-library-gis >= 20.2.14
+Requires: smartmet-library-locus >= 20.2.14
+Requires: smartmet-library-macgyver >= 20.2.14
+Requires: smartmet-library-spine >= 20.2.13
+Requires: smartmet-server >= 20.2.13
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
@@ -89,6 +89,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Fri Feb 14 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.2.14-1.fmi
+- Upgrade to pgdg12
+
 * Fri Feb  7 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.2.7-1.fmi
 - Upgrade to GDAL 3
 

@@ -5,9 +5,7 @@
 // ======================================================================
 
 #include "Engine.h"
-
 #include "Impl.h"
-
 #include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <fmt/format.h>
 #include <fmt/printf.h>
@@ -25,6 +23,7 @@
 #include <atomic>
 #include <iterator>
 #include <limits>
+#include <ogr_geometry.h>
 #include <sstream>
 #include <string>
 #include <unistd.h>

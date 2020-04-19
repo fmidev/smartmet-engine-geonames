@@ -21,14 +21,21 @@ endif
 CC = g++
 CFLAGS = -DUNIX -O0 -g $(FLAGS)
 
-INCLUDES = \
+# Boost 1.69
+
+ifneq "$(wildcard /usr/include/boost169)" ""
+  INCLUDES += -I/usr/include/boost169
+  LIBS += -L/usr/lib64/boost169
+endif
+
+INCLUDES += \
 	-I/usr/gdal30/include \
 	-I../geonames \
 	-I/usr/include/mysql \
 	-I/usr/include/smartmet \
 	`pkg-config --cflags libconfig++`
 
-LIBS = \
+LIBS += \
 	../geonames.so \
 	-lsmartmet-spine \
 	-lsmartmet-macgyver \

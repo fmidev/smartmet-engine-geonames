@@ -21,15 +21,23 @@ endif
 CC = g++
 CFLAGS = -DUNIX -O0 -g $(FLAGS)
 
-# Boost 1.69
+
+# Special external dependencies
 
 ifneq "$(wildcard /usr/include/boost169)" ""
   INCLUDES += -I/usr/include/boost169
   LIBS += -L/usr/lib64/boost169
 endif
 
+
+ifneq "$(wildcard /usr/gdal30/include)" ""
+  INCLUDES += -I/usr/gdal30/include
+  LIBS += -L/usr/gdal30/lib
+else
+  INCLUDES += -I/usr/include/gdal
+endif
+
 INCLUDES += \
-	-I/usr/gdal30/include \
 	-I../geonames \
 	-I/usr/include/mysql \
 	-I/usr/include/smartmet \

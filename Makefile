@@ -32,11 +32,18 @@ DEFINES = -DUNIX -D_REENTRANT
 GCC_DIAG_COLOR ?= always
 CXX_STD ?= c++11
 
-# Boost 1.69
+# Special external dependencies
 
 ifneq "$(wildcard /usr/include/boost169)" ""
   INCLUDES += -I/usr/include/boost169
   LIBS += -L/usr/lib64/boost169
+endif
+
+ifneq "$(wildcard /usr/gdal30/include)" ""
+  INCLUDES += -I/usr/gdal30/include
+  LIBS += -L/usr/gdal30/lib
+else
+  INCLUDES += -I/usr/include/gdal
 endif
 
 ifeq ($(CXX), clang++)
@@ -50,7 +57,6 @@ ifeq ($(CXX), clang++)
 	-Wno-missing-prototypes
 
  INCLUDES += \
-	-isystem $(PREFIX)/gdal30/include \
 	-isystem $(includedir) \
 	-isystem $(includedir)/smartmet
 
@@ -73,7 +79,6 @@ else
  FLAGS_RELEASE = -Wuninitialized
 
  INCLUDES += \
-	-I$(PREFIX)/gdal30/include \
 	-I$(includedir) \
 	-I$(includedir)/smartmet
 

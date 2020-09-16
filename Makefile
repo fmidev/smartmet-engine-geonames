@@ -40,10 +40,10 @@ ifneq "$(wildcard /usr/include/boost169)" ""
 endif
 
 ifneq "$(wildcard /usr/gdal30/include)" ""
-  INCLUDES += -I/usr/gdal30/include
+  INCLUDES += -isystem /usr/gdal30/include
   LIBS += -L$(PREFIX)/gdal30/lib
 else
-  INCLUDES += -I/usr/include/gdal
+  INCLUDES += -isystem /usr/include/gdal
 endif
 
 
@@ -57,7 +57,7 @@ ifeq ($(CXX), clang++)
 	-Wno-missing-prototypes
 
  INCLUDES += \
-	-isystem $(includedir)/smartmet
+	-I$(includedir)/smartmet
 
 else
 

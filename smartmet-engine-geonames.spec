@@ -19,7 +19,6 @@ BuildRequires: fmt-devel >= 6.2.1
 BuildRequires: libicu-devel
 BuildRequires: libpqxx-devel
 BuildRequires: mariadb-devel
-BuildRequires: gdal-devel
 BuildRequires: smartmet-library-gis-devel >= 20.8.21
 BuildRequires: smartmet-library-locus-devel >= 20.8.21
 BuildRequires: smartmet-library-macgyver-devel >= 20.8.21
@@ -34,13 +33,20 @@ Requires: libatomic
 Requires: fmt >= 6.2.1
 Requires: libicu
 Requires: libpqxx
-Requires: mariadb-libs
 Requires: smartmet-library-gis >= 20.8.21
 Requires: smartmet-library-locus >= 20.8.21
 Requires: smartmet-library-macgyver >= 20.8.21
 Requires: smartmet-library-spine >= 20.8.21
 Requires: smartmet-server >= 20.8.21
-Requires: gdal
+%if 0%{rhel} >= 8
+BuildRequires: gdal30-devel
+Requires: gdal30-libs
+Requires: mariadb-connector-c
+%else
+BuildRequires: gdal-devel
+Requires: gdal-libs
+Requires: mariadb-libs
+%endif
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1

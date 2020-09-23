@@ -16,7 +16,7 @@
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
 #include <macgyver/StringConversion.h>
-#include <spine/Exception.h>
+#include <macgyver/Exception.h>
 #include <spine/Location.h>
 #include <sys/types.h>
 
@@ -65,7 +65,7 @@ void print(const SmartMet::Spine::LocationPtr &ptr)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -81,7 +81,7 @@ void print(const std::list<SmartMet::Spine::LocationPtr *> &ptrs)
   }
   catch (...)
   {
-    throw SmartMet::Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 #endif
@@ -202,7 +202,7 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
     }
     catch (const libconfig::SettingException &e)
     {
-      throw Spine::Exception(BCP, "Configuration file setting error!")
+      throw Fmi::Exception(BCP, "Configuration file setting error!")
           .addParameter("Path", e.getPath())
           .addParameter("Configuration file", itsConfigFile)
           .addParameter("Error description", e.what());
@@ -211,7 +211,7 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
 
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Constructor failed!");
+    throw Fmi::Exception::Trace(BCP, "Constructor failed!");
   }
 }  // namespace Geonames
 
@@ -243,7 +243,7 @@ double Engine::Impl::elevation(double lon, double lat) const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -264,7 +264,7 @@ double Engine::Impl::elevation(double lon, double lat, unsigned int maxdemresolu
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -296,7 +296,7 @@ Fmi::LandCover::Type Engine::Impl::coverType(double lon, double lat) const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -325,7 +325,7 @@ std::string Engine::Impl::preprocess_name(const std::string &name) const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -371,7 +371,7 @@ void Engine::Impl::add_treewords(std::set<std::string> &words,
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -413,7 +413,7 @@ std::set<std::string> Engine::Impl::to_treewords(const std::string &name,
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -442,7 +442,7 @@ std::string Engine::Impl::to_treeword(const std::string &name) const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -463,7 +463,7 @@ std::string Engine::Impl::to_treeword(const std::string &name, const std::string
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -523,7 +523,7 @@ const libconfig::Setting &Engine::Impl::lookup_database(const std::string &setti
   }
   catch (const libconfig::SettingNotFoundException &ex)
   {
-    throw SmartMet::Spine::Exception(BCP, "Override configuration error: " + setting, nullptr);
+    throw Fmi::Exception(BCP, "Override configuration error: " + setting, nullptr);
   }
 }
 
@@ -549,7 +549,7 @@ void Engine::Impl::initSuggest(bool threaded)
         Locus::Connection conn(itsHost, itsUser, itsPass, itsDatabase, "UTF8", itsPort, false);
 
         if (!conn.isConnected())
-          throw Spine::Exception(BCP, "Failed to connect to fminames database");
+          throw Fmi::Exception(BCP, "Failed to connect to fminames database");
 
         read_database_hash_value(conn);
 
@@ -593,16 +593,16 @@ void Engine::Impl::initSuggest(bool threaded)
     }
     catch (const libconfig::ParseException &e)
     {
-      throw Spine::Exception::Trace(BCP, "Geo configuration error!")
+      throw Fmi::Exception::Trace(BCP, "Geo configuration error!")
           .addDetail(std::string(e.getError()) + "' on line " + std::to_string(e.getLine()));
     }
     catch (const libconfig::ConfigException &)
     {
-      throw Spine::Exception::Trace(BCP, "Geo configuration error");
+      throw Fmi::Exception::Trace(BCP, "Geo configuration error");
     }
     catch (...)
     {
-      Spine::Exception exception(BCP, "Operation failed", nullptr);
+      Fmi::Exception exception(BCP, "Operation failed", nullptr);
       if (!itsReloading)
       {
         throw exception;
@@ -642,7 +642,7 @@ void Engine::Impl::initSuggest(bool threaded)
   }
   catch (...)
   {
-    Spine::Exception exception(BCP, "Geonames autocomplete data initialization failed", nullptr);
+    Fmi::Exception exception(BCP, "Geonames autocomplete data initialization failed", nullptr);
 
     if (!threaded)
       throw exception;
@@ -722,7 +722,7 @@ void Engine::Impl::init(bool first_construction)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -744,7 +744,7 @@ void Engine::Impl::shutdown()
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -799,7 +799,7 @@ void Engine::Impl::read_config()
 
       if (!itsConfig.exists("database"))
       {
-        Spine::Exception exception(BCP, "Configuration file must specify the database details!");
+        Fmi::Exception exception(BCP, "Configuration file must specify the database details!");
         exception.addParameter("Configuration file", itsConfigFile);
         throw exception;
       }
@@ -808,7 +808,7 @@ void Engine::Impl::read_config()
 
       if (!db.isGroup())
       {
-        Spine::Exception exception(BCP, "Configured value of 'database' must be a group!");
+        Fmi::Exception exception(BCP, "Configured value of 'database' must be a group!");
         exception.addParameter("Configuration file", itsConfigFile);
         throw exception;
       }
@@ -837,7 +837,7 @@ void Engine::Impl::read_config()
     }
     catch (const libconfig::SettingException &e)
     {
-      Spine::Exception exception(BCP, "Configuration file setting error!");
+      Fmi::Exception exception(BCP, "Configuration file setting error!");
       exception.addParameter("Configuration file", itsConfigFile);
       exception.addParameter("Path", e.getPath());
       exception.addParameter("Error description", e.what());
@@ -845,7 +845,7 @@ void Engine::Impl::read_config()
     }
     catch (const libconfig::ParseException &e)
     {
-      Spine::Exception exception(BCP, "Configuration file parsing failed!");
+      Fmi::Exception exception(BCP, "Configuration file parsing failed!");
       exception.addParameter("Configuration file", itsConfigFile);
       exception.addParameter("Error line", std::to_string(e.getLine()));
       exception.addParameter("Error description", e.getError());
@@ -853,7 +853,7 @@ void Engine::Impl::read_config()
     }
     catch (const libconfig::ConfigException &e)
     {
-      Spine::Exception exception(BCP, "Configuration exception!");
+      Fmi::Exception exception(BCP, "Configuration exception!");
       exception.addParameter("Configuration file", itsConfigFile);
       exception.addParameter("Error description", e.what());
       throw exception;
@@ -861,7 +861,7 @@ void Engine::Impl::read_config()
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Configuration read failed!");
+    throw Fmi::Exception::Trace(BCP, "Configuration read failed!");
   }
 }
 
@@ -893,7 +893,7 @@ void Engine::Impl::read_config_priorities()
 
       if (!tmp.isGroup())
       {
-        Spine::Exception exception(BCP,
+        Fmi::Exception exception(BCP,
                                    "Configured value of 'priorities.features' must be a group!");
         exception.addParameter("Configuration file", itsConfigFile);
         throw exception;
@@ -907,7 +907,7 @@ void Engine::Impl::read_config_priorities()
 
         if (!itsConfig.exists(mapname))
         {
-          Spine::Exception exception(BCP, "Configuration of '" + mapname + "' is missing!");
+          Fmi::Exception exception(BCP, "Configuration of '" + mapname + "' is missing!");
           exception.addParameter("Configuration file", itsConfigFile);
           throw exception;
         }
@@ -924,7 +924,7 @@ void Engine::Impl::read_config_priorities()
     }
     catch (const libconfig::SettingException &e)
     {
-      Spine::Exception exception(BCP, "Configuration file setting error!");
+      Fmi::Exception exception(BCP, "Configuration file setting error!");
       exception.addParameter("Path", e.getPath());
       exception.addParameter("Configuration file", itsConfigFile);
       exception.addParameter("Error description", e.what());
@@ -933,7 +933,7 @@ void Engine::Impl::read_config_priorities()
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Reading config priorities failed!");
+    throw Fmi::Exception::Trace(BCP, "Reading config priorities failed!");
   }
 }
 
@@ -958,7 +958,7 @@ void Engine::Impl::read_config_prioritymap(const std::string &partname, Prioriti
 
       if (!tmp.isGroup())
       {
-        Spine::Exception exception(BCP, "Configured value of '" + name + "' must be a group!");
+        Fmi::Exception exception(BCP, "Configured value of '" + name + "' must be a group!");
         exception.addParameter("Configuration file", itsConfigFile);
         throw exception;
       }
@@ -972,7 +972,7 @@ void Engine::Impl::read_config_prioritymap(const std::string &partname, Prioriti
     }
     catch (const libconfig::SettingException &e)
     {
-      Spine::Exception exception(BCP, "Configuration file setting error!");
+      Fmi::Exception exception(BCP, "Configuration file setting error!");
       exception.addParameter("Config file", itsConfigFile);
       exception.addParameter("Path", e.getPath());
       exception.addParameter("Error description", e.what());
@@ -981,7 +981,7 @@ void Engine::Impl::read_config_prioritymap(const std::string &partname, Prioriti
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1011,7 +1011,7 @@ void Engine::Impl::read_database_hash_value(Locus::Connection &conn)
     {
       if (!itsStrict)
         return;
-      throw Spine::Exception(BCP, "FmiNames: Failed to read database hash value");
+      throw Fmi::Exception(BCP, "FmiNames: Failed to read database hash value");
     }
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
@@ -1022,7 +1022,7 @@ void Engine::Impl::read_database_hash_value(Locus::Connection &conn)
   catch (...)
   {
     if (itsStrict)
-      throw Spine::Exception::Trace(BCP, "Operation failed!");
+      throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1054,7 +1054,7 @@ void Engine::Impl::read_countries(Locus::Connection &conn)
     if (res.empty())
     {
       if (itsStrict)
-        throw Spine::Exception(BCP, "FmiNames: Found no PCLI/PCLF/PCLD places from geonames table");
+        throw Fmi::Exception(BCP, "FmiNames: Found no PCLI/PCLF/PCLD places from geonames table");
       else
         std::cerr << "Warning: FmiNames: Found no PCLI/PCLF/PCLD places from geonames table"
                   << std::endl;
@@ -1072,7 +1072,7 @@ void Engine::Impl::read_countries(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1103,7 +1103,7 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
     if (res.empty())
     {
       if (itsStrict)
-        throw Spine::Exception(BCP, "Found no country translations");
+        throw Fmi::Exception(BCP, "Found no country translations");
       else
         std::cerr << "Warning: Found no country translations" << std::endl;
     }
@@ -1133,7 +1133,7 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1155,7 +1155,7 @@ void Engine::Impl::read_municipalities(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(query);
 
     // We allow this to be empty since the table contains only Finnish information
-    // if (res.empty()) throw Spine::Exception(BCP, "FmiNames: Found nothing from municipalities
+    // if (res.empty()) throw Fmi::Exception(BCP, "FmiNames: Found nothing from municipalities
     // table");
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
@@ -1171,7 +1171,7 @@ void Engine::Impl::read_municipalities(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1208,7 +1208,7 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
     if (res.empty())
     {
       if (itsStrict)
-        throw Spine::Exception(BCP, "Found nothing from fminames database");
+        throw Fmi::Exception(BCP, "Found nothing from fminames database");
       else
         std::cerr << "Warning: Found nothing from fminames database" << std::endl;
     }
@@ -1286,7 +1286,7 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1338,7 +1338,7 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
     if (res.empty())
     {
       if (itsStrict)
-        throw Spine::Exception(BCP, "Found nothing from alternate_geonames database");
+        throw Fmi::Exception(BCP, "Found nothing from alternate_geonames database");
       else
         std::cerr << "Warning: Found nothing from alternate_geonames database" << std::endl;
     }
@@ -1392,7 +1392,7 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1416,7 +1416,7 @@ void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn)
     pqxx::result res = conn.executeNonTransaction(query);
 
     // Permit the table to be empty since it contains only Finnish information
-    // if (res.empty()) throw Spine::Exception(BCP, "FmiNames: Found nothing from
+    // if (res.empty()) throw Fmi::Exception(BCP, "FmiNames: Found nothing from
     // alternate_municipalities database");
 
     if (itsVerbose)
@@ -1443,7 +1443,7 @@ void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1467,7 +1467,7 @@ void Engine::Impl::build_geoid_map()
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1497,7 +1497,7 @@ void Engine::Impl::assign_priorities(Spine::LocationList &locs) const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1517,7 +1517,7 @@ int Engine::Impl::country_priority(const Spine::Location &loc) const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1537,7 +1537,7 @@ int Engine::Impl::area_priority(const Spine::Location &loc) const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1557,7 +1557,7 @@ int Engine::Impl::population_priority(const Spine::Location &loc) const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1587,7 +1587,7 @@ int Engine::Impl::feature_priority(const Spine::Location &loc) const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1612,7 +1612,7 @@ void Engine::Impl::read_keywords(Locus::Connection &conn)
     {
       if (!itsStrict)
         return;
-      throw Spine::Exception(BCP, "GeoNames: Found nothing from keywords_has_geonames database");
+      throw Fmi::Exception(BCP, "GeoNames: Found nothing from keywords_has_geonames database");
     }
 
     int count_ok = 0;
@@ -1649,7 +1649,7 @@ void Engine::Impl::read_keywords(Locus::Connection &conn)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1695,7 +1695,7 @@ void Engine::Impl::build_geotrees()
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1759,7 +1759,7 @@ void Engine::Impl::build_ternarytrees()
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1781,7 +1781,7 @@ void Engine::Impl::build_lang_ternarytrees()
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1864,7 +1864,7 @@ void Engine::Impl::build_lang_ternarytrees_all()
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1961,7 +1961,7 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1995,7 +1995,7 @@ void Engine::Impl::translate_name(Spine::Location &loc, const std::string &lang)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2045,7 +2045,7 @@ void Engine::Impl::translate_area(Spine::Location &loc, const std::string &lang)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2067,7 +2067,7 @@ void Engine::Impl::translate(Spine::LocationPtr &loc, const std::string &lang) c
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2086,7 +2086,7 @@ void Engine::Impl::translate(Spine::LocationList &locs, const std::string &lang)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2124,7 +2124,7 @@ std::string Engine::Impl::translate_country(const std::string &iso2, const std::
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2154,7 +2154,7 @@ bool Engine::Impl::prioritySort(const Spine::LocationPtr &a, const Spine::Locati
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2181,7 +2181,7 @@ bool basicSort(const Spine::LocationPtr &a, const Spine::LocationPtr &b)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2200,7 +2200,7 @@ bool closeEnough(const Spine::LocationPtr &a, const Spine::LocationPtr &b)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2218,7 +2218,7 @@ bool reallyClose(const Spine::LocationPtr &a, const Spine::LocationPtr &b)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2241,7 +2241,7 @@ void Engine::Impl::sort(Spine::LocationList &theLocations) const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2259,7 +2259,7 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
                                           bool duplicates) const
 {
   if (!itsSuggestReadyFlag)
-    throw Spine::Exception(BCP, "Attempt to use geonames suggest before it is ready!");
+    throw Fmi::Exception(BCP, "Attempt to use geonames suggest before it is ready!");
 
   try
   {
@@ -2353,7 +2353,7 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2403,7 +2403,7 @@ Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_typ
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2445,7 +2445,7 @@ Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOpti
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2490,7 +2490,7 @@ Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOptions &theOp
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2530,7 +2530,7 @@ Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions &theOption
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2573,7 +2573,7 @@ Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theO
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -2625,7 +2625,7 @@ void Engine::Impl::name_cache_status(const boost::shared_ptr<Spine::Table> &tabl
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 

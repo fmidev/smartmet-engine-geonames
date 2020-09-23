@@ -882,6 +882,7 @@ int main(void)
   cerr.setf(ios::unitbuf);
 
   reactor = new SmartMet::Spine::Reactor(opts);
+  reactor->init();
   names = reinterpret_cast<SmartMet::Engine::Geonames::Engine *>(
       reactor->getSingleton("Geonames", NULL));
 

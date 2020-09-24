@@ -1,7 +1,7 @@
 #include "WktGeometry.h"
 #include "Engine.h"
 #include <gis/Box.h>
-#include <spine/Exception.h>
+#include <macgyver/Exception.h>
 
 namespace SmartMet
 {
@@ -31,7 +31,7 @@ std::string get_name_base(const std::string& theName)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -122,7 +122,7 @@ NFmiSvgPath get_svg_path(const OGRGeometry& geom)
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Failed to create NFmiSvgPath from OGRGeometry");
+    throw Fmi::Exception(BCP, "Failed to create NFmiSvgPath from OGRGeometry");
   }
 }
 
@@ -171,7 +171,7 @@ void WktGeometry::init(const Spine::LocationPtr loc,
   }
   catch (...)
   {
-    throw Spine::Exception(BCP, "Operation failed!", NULL);
+    throw Fmi::Exception(BCP, "Operation failed!", NULL);
   }
 }
 

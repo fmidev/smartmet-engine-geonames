@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 20.6.8
+Version: 20.9.23
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -15,15 +15,14 @@ BuildRequires: gcc-c++
 BuildRequires: make
 BuildRequires: boost169-devel
 BuildRequires: libatomic
-BuildRequires: fmt-devel >= 5.2.0
+BuildRequires: fmt-devel >= 6.2.1
 BuildRequires: libicu-devel
 BuildRequires: libpqxx-devel
 BuildRequires: mariadb-devel
-BuildRequires: gdal-devel
-BuildRequires: smartmet-library-gis-devel >= 20.4.18
-BuildRequires: smartmet-library-locus-devel >= 20.4.18
-BuildRequires: smartmet-library-macgyver-devel >= 20.4.18
-BuildRequires: smartmet-library-spine-devel >= 20.4.18
+BuildRequires: smartmet-library-gis-devel >= 20.8.21
+BuildRequires: smartmet-library-locus-devel >= 20.8.21
+BuildRequires: smartmet-library-macgyver-devel >= 20.9.18
+BuildRequires: smartmet-library-spine-devel >= 20.9.23
 Requires: boost169-date-time
 Requires: boost169-filesystem
 Requires: boost169-iostreams
@@ -31,16 +30,23 @@ Requires: boost169-locale
 Requires: boost169-system
 Requires: boost169-thread
 Requires: libatomic
-Requires: fmt >= 5.2.0
+Requires: fmt >= 6.2.1
 Requires: libicu
 Requires: libpqxx
+Requires: smartmet-library-gis >= 20.8.21
+Requires: smartmet-library-locus >= 20.8.21
+Requires: smartmet-library-macgyver >= 20.9.18
+Requires: smartmet-library-spine >= 20.9.23
+Requires: smartmet-server >= 20.9.23
+%if 0%{rhel} >= 8
+BuildRequires: gdal30-devel
+Requires: gdal30-libs
+Requires: mariadb-connector-c
+%else
+BuildRequires: gdal-devel
+Requires: gdal-libs
 Requires: mariadb-libs
-Requires: smartmet-library-gis >= 20.4.18
-Requires: smartmet-library-locus >= 20.4.18
-Requires: smartmet-library-macgyver >= 20.4.18
-Requires: smartmet-library-spine >= 20.4.18
-Requires: smartmet-server >= 20.4.18
-Requires: gdal
+%endif
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
@@ -90,6 +96,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Sep 23 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.9.23-1.fmi
+- Use Fmi::Exception instead of Spine::Exception
+
+* Fri Aug 21 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.8.21-1.fmi
+- Upgrade to fmt 6.2
+
 * Mon Jun  8 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.6.8-1.fmi
 - Upgraded libpqxx dependencies
 

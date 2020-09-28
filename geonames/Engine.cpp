@@ -16,7 +16,7 @@
 #include <macgyver/TimeZoneFactory.h>
 #include <spine/Convenience.h>
 #include <spine/DebugFormatter.h>
-#include <spine/Exception.h>
+#include <macgyver/Exception.h>
 #include <spine/Location.h>
 #include <spine/TableFormatterOptions.h>
 #include <algorithm>
@@ -58,7 +58,7 @@ std::string parse_radius(const std::string& inputStr, double& radius)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -136,7 +136,7 @@ void Engine::init()
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Init failed!");
+    throw Fmi::Exception::Trace(BCP, "Init failed!");
   }
 }
 
@@ -175,7 +175,7 @@ void Engine::shutdown()
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -201,7 +201,7 @@ void Engine::shutdownRequestFlagSet()
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -220,7 +220,7 @@ std::size_t Engine::hash_value() const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -246,13 +246,13 @@ Spine::LocationPtr Engine::nameSearch(const std::string& theName, const std::str
     Spine::LocationList result = nameSearch(opts, theName);
 
     if (result.empty())
-      throw Spine::Exception(BCP, "Unknown location: " + theName);
+      throw Fmi::Exception(BCP, "Unknown location: " + theName);
 
     return result.front();
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -337,7 +337,7 @@ Spine::LocationPtr Engine::featureSearch(double theLongitude,
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -364,13 +364,13 @@ Spine::LocationPtr Engine::idSearch(long theGeoID, const std::string& theLang) c
     Spine::LocationList result = idSearch(opts, boost::numeric_cast<int>(theGeoID));
 
     if (result.empty())
-      throw Spine::Exception(BCP, "Unknown location ID: " + Fmi::to_string(theGeoID));
+      throw Fmi::Exception(BCP, "Unknown location ID: " + Fmi::to_string(theGeoID));
 
     return result.front();
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -391,7 +391,7 @@ Spine::LocationList Engine::nameSearch(const Locus::QueryOptions& theOptions,
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -413,7 +413,7 @@ Spine::LocationList Engine::latlonSearch(const Locus::QueryOptions& theOptions,
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -436,7 +436,7 @@ Spine::LocationList Engine::lonlatSearch(const Locus::QueryOptions& theOptions,
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -456,7 +456,7 @@ Spine::LocationList Engine::idSearch(const Locus::QueryOptions& theOptions, int 
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -477,7 +477,7 @@ Spine::LocationList Engine::keywordSearch(const Locus::QueryOptions& theOptions,
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -562,7 +562,7 @@ Spine::LocationList Engine::suggest(const std::string& thePattern,
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -589,7 +589,7 @@ Spine::LocationList Engine::suggestDuplicates(const std::string& thePattern,
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -644,7 +644,7 @@ Spine::LocationPtr Engine::keywordSearch(double theLongitude,
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -756,7 +756,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
       for (const std::string& path : searchName)
       {
         if (path.find(' ') != std::string::npos)
-          throw Spine::Exception(BCP, "Invalid path parameter " + path + ", no spaces allowed!");
+          throw Fmi::Exception(BCP, "Invalid path parameter " + path + ", no spaces allowed!");
 
         std::string tag = "path" + Fmi::to_string(path_counter++);
 
@@ -782,7 +782,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         for (const std::string& path : path_list)
         {
           if (path.find(':') != std::string::npos)
-            throw Spine::Exception(BCP, "Invalid path parameter " + path + ", no radius allowed!");
+            throw Fmi::Exception(BCP, "Invalid path parameter " + path + ", no radius allowed!");
 
           std::string tag = "paths" + Fmi::to_string(paths_counter++);
           std::unique_ptr<Spine::Location> loc(new Spine::Location(path, 0.0));
@@ -801,7 +801,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         std::list<std::string> parts;
         boost::algorithm::split(parts, bbox, boost::algorithm::is_any_of(","));
         if (parts.size() != 4)
-          throw Spine::Exception(BCP,
+          throw Fmi::Exception(BCP,
                                  "Invalid bbox parameter " + bbox +
                                      ", should be in format 'lon,lat,lon,lat[:radius]'!");
 
@@ -823,7 +823,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         std::vector<std::string> coordinates;
         boost::algorithm::split(coordinates, bboxes, boost::algorithm::is_any_of(","));
         if (coordinates.size() % 4 != 0)
-          throw Spine::Exception(BCP,
+          throw Fmi::Exception(BCP,
                                  "Invalid bboxes parameter " + bboxes +
                                      ", should be in format "
                                      "'lon,lat,lon,lat[:radius],lon,lat,lon,lat[:radius],...'!");
@@ -852,7 +852,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         std::vector<std::string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
         if (parts.size() % 2 != 0)
-          throw Spine::Exception(BCP, "Invalid lonlat list: " + std::string(coords));
+          throw Fmi::Exception(BCP, "Invalid lonlat list: " + std::string(coords));
 
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
@@ -878,7 +878,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         std::vector<std::string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
         if (parts.size() % 2 != 0)
-          throw Spine::Exception(BCP, "Invalid lonlats list: " + std::string(coords));
+          throw Fmi::Exception(BCP, "Invalid lonlats list: " + std::string(coords));
 
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
@@ -904,7 +904,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         std::vector<std::string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
         if (parts.size() % 2 != 0)
-          throw Spine::Exception(BCP, "Invalid latlon list: " + std::string(coords));
+          throw Fmi::Exception(BCP, "Invalid latlon list: " + std::string(coords));
 
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
@@ -932,7 +932,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         std::vector<std::string> parts;
         boost::algorithm::split(parts, coords, boost::algorithm::is_any_of(","));
         if (parts.size() % 2 != 0)
-          throw Spine::Exception(BCP, "Invalid latlons list: " + std::string(coords));
+          throw Fmi::Exception(BCP, "Invalid latlons list: " + std::string(coords));
 
         for (unsigned int j = 0; j < parts.size(); j += 2)
         {
@@ -992,7 +992,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         opts.SetLanguage(language);
         Spine::LocationList places = this->keywordSearch(opts, keyword);
         if (places.empty())
-          throw Spine::Exception(BCP,
+          throw Fmi::Exception(BCP,
                                  "No locations for keyword " + std::string(keyword) + " found");
 
         for (Spine::LocationPtr& place : places)
@@ -1010,22 +1010,22 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         double radius = 0.0;
         size_t aliasPos = wkt.find(" as ");
         if (aliasPos != std::string::npos && wkt.size() - aliasPos < 5)
-          throw Spine::Exception(BCP, "Invalid WKT-parameter: " + wkt);
+          throw Fmi::Exception(BCP, "Invalid WKT-parameter: " + wkt);
         std::string wktStr = wkt.substr(0, aliasPos);
         wktStr = parse_radius(wktStr, radius);
         // find first coordinate and do a lonlat search with it
         std::size_t firstNumberPos = wktStr.find_first_of("+-.0123456789");
         if (firstNumberPos == std::string::npos)
-          throw Spine::Exception(BCP, "Invalid WKT: " + wktStr);
+          throw Fmi::Exception(BCP, "Invalid WKT: " + wktStr);
 
         std::size_t firstCharacterAfterNumberPos = wktStr.find_first_of(",)");
         if (firstCharacterAfterNumberPos == std::string::npos)
-          throw Spine::Exception(BCP, "Invalid WKT: " + wktStr);
+          throw Fmi::Exception(BCP, "Invalid WKT: " + wktStr);
         std::string firstCoordinate =
             wktStr.substr(firstNumberPos, firstCharacterAfterNumberPos - firstNumberPos);
         std::size_t spacePos = firstCoordinate.find(' ');
         if (spacePos == std::string::npos)
-          throw Spine::Exception(BCP, "Invalid WKT: " + wktStr);
+          throw Fmi::Exception(BCP, "Invalid WKT: " + wktStr);
 
         std::string lonStr = firstCoordinate.substr(0, spacePos);
         std::string latStr = firstCoordinate.substr(spacePos + 1);
@@ -1044,7 +1044,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1063,7 +1063,7 @@ std::string Engine::countryName(const std::string& theIso2, const std::string& t
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1082,7 +1082,7 @@ boost::shared_ptr<Fmi::DEM> Engine::dem() const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1101,7 +1101,7 @@ unsigned int Engine::maxDemResolution() const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1120,7 +1120,7 @@ boost::shared_ptr<Fmi::LandCover> Engine::landCover() const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1158,7 +1158,7 @@ void Engine::sort(Spine::LocationList& theLocations) const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1208,7 +1208,7 @@ bool Engine::reload()
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1237,7 +1237,7 @@ std::string printrate(long count, long secs)
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1331,7 +1331,7 @@ StatusReturnType Engine::metadataStatus() const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1349,7 +1349,7 @@ StatusReturnType Engine::cacheStatus() const
   }
   catch (...)
   {
-    throw Spine::Exception::Trace(BCP, "Operation failed!");
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 

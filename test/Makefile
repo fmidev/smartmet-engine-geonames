@@ -17,15 +17,13 @@ ifeq ($(ASAN), yes)
   FLAGS += -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fsanitize-address-use-after-scope
 endif
 
-
-CC = g++
 CFLAGS = -DUNIX -O0 -g $(FLAGS)
 
 
 # Special external dependencies
 
 ifneq "$(wildcard /usr/include/boost169)" ""
-  INCLUDES += -I/usr/include/boost169
+  INCLUDES += -isystem /usr/include/boost169
   LIBS += -L/usr/lib64/boost169
 endif
 
@@ -39,8 +37,8 @@ endif
 
 INCLUDES += \
 	-I../geonames \
-	-I/usr/include/mysql \
-	-I/usr/include/smartmet \
+	-isystem /usr/include/mysql \
+	-isystem /usr/include/smartmet \
 	`pkg-config --cflags libconfig++`
 
 LIBS += \
@@ -86,4 +84,4 @@ test: .ciprep cnf/geonames.conf $(PROG)
 	done
 
 $(PROG) : % : %.cpp ../geonames.so
-	$(CC) $(CFLAGS) -o $@ $@.cpp $(INCLUDES) $(LIBS)
+	$(CXX) $(CFLAGS) -o $@ $@.cpp $(INCLUDES) $(LIBS)

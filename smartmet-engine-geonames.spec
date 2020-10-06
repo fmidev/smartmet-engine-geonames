@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 20.9.23
+Version: 20.10.6
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -19,9 +19,9 @@ BuildRequires: fmt-devel >= 6.2.1
 BuildRequires: libicu-devel
 BuildRequires: libpqxx-devel
 BuildRequires: mariadb-devel
-BuildRequires: smartmet-library-gis-devel >= 20.8.21
+BuildRequires: smartmet-library-gis-devel >= 20.10.5
 BuildRequires: smartmet-library-locus-devel >= 20.8.21
-BuildRequires: smartmet-library-macgyver-devel >= 20.9.18
+BuildRequires: smartmet-library-macgyver-devel >= 20.10.5
 BuildRequires: smartmet-library-spine-devel >= 20.9.23
 Requires: boost169-date-time
 Requires: boost169-filesystem
@@ -33,9 +33,9 @@ Requires: libatomic
 Requires: fmt >= 6.2.1
 Requires: libicu
 Requires: libpqxx
-Requires: smartmet-library-gis >= 20.8.21
+Requires: smartmet-library-gis >= 20.10.5
 Requires: smartmet-library-locus >= 20.8.21
-Requires: smartmet-library-macgyver >= 20.9.18
+Requires: smartmet-library-macgyver >= 20.10.5
 Requires: smartmet-library-spine >= 20.9.23
 Requires: smartmet-server >= 20.9.23
 %if 0%{rhel} >= 8
@@ -96,6 +96,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Tue Oct  6 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.10.6-1.fmi
+- Enable sensible relative libconfig include paths
+
 * Wed Sep 23 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.9.23-1.fmi
 - Use Fmi::Exception instead of Spine::Exception
 

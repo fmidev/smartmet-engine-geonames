@@ -29,10 +29,10 @@ endif
 
 
 ifneq "$(wildcard /usr/gdal30/include)" ""
-  INCLUDES += -I/usr/gdal30/include
+  INCLUDES += -isystem /usr/gdal30/include
   LIBS += -L/usr/gdal30/lib
 else
-  INCLUDES += -I/usr/include/gdal
+  INCLUDES += -isystem /usr/include/gdal
 endif
 
 INCLUDES += \

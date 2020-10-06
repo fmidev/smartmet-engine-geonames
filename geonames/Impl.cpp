@@ -795,6 +795,11 @@ void Engine::Impl::read_config()
       if (itsVerbose)
         std::cout << "Reading fminames configuration file '" << itsConfigFile << "'" << std::endl;
 
+      // Enable sensible relative include paths
+      boost::filesystem::path p = itsConfigFile;
+      p.remove_filename();
+      itsConfig.setIncludeDir(p.c_str());
+      
       itsConfig.readFile(itsConfigFile.c_str());
 
       if (!itsConfig.exists("database"))

@@ -26,6 +26,14 @@ ifneq "$(wildcard /usr/include/boost169)" ""
   LIBS += -L/usr/lib64/boost169
 endif
 
+
+ifneq "$(wildcard /usr/gdal30/include)" ""
+  INCLUDES += -isystem /usr/gdal30/include
+  LIBS += -L$(PREFIX)/gdal30/lib
+else
+  INCLUDES += -isystem /usr/include/gdal
+endif
+
 INCLUDES += \
 	-I../geonames \
 	-isystem /usr/include/mysql \

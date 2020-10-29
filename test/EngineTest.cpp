@@ -317,14 +317,15 @@ void suggest()
   if (ptrs.size() < 1)
     TEST_FAILED("Should find Kemi Ajos");
   if (ptrs.front()->geoid != -100539)
-    TEST_FAILED("GeoId of Kemi Ajos mareograph should be -100539, not " + ptrs.front()->geoid);
+      TEST_FAILED("GeoId of Kemi Ajos mareograph should be -100539, not " +
+          std::to_string(ptrs.front()->geoid));
 
   ptrs = names->suggest("100540", "fmisid");
   if (ptrs.size() < 1)
     TEST_FAILED("Should find Raahe Lapaluoto");
   if (ptrs.front()->geoid != -100540)
     TEST_FAILED("GeoId of Raahe Lapaluoto mareograph should be -100540, not " +
-                ptrs.front()->geoid);
+        std::to_string(ptrs.front()->geoid));
 
   // Test special political entities
 

@@ -58,6 +58,7 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: smartmet-test-data-gis
 #TestRequires: smartmet-test-db
 #TestRequires: zlib-devel
+#TestRequires: gdal-devel
 
 %description
 SmartMet geonames engine

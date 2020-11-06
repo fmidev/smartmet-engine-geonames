@@ -55,7 +55,7 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: gcc-c++
 #TestRequires: smartmet-library-spine-devel
 #TestRequires: smartmet-library-regression
-#TestRequires: smartmet-test-data-gis
+#TestRequires: smartmet-test-data
 #TestRequires: smartmet-test-db
 #TestRequires: zlib-devel
 #TestRequires: gdal-devel

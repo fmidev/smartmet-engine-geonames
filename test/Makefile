@@ -39,26 +39,16 @@ clean:
 	rm -f $(PROG) *~
 
 
-# Detect certain configuration parameters according to environment
-DATABASE_HOST = $(shell test "$$CI" = "true" && echo localhost || echo smartmet-test)
-DATABASE_PORT = $(shell test "$$CI" = "true" && echo 5432 || echo 5444)
-TESTDATADIR =  $(shell test -d /usr/share/smartmet/test/data && echo "/usr/share/smartmet/test/data" || echo "/smartmet/share")
-
-cnf/geonames.conf: cnf/geonames.tmpl.conf
-	sed -e "s/DATABASE_PORT/$(DATABASE_PORT)/" \
-		-e "s/DATABASE_HOST/$(DATABASE_HOST)/" \
-		-e "s%TESTDATADIR%$(TESTDATADIR)%" < cnf/geonames.tmpl.conf > tmp
-		mv tmp cnf/geonames.conf
-
 ifdef CI
-test: fminames cnf/geonames.conf $(PROG)
+test: fminames $(PROG)
 else
-test: cnf/geonames.conf $(PROG)
+test: $(PROG)
 endif
 	@echo Running tests:
 	@for prog in $(PROG); do ./$$prog; done
 
 fminames:
+	sed -i -e 's/"smartmet-test"/"localhost"/g' cnf/*.conf
 	@/usr/share/smartmet/test/db/init-and-start.sh && /usr/share/smartmet/test/db/install-test-db.sh > /dev/null
 
 

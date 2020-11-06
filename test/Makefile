@@ -59,7 +59,7 @@ endif
 	@for prog in $(PROG); do ./$$prog; done
 
 fminames:
-	@/usr/share/smartmet/test/db/init-and-start.sh && /usr/share/smartmet/test/db/install-test-db.sh
+	@/usr/share/smartmet/test/db/init-and-start.sh && /usr/share/smartmet/test/db/install-test-db.sh > /dev/null
 
 
 $(PROG) : % : %.cpp ../geonames.so

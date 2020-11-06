@@ -38,9 +38,6 @@ all: $(PROG)
 clean:
 	rm -f $(PROG) *~
 
-.ciprep:
-	test "$$CI" != "true" || ( /usr/share/smartmet/test/db/init-and-start.sh && \
-		/usr/share/smartmet/test/db/install-test-db.sh drop && rm -f $(PROG) && touch .ciprep )
 
 # Detect certain configuration parameters according to environment
 DATABASE_HOST = $(shell test "$$CI" = "true" && echo localhost || echo smartmet-test)
@@ -53,12 +50,17 @@ cnf/geonames.conf: cnf/geonames.tmpl.conf
 		-e "s%TESTDATADIR%$(TESTDATADIR)%" < cnf/geonames.tmpl.conf > tmp
 		mv tmp cnf/geonames.conf
 
-
-test: .ciprep cnf/geonames.conf $(PROG)
+ifdef CI
+test: fminames cnf/geonames.conf $(PROG)
+else
+test: cnf/geonames.conf $(PROG)
+endif
 	@echo Running tests:
-	@for prog in $(PROG); do \
-	./$$prog; \
-	done
+	@for prog in $(PROG); do ./$$prog; done
+
+fminames:
+	@/usr/share/smartmet/test/db/init-and-start.sh && /usr/share/smartmet/test/db/install-test-db.sh
+
 
 $(PROG) : % : %.cpp ../geonames.so
 	$(CXX) $(CFLAGS) -o $@ $@.cpp $(INCLUDES) $(LIBS)

@@ -816,11 +816,11 @@ void featureSearch()
 {
   // Kumpula, Helsinki
 
-  auto ptr = names->featureSearch(24.9642, 60.2089, "fi", "SYNOP");
+  auto ptr = names->featureSearch(24.95, 60.175, "fi", "SYNOP");
   if (ptr->feature != "SYNOP")
     TEST_FAILED("Did not find a SYNOP station");
-  if (ptr->name != "Kumpula")
-    TEST_FAILED("Did not find Kumpula, Helsinki but " + ptr->name);
+  if (ptr->name != "KAISANIEMI")
+    TEST_FAILED("Did not find KAISANIE I, Helsinki but " + ptr->name);
 
   ptr = names->featureSearch(24.9642, 60.2089, "fi", "PPL");
   if (ptr->name != "Hermanni")

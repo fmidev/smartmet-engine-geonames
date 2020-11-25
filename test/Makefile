@@ -1,31 +1,10 @@
 PROG = $(patsubst %.cpp,%,$(wildcard *Test.cpp))
 
-FLAGS = -std=c++11 -Wall -W -Wno-unused-parameter
+REQUIRES = gdal configpp
 
-EXTRAFLAGS = -Werror -pedantic -Wpointer-arith -Wcast-qual \
-	-Wcast-align -Wwrite-strings -Wconversion -Winline \
-	-Wctor-dtor-privacy -Wnon-virtual-dtor -Wno-pmf-conversions \
-	-Wsign-promo -Wchar-subscripts -Wold-style-cast \
-	-Wshadow -Woverloaded-virtual
-
-DIFFICULTFLAGS = -Weffc++ -Wunreachable-code -Wredundant-decls
-
-ifeq ($(TSAN), yes)
-  FLAGS += -fsanitize=thread
-endif
-ifeq ($(ASAN), yes)
-  FLAGS += -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fsanitize-address-use-after-scope
-endif
+include $(shell echo $${PREFIX-/usr})/share/smartmet/devel/makefile.inc
 
 CFLAGS = -DUNIX -O0 -g $(FLAGS)
-
-# Boost 1.69
-
-ifneq "$(wildcard /usr/include/boost169)" ""
-  INCLUDES += -isystem /usr/include/boost169
-  LIBS += -L/usr/lib64/boost169
-endif
-
 
 ifneq "$(wildcard /usr/gdal30/include)" ""
   INCLUDES += -isystem /usr/gdal30/include
@@ -37,8 +16,7 @@ endif
 INCLUDES += \
 	-I../geonames \
 	-isystem /usr/include/mysql \
-	-isystem /usr/include/smartmet \
-	`pkg-config --cflags libconfig++`
+	-isystem /usr/include/smartmet
 
 LIBS += \
 	../geonames.so \
@@ -46,7 +24,7 @@ LIBS += \
 	-lsmartmet-macgyver \
 	-lsmartmet-locus \
 	-lsmartmet-newbase \
-	`pkg-config --libs libconfig++` \
+	$(CONFIGPP_LIBS) \
 	-lpqxx \
 	-lboost_date_time \
 	-lboost_thread \
@@ -60,27 +38,19 @@ all: $(PROG)
 clean:
 	rm -f $(PROG) *~
 
-.ciprep:
-	test "$$CI" != "true" || ( /usr/share/smartmet/test/db/init-and-start.sh && \
-		/usr/share/smartmet/test/db/install-test-db.sh drop && rm -f $(PROG) && touch .ciprep )
 
-# Detect certain configuration parameters according to environment
-DATABASE_HOST = $(shell test "$$CI" = "true" && echo localhost || echo smartmet-test)
-DATABASE_PORT = $(shell test "$$CI" = "true" && echo 5432 || echo 5444)
-TESTDATADIR =  $(shell test -d /usr/share/smartmet/test/data && echo "/usr/share/smartmet/test/data" || echo "/smartmet/share")
-
-cnf/geonames.conf: cnf/geonames.tmpl.conf
-	sed -e "s/DATABASE_PORT/$(DATABASE_PORT)/" \
-		-e "s/DATABASE_HOST/$(DATABASE_HOST)/" \
-		-e "s%TESTDATADIR%$(TESTDATADIR)%" < cnf/geonames.tmpl.conf > tmp
-		mv tmp cnf/geonames.conf
-
-
-test: .ciprep cnf/geonames.conf $(PROG)
+ifdef CI
+test: fminames $(PROG)
+else
+test: $(PROG)
+endif
 	@echo Running tests:
-	@for prog in $(PROG); do \
-	./$$prog; \
-	done
+	@for prog in $(PROG); do ./$$prog; done
+
+fminames:
+	sed -i -e 's/"smartmet-test"/"localhost"/g' cnf/*.conf
+	@/usr/share/smartmet/test/db/init-and-start.sh && /usr/share/smartmet/test/db/install-test-db.sh > /dev/null
+
 
 $(PROG) : % : %.cpp ../geonames.so
 	$(CXX) $(CFLAGS) -o $@ $@.cpp $(INCLUDES) $(LIBS)

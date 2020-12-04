@@ -15,8 +15,8 @@
 #include <boost/thread.hpp>
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
-#include <macgyver/StringConversion.h>
 #include <macgyver/Exception.h>
+#include <macgyver/StringConversion.h>
 #include <spine/Location.h>
 #include <sys/types.h>
 
@@ -799,7 +799,7 @@ void Engine::Impl::read_config()
       boost::filesystem::path p = itsConfigFile;
       p.remove_filename();
       itsConfig.setIncludeDir(p.c_str());
-      
+
       itsConfig.readFile(itsConfigFile.c_str());
 
       if (!itsConfig.exists("database"))
@@ -898,8 +898,7 @@ void Engine::Impl::read_config_priorities()
 
       if (!tmp.isGroup())
       {
-        Fmi::Exception exception(BCP,
-                                   "Configured value of 'priorities.features' must be a group!");
+        Fmi::Exception exception(BCP, "Configured value of 'priorities.features' must be a group!");
         exception.addParameter("Configuration file", itsConfigFile);
         throw exception;
       }
@@ -2433,10 +2432,21 @@ Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOpti
     if (pos)
       return *pos;
 
+    // Locus priority sort messes up GeoEngine priority sort, so we temporarily
+    // increase the limit to at least 100 names.
+    auto options = theOptions;
+    if (options.GetResultLimit() > 0)
+      options.SetResultLimit(std::max(theOptions.GetResultLimit(), 100u));
+
     Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
-    Spine::LocationList ptrs = to_locationlist(lq.FetchByName(theOptions, theName));
+    Spine::LocationList ptrs = to_locationlist(lq.FetchByName(options, theName));
+
     assign_priorities(ptrs);
     ptrs.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
+
+    // And finally keep only the desired number of matches
+    if (theOptions.GetResultLimit() > 0 && ptrs.size() > theOptions.GetResultLimit())
+      ptrs.resize(theOptions.GetResultLimit());
 
     // Do not cache empty results
     if (ptrs.empty())

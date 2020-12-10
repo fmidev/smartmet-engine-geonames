@@ -317,15 +317,15 @@ void suggest()
   if (ptrs.size() < 1)
     TEST_FAILED("Should find Kemi Ajos");
   if (ptrs.front()->geoid != -100539)
-      TEST_FAILED("GeoId of Kemi Ajos mareograph should be -100539, not " +
-          std::to_string(ptrs.front()->geoid));
+    TEST_FAILED("GeoId of Kemi Ajos mareograph should be -100539, not " +
+                std::to_string(ptrs.front()->geoid));
 
   ptrs = names->suggest("100540", "fmisid");
   if (ptrs.size() < 1)
     TEST_FAILED("Should find Raahe Lapaluoto");
   if (ptrs.front()->geoid != -100540)
     TEST_FAILED("GeoId of Raahe Lapaluoto mareograph should be -100540, not " +
-        std::to_string(ptrs.front()->geoid));
+                std::to_string(ptrs.front()->geoid));
 
   // Test special political entities
 
@@ -671,6 +671,14 @@ void nameSearch()
     TEST_FAILED("Failed to find Malakka");
   if (ptrs.front()->name != "Malakka")
     TEST_FAILED("First match for Malakka should be Malakka, not " + ptrs.front()->name);
+
+  // We should get Kallio, Helsinki as the best match due to its large population
+
+  ptrs = names->nameSearch(opts, "Kallio");
+  if (ptrs.empty())
+    TEST_FAILED("Failed to find Kallio");
+  if (ptrs.front()->area != "Helsinki")
+    TEST_FAILED("First match for Kallio should be in Helsinki, not in " + ptrs.front()->area);
 
   TEST_PASSED();
 }

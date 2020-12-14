@@ -39,8 +39,8 @@ Requires: smartmet-library-macgyver >= 20.10.28
 Requires: smartmet-library-spine >= 20.10.28
 Requires: smartmet-server >= 20.9.23
 %if 0%{rhel} >= 8
-BuildRequires: gdal30-devel
-Requires: gdal30-libs
+BuildRequires: gdal32-devel
+Requires: gdal32-libs
 Requires: mariadb-connector-c
 %else
 BuildRequires: gdal-devel

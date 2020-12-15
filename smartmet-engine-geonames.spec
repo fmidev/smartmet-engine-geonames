@@ -3,22 +3,23 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 20.12.4
+Version: 20.12.15
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
 Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: rpm-build
-BuildRequires: gcc-c++
-BuildRequires: make
 BuildRequires: boost169-devel
-BuildRequires: libatomic
 BuildRequires: fmt-devel >= 7.1.0
+BuildRequires: gcc-c++
+BuildRequires: gdal32-devel
+BuildRequires: libatomic
 BuildRequires: libicu-devel
 BuildRequires: libpqxx-devel
+BuildRequires: make
 BuildRequires: mariadb-devel
+BuildRequires: rpm-build
 BuildRequires: smartmet-library-gis-devel >= 20.10.28
 BuildRequires: smartmet-library-locus-devel >= 20.8.21
 BuildRequires: smartmet-library-macgyver-devel >= 20.10.28
@@ -29,8 +30,9 @@ Requires: boost169-iostreams
 Requires: boost169-locale
 Requires: boost169-system
 Requires: boost169-thread
-Requires: libatomic
 Requires: fmt >= 7.1.0
+Requires: gdal32-libs
+Requires: libatomic
 Requires: libicu
 Requires: libpqxx
 Requires: smartmet-library-gis >= 20.10.28
@@ -39,12 +41,8 @@ Requires: smartmet-library-macgyver >= 20.10.28
 Requires: smartmet-library-spine >= 20.10.28
 Requires: smartmet-server >= 20.9.23
 %if 0%{rhel} >= 8
-BuildRequires: gdal32-devel
-Requires: gdal32-libs
 Requires: mariadb-connector-c
 %else
-BuildRequires: gdal-devel
-Requires: gdal-libs
 Requires: mariadb-libs
 %endif
 Provides: %{SPECNAME}
@@ -58,7 +56,7 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: smartmet-test-data
 #TestRequires: smartmet-test-db
 #TestRequires: zlib-devel
-#TestRequires: gdal-devel
+#TestRequires: gdal32-devel
 
 %description
 SmartMet geonames engine
@@ -97,6 +95,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Tue Dec 15 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.12.15-1.fmi
+- Upgrade to pgdg12
+
 * Fri Dec  4 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.12.4-1.fmi
 - Improved sorting of name search results
 

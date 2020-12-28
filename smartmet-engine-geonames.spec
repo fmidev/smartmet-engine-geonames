@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 20.12.15
+Version: 20.12.28
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -16,14 +16,14 @@ BuildRequires: gcc-c++
 BuildRequires: gdal32-devel
 BuildRequires: libatomic
 BuildRequires: libicu-devel
-BuildRequires: libpqxx-devel
+BuildRequires: libpqxx-devel < 1:7.0
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 20.10.28
-BuildRequires: smartmet-library-locus-devel >= 20.8.21
-BuildRequires: smartmet-library-macgyver-devel >= 20.10.28
-BuildRequires: smartmet-library-spine-devel >= 20.10.28
+BuildRequires: smartmet-library-gis-devel >= 20.12.15
+BuildRequires: smartmet-library-locus-devel >= 20.12.15
+BuildRequires: smartmet-library-macgyver-devel >= 20.12.15
+BuildRequires: smartmet-library-spine-devel >= 20.12.15
 Requires: boost169-date-time
 Requires: boost169-filesystem
 Requires: boost169-iostreams
@@ -34,12 +34,12 @@ Requires: fmt >= 7.1.0
 Requires: gdal32-libs
 Requires: libatomic
 Requires: libicu
-Requires: libpqxx
-Requires: smartmet-library-gis >= 20.10.28
-Requires: smartmet-library-locus >= 20.8.21
-Requires: smartmet-library-macgyver >= 20.10.28
-Requires: smartmet-library-spine >= 20.10.28
-Requires: smartmet-server >= 20.9.23
+Requires: libpqxx < 1:7.0
+Requires: smartmet-library-gis >= 20.12.15
+Requires: smartmet-library-locus >= 20.12.15
+Requires: smartmet-library-macgyver >= 20.12.15
+Requires: smartmet-library-spine >= 20.12.15
+Requires: smartmet-server >= 20.10.28
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -95,6 +95,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Dec 28 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.12.28-1.fmi
+- Prevent libpqxx 7.0 from being installed
+
 * Tue Dec 15 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.12.15-1.fmi
 - Upgrade to pgdg12
 

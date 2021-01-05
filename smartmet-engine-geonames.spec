@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 20.12.28
+Version: 21.1.5
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -11,7 +11,7 @@ URL: https://github.com/fmidev/smartmet-engine-geonames
 Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: boost169-devel
-BuildRequires: fmt-devel >= 7.1.0
+BuildRequires: fmt-devel >= 7.1.3
 BuildRequires: gcc-c++
 BuildRequires: gdal32-devel
 BuildRequires: libatomic
@@ -20,25 +20,25 @@ BuildRequires: libpqxx-devel < 1:7.0
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 20.12.15
+BuildRequires: smartmet-library-gis-devel >= 21.1.5
 BuildRequires: smartmet-library-locus-devel >= 20.12.15
-BuildRequires: smartmet-library-macgyver-devel >= 20.12.15
-BuildRequires: smartmet-library-spine-devel >= 20.12.15
+BuildRequires: smartmet-library-macgyver-devel >= 21.1.5
+BuildRequires: smartmet-library-spine-devel >= 21.1.5
 Requires: boost169-date-time
 Requires: boost169-filesystem
 Requires: boost169-iostreams
 Requires: boost169-locale
 Requires: boost169-system
 Requires: boost169-thread
-Requires: fmt >= 7.1.0
+Requires: fmt >= 7.1.3
 Requires: gdal32-libs
 Requires: libatomic
 Requires: libicu
 Requires: libpqxx < 1:7.0
-Requires: smartmet-library-gis >= 20.12.15
+Requires: smartmet-library-gis >= 21.1.5
 Requires: smartmet-library-locus >= 20.12.15
-Requires: smartmet-library-macgyver >= 20.12.15
-Requires: smartmet-library-spine >= 20.12.15
+Requires: smartmet-library-macgyver >= 21.1.5
+Requires: smartmet-library-spine >= 21.1.5
 Requires: smartmet-server >= 20.10.28
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
@@ -95,6 +95,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Tue Jan  5 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.1.5-1.fmi
+- Upgrade to fmt 7.1.3
+
 * Mon Dec 28 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.12.28-1.fmi
 - Prevent libpqxx 7.0 from being installed
 

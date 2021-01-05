@@ -47,6 +47,7 @@ class LocationOptions
   const Spine::TaggedLocationList& locations() const { return itsLocations; }
   bool empty() const { return itsLocations.empty(); }
   Spine::TaggedLocationList::size_type size() const { return itsLocations.size(); }
+  void setLocations(const Spine::TaggedLocationList& locations) { itsLocations = locations; }
 
  private:
   friend class Engine;

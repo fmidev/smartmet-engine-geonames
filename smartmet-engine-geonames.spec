@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.1.5
+Version: 21.1.14
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -20,10 +20,10 @@ BuildRequires: libpqxx-devel < 1:7.0
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 21.1.5
-BuildRequires: smartmet-library-locus-devel >= 20.12.15
-BuildRequires: smartmet-library-macgyver-devel >= 21.1.5
-BuildRequires: smartmet-library-spine-devel >= 21.1.5
+BuildRequires: smartmet-library-gis-devel >= 21.1.14
+BuildRequires: smartmet-library-locus-devel >= 21.1.14
+BuildRequires: smartmet-library-macgyver-devel >= 21.1.14
+BuildRequires: smartmet-library-spine-devel >= 21.1.14
 Requires: boost169-date-time
 Requires: boost169-filesystem
 Requires: boost169-iostreams
@@ -35,11 +35,11 @@ Requires: gdal32-libs
 Requires: libatomic
 Requires: libicu
 Requires: libpqxx < 1:7.0
-Requires: smartmet-library-gis >= 21.1.5
-Requires: smartmet-library-locus >= 20.12.15
-Requires: smartmet-library-macgyver >= 21.1.5
-Requires: smartmet-library-spine >= 21.1.5
-Requires: smartmet-server >= 20.10.28
+Requires: smartmet-library-gis >= 21.1.14
+Requires: smartmet-library-locus >= 21.1.14
+Requires: smartmet-library-macgyver >= 21.1.14
+Requires: smartmet-library-spine >= 21.1.14
+Requires: smartmet-server >= 21.1.14
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -95,6 +95,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Thu Jan 14 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.1.14-1.fmi
+- Repackaged smartmet to resolve debuginfo issues
+
 * Tue Jan  5 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.1.5-1.fmi
 - Upgrade to fmt 7.1.3
 

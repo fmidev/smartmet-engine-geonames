@@ -57,6 +57,7 @@ $(LIBFILE): $(OBJS)
 
 clean:
 	rm -f $(LIBFILE) obj/* *~ $(SUBNAME)/*~
+	$(MAKE) -C test $@
 
 format:
 	clang-format -i -style=file $(SUBNAME)/*.h $(SUBNAME)/*.cpp test/*.cpp

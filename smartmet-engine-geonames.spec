@@ -44,6 +44,7 @@ Requires: smartmet-server >= 21.1.14
 Requires: mariadb-connector-c
 %else
 Requires: mariadb-libs
+%endif
 
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1

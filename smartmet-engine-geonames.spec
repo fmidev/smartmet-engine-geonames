@@ -3,43 +3,46 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 20.10.6
+Version: 21.1.25
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
 Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: rpm-build
-BuildRequires: gcc-c++
-BuildRequires: make
 BuildRequires: boost169-devel
+BuildRequires: fmt-devel >= 7.1.3
+BuildRequires: gcc-c++
+BuildRequires: gdal32-devel
 BuildRequires: libatomic
-BuildRequires: fmt-devel >= 6.2.1
 BuildRequires: libicu-devel
-BuildRequires: libpqxx-devel
+BuildRequires: libpqxx-devel < 1:7.0
+BuildRequires: make
 BuildRequires: mariadb-devel
-BuildRequires: gdal30-devel
-BuildRequires: smartmet-library-gis-devel >= 20.9.25
-BuildRequires: smartmet-library-locus-devel >= 20.8.21
-BuildRequires: smartmet-library-macgyver-devel >= 20.10.5
-BuildRequires: smartmet-library-spine-devel >= 20.10.6
+BuildRequires: rpm-build
+BuildRequires: smartmet-library-gis-devel >= 21.1.14
+BuildRequires: smartmet-library-locus-devel >= 21.1.14
+BuildRequires: smartmet-library-macgyver-devel >= 21.1.14
+BuildRequires: smartmet-library-spine-devel >= 21.1.14
 Requires: boost169-date-time
 Requires: boost169-filesystem
 Requires: boost169-iostreams
 Requires: boost169-locale
 Requires: boost169-system
 Requires: boost169-thread
+Requires: fmt >= 7.1.3
+Requires: gdal32-libs
 Requires: libatomic
-Requires: fmt >= 6.2.1
 Requires: libicu
-Requires: libpqxx
-Requires: smartmet-library-gis >= 20.9.25
-Requires: smartmet-library-locus >= 20.8.21
-Requires: smartmet-library-macgyver >= 20.10.5
-Requires: smartmet-library-spine >= 20.10.6
-Requires: smartmet-server >= 20.9.23
-Requires: gdal30-libs
+Requires: libpqxx < 1:7.0
+Requires: smartmet-library-gis >= 21.1.14
+Requires: smartmet-library-locus >= 21.1.14
+Requires: smartmet-library-macgyver >= 21.1.14
+Requires: smartmet-library-spine >= 21.1.14
+Requires: smartmet-server >= 21.1.14
+%if 0%{rhel} >= 8
+Requires: mariadb-connector-c
+%else
 Requires: mariadb-libs
 
 Provides: %{SPECNAME}
@@ -50,9 +53,10 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: gcc-c++
 #TestRequires: smartmet-library-spine-devel
 #TestRequires: smartmet-library-regression
-#TestRequires: smartmet-test-data-gis
+#TestRequires: smartmet-test-data
 #TestRequires: smartmet-test-db
 #TestRequires: zlib-devel
+#TestRequires: gdal32-devel
 
 %description
 SmartMet geonames engine
@@ -91,6 +95,27 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Jan 25 2021 Anssi Reponen <anssi.reponen@fmi.fi> - 21.1.25-1.fmi
+- Added function to change tagged locations in LocationOptions class
+
+* Thu Jan 14 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.1.14-1.fmi
+- Repackaged smartmet to resolve debuginfo issues
+
+* Tue Jan  5 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.1.5-1.fmi
+- Upgrade to fmt 7.1.3
+
+* Mon Dec 28 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.12.28-1.fmi
+- Prevent libpqxx 7.0 from being installed
+
+* Tue Dec 15 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.12.15-1.fmi
+- Upgrade to pgdg12
+
+* Fri Dec  4 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.12.4-1.fmi
+- Improved sorting of name search results
+
+* Wed Oct 28 2020 Andris Pavenis <andris.pavenis@fmi.fi> - 20.10.28-1.fmi
+- Rebuild due to fmt upgrade
+
 * Tue Oct  6 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.10.6-1.fmi
 - Enable sensible relative libconfig include paths
 

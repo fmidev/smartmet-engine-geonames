@@ -317,14 +317,15 @@ void suggest()
   if (ptrs.size() < 1)
     TEST_FAILED("Should find Kemi Ajos");
   if (ptrs.front()->geoid != -100539)
-    TEST_FAILED("GeoId of Kemi Ajos mareograph should be -100539, not " + ptrs.front()->geoid);
+    TEST_FAILED("GeoId of Kemi Ajos mareograph should be -100539, not " +
+                std::to_string(ptrs.front()->geoid));
 
   ptrs = names->suggest("100540", "fmisid");
   if (ptrs.size() < 1)
     TEST_FAILED("Should find Raahe Lapaluoto");
   if (ptrs.front()->geoid != -100540)
     TEST_FAILED("GeoId of Raahe Lapaluoto mareograph should be -100540, not " +
-                ptrs.front()->geoid);
+                std::to_string(ptrs.front()->geoid));
 
   // Test special political entities
 
@@ -671,6 +672,14 @@ void nameSearch()
   if (ptrs.front()->name != "Malakka")
     TEST_FAILED("First match for Malakka should be Malakka, not " + ptrs.front()->name);
 
+  // We should get Kallio, Helsinki as the best match due to its large population
+
+  ptrs = names->nameSearch(opts, "Kallio");
+  if (ptrs.empty())
+    TEST_FAILED("Failed to find Kallio");
+  if (ptrs.front()->area != "Helsinki")
+    TEST_FAILED("First match for Kallio should be in Helsinki, not in " + ptrs.front()->area);
+
   TEST_PASSED();
 }
 
@@ -746,15 +755,9 @@ void lonlatSearch()
     TEST_FAILED("Elevation for Kumpula should be 11, not " +
                 boost::lexical_cast<std::string>(ptrs.front()->elevation));
 
-#ifdef SMALL_DEM_DATA_IN_USE_IN_MASTER
   if (ptrs.front()->dem != 24)
     TEST_FAILED("DEM for Kumpula should be 24, not " +
                 boost::lexical_cast<std::string>(ptrs.front()->dem));
-#else
-  if (ptrs.front()->dem != 11)
-    TEST_FAILED("DEM for Kumpula should be 11, not " +
-                boost::lexical_cast<std::string>(ptrs.front()->dem));
-#endif
 
   // Rooma
 
@@ -821,11 +824,11 @@ void featureSearch()
 {
   // Kumpula, Helsinki
 
-  auto ptr = names->featureSearch(24.9642, 60.2089, "fi", "SYNOP");
+  auto ptr = names->featureSearch(24.95, 60.175, "fi", "SYNOP");
   if (ptr->feature != "SYNOP")
     TEST_FAILED("Did not find a SYNOP station");
-  if (ptr->name != "Kumpula")
-    TEST_FAILED("Did not find Kumpula, Helsinki but " + ptr->name);
+  if (ptr->name != "KAISANIEMI")
+    TEST_FAILED("Did not find KAISANIE I, Helsinki but " + ptr->name);
 
   ptr = names->featureSearch(24.9642, 60.2089, "fi", "PPL");
   if (ptr->name != "Hermanni")

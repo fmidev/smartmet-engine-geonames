@@ -14,9 +14,12 @@ remove_underscores = true;
 # Ä and A would be considered equivalent.
 locale = "fi_FI.UTF-8";
 
+# Common iconv ascii//translit mode not enabled by default.
+ascii_autocomplete = false;
+
 # DEM data. If this is omitted, the dem value will always be NaN
-# demdir = "TESTDATADIR/gis/rasters/viewfinder";
-demdir = "/smartmet/share/gis/rasters/viewfinder";
+# demdir = "/usr/share/smartmet/test/data/gis/rasters/viewfinder";
+demdir = "/usr/share/smartmet/test/data/gis/rasters/viewfinder";
 
 # Do not use too high resolution data to avoid page faults
 # 0 meters = allow highest possible resolution
@@ -25,16 +28,16 @@ demdir = "/smartmet/share/gis/rasters/viewfinder";
 maxdemresolution = 0;
 
 # LandCover data
-# landcoverdir = "TESTDATADIR/gis/rasters/globcover";
-landcoverdir = "/smartmet/share/gis/rasters/globcover";
+# landcoverdir = "/usr/share/smartmet/test/data/gis/rasters/globcover";
+landcoverdir = "/usr/share/smartmet/test/data/gis/rasters/globcover";
 
 # Database settings.
 
 database:
 {
 	disable  = false;
-	port	 = DATABASE_PORT;
-	host	 = "DATABASE_HOST";
+	port	 = 5444;
+	host	 = "smartmet-test";
 	user	 = "fminames_user";
 	database = "fminames";
 	pass	 = "fminames_pw";
@@ -42,8 +45,8 @@ database:
 	overrides =
 	(
 		{
-			name = ["centos7-punkka"];
-			host = "gemini";
+			name = ["centos7-punkka", "centos7-mheiskan"];
+			host = "dev.dev.weatherproof.fi";
 		},
 		{
 			name = ["lavi", "kokis"];

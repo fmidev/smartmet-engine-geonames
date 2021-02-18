@@ -522,6 +522,73 @@ void suggest_duplicates()
   TEST_PASSED();
 }
 
+void nameIdSearch()
+{
+  SmartMet::Spine::LocationList ptrs;
+
+  Locus::QueryOptions opts;
+  opts.SetCountries("all");
+  opts.SetFeatures("SYNOP,FINAVIA,STUK");
+  opts.SetSearchVariants(true);
+  opts.SetResultLimit(1);
+  SmartMet::Spine::LocationList ll;
+
+  // FMISID
+  opts.SetNameType("fmisid");
+  opts.SetLanguage("fi");
+  std::string id = "101004";
+  ll = names->nameSearch(opts, id);
+
+  if(ll.size() > 0)
+	if(ll.front()->name != "Kumpula")
+	  TEST_FAILED("Name of FMISID 101004 should be Kumpula, not " + ll.front()->name);
+
+  opts.SetLanguage("sv");
+  ll = names->nameSearch(opts, id);
+
+  if(ll.size() > 0)
+	if(ll.front()->name != "Gumtäkt")
+	  TEST_FAILED("Name of FMISID 101004 should be Gumtäkt, not " + ll.front()->name);
+
+  // WMO
+  opts.SetNameType("wmo");
+  opts.SetLanguage("fi");
+  id = "2998";
+  ll = names->nameSearch(opts, id);
+
+  if(ll.size() > 0)
+	if(ll.front()->name != "Kumpula")
+	  TEST_FAILED("Name of WMO 2998 should be Kumpula, not " + ll.front()->name);
+
+  opts.SetLanguage("sv");
+  ll = names->nameSearch(opts, id);
+
+  if(ll.size() > 0)
+	if(ll.front()->name != "Gumtäkt")
+	  TEST_FAILED("Name of WMO 2998 should be Gumtäkt, not " + ll.front()->name);
+
+  // LPNN
+  opts.SetNameType("lpnn");
+  opts.SetLanguage("fi");
+  id = "339";
+  ll = names->nameSearch(opts, id);
+
+  if(ll.size() > 0)
+	if(ll.front()->name != "Kumpula")
+	  TEST_FAILED("Name of LPNN 339 should be Kumpula, not " + ll.front()->name);
+
+  opts.SetLanguage("sv");
+  ll = names->nameSearch(opts, id);
+
+  if(ll.size() > 0)
+	if(ll.front()->name != "Gumtäkt")
+	  TEST_FAILED("Name of LPNN 339 should be Gumtäkt, not " + ll.front()->name);
+
+
+  TEST_PASSED();
+
+}
+
 // ----------------------------------------------------------------------
 
 void nameSearch()
@@ -856,6 +923,7 @@ class tests : public tframe::tests
   void test()
   {
     TEST(nameSearch);
+    TEST(nameIdSearch);
     TEST(idSearch);
     TEST(lonlatSearch);
     TEST(nearest);

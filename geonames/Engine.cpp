@@ -649,6 +649,54 @@ Spine::LocationPtr Engine::keywordSearch(double theLongitude,
   }
 }
 
+LocationOptions Engine::parseLocations(const std::vector<int>& fmisids,
+									   const std::vector<int>& lpnns,
+									   const std::vector<int>& wmos,
+									   const std::string& language) const
+{
+  try
+  {
+    LocationOptions options;
+
+	Locus::QueryOptions opts;
+    opts.SetCountries("all");
+	opts.SetFullCountrySearch(true);
+	opts.SetFeatures("SYNOP,FINAVIA,STUK");
+    opts.SetSearchVariants(true);
+    opts.SetLanguage(language);
+    opts.SetResultLimit(1);
+	
+	opts.SetNameType("fmisid");
+	for(const auto& id : fmisids)
+	  {
+		Spine::LocationList ll = nameSearch(opts, Fmi::to_string(id));
+		if (ll.size() > 0)
+		  options.add(Fmi::to_string(id), ll.front());
+	  }
+	opts.SetNameType("lpnn");
+	for(const auto& id : lpnns)
+	  {
+		Spine::LocationList ll = nameSearch(opts, Fmi::to_string(id));
+		if (ll.size() > 0)
+		  options.add(Fmi::to_string(id), ll.front());
+	  }
+	opts.SetNameType("wmo");
+	for(const auto& id : wmos)
+	  {
+		Spine::LocationList ll = nameSearch(opts, Fmi::to_string(id));
+		if (ll.size() > 0)
+		  options.add(Fmi::to_string(id), ll.front());
+	  }
+
+	return options;
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+
 // ----------------------------------------------------------------------
 /*!
  * \brief Map location-related HTTP query parameters to Locations

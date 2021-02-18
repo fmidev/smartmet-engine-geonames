@@ -161,6 +161,12 @@ class Engine : public Spine::SmartMetEngine
 
   std::string countryName(const std::string& theIso2, const std::string& theLang = "fi") const;
 
+  // Parse locations from FMISIDs,LPNNs,WMOs
+  LocationOptions parseLocations(const std::vector<int>& fmisids,
+								 const std::vector<int>& lpnns,
+								 const std::vector<int>& wmos,
+								 const std::string& language) const;
+  
   // Parse location-related HTTP options
   LocationOptions parseLocations(const Spine::HTTP::Request& theReq) const;
 

@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.1.25
+Version: 21.2.18
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -21,7 +21,7 @@ BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-library-gis-devel >= 21.1.14
-BuildRequires: smartmet-library-locus-devel >= 21.1.14
+BuildRequires: smartmet-library-locus-devel >= 21.2.18
 BuildRequires: smartmet-library-macgyver-devel >= 21.1.14
 BuildRequires: smartmet-library-spine-devel >= 21.1.14
 Requires: boost169-date-time
@@ -36,7 +36,7 @@ Requires: libatomic
 Requires: libicu
 Requires: libpqxx < 1:7.0
 Requires: smartmet-library-gis >= 21.1.14
-Requires: smartmet-library-locus >= 21.1.14
+Requires: smartmet-library-locus >= 21.2.18
 Requires: smartmet-library-macgyver >= 21.1.14
 Requires: smartmet-library-spine >= 21.1.14
 Requires: smartmet-server >= 21.1.14
@@ -95,6 +95,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Thu Feb 18 2021 Anssi Reponen <anssi.reponen@fmi.fi> - 21.2.18-1.fmi
+- New parseLocations-function added to get locations for FMISs,WMOs,LPNNs (BRAINSTORM-1848)
+
 * Mon Jan 25 2021 Anssi Reponen <anssi.reponen@fmi.fi> - 21.1.25-1.fmi
 - Added function to change tagged locations in LocationOptions class
 

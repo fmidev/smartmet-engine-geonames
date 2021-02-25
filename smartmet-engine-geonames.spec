@@ -20,10 +20,11 @@ BuildRequires: libpqxx-devel < 1:7.0
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 21.1.14
+BuildRequires: smartmet-library-gis-devel >= 21.2.11
 BuildRequires: smartmet-library-locus-devel >= 21.2.18
-BuildRequires: smartmet-library-macgyver-devel >= 21.1.14
-BuildRequires: smartmet-library-spine-devel >= 21.1.14
+BuildRequires: smartmet-library-macgyver-devel >= 21.1.25
+BuildRequires: smartmet-library-spine-devel >= 21.2.5
+
 Requires: boost169-date-time
 Requires: boost169-filesystem
 Requires: boost169-iostreams
@@ -35,10 +36,10 @@ Requires: gdal32-libs
 Requires: libatomic
 Requires: libicu
 Requires: libpqxx < 1:7.0
-Requires: smartmet-library-gis >= 21.1.14
+Requires: smartmet-library-gis >= 21.2.11
 Requires: smartmet-library-locus >= 21.2.18
-Requires: smartmet-library-macgyver >= 21.1.14
-Requires: smartmet-library-spine >= 21.1.14
+Requires: smartmet-library-macgyver >= 21.1.25
+Requires: smartmet-library-spine >= 21.2.5
 Requires: smartmet-server >= 21.1.14
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c

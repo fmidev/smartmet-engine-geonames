@@ -40,7 +40,7 @@ TEST_DB_DIR := $(shell pwd)/tmp-geonames-db
 TEST_RUNNER :=
 
 ifdef CI
-GEONAMES_HOST_EDIT := sed -e 's/"smartmet-test"/"localhost"/g'
+GEONAMES_HOST_EDIT := sed -e 's|"smartmet-test"|"$(TEST_DB_DIR)"|g'
 TEST_PREPARE_TARGETS += start-geonames-db
 TEST_FINISH_TARGETS += stop-test-db
 else
@@ -77,7 +77,9 @@ stop-test-db:
 $(PROG) : % : %.cpp ../geonames.so $(TEST_PREPARE_TARGETS)
 	$(CXX) $(CFLAGS) -o $@ $@.cpp $(INCLUDES) $(LIBS)
 
-cnf/geonames.conf:  dummy
+cnf/geonames.conf:
 	$(GEONAMES_HOST_EDIT) $@.in >$@
 
 dummy:
+
+.PHONY: cnf/geonames.conf

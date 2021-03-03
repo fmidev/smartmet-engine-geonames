@@ -55,7 +55,7 @@ clean:
 	-$(MAKE) stop-test-db
 	rm -rf tmp-geonames-db
 
-test: $(PROG) $(TEST_PREPARE_TARGETS)
+test: $(TEST_PREPARE_TARGETS) $(PROG)
 	@echo Running tests:
 	@for prog in $(PROG); do ./$$prog; done
 	-$(MAKE) $(TEST_FINISH_TARGETS)
@@ -74,7 +74,7 @@ start-geonames-db: geonames-database
 stop-test-db:
 	-/usr/share/smartmet/test/db/test-db-ctl.sh $(TEST_DB_DIR) stop
 
-$(PROG) : % : %.cpp ../geonames.so
+$(PROG) : % : %.cpp ../geonames.so $(TEST_PREPARE_TARGETS)
 	$(CXX) $(CFLAGS) -o $@ $@.cpp $(INCLUDES) $(LIBS)
 
 cnf/geonames.conf:  dummy

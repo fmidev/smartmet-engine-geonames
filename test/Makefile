@@ -41,7 +41,7 @@ TEST_RUNNER :=
 
 ifdef CI
 GEONAMES_HOST_EDIT := sed -e 's/"smartmet-test"/"localhost"/g'
-TEST_PREPARE_TARGETS += geonames-database start-geonames-db
+TEST_PREPARE_TARGETS += start-geonames-db
 TEST_FINISH_TARGETS += stop-test-db
 else
 GEONAMES_HOST_EDIT := cat

@@ -94,7 +94,6 @@ Fmi::LandCover::Type covertype(const boost::shared_ptr<Fmi::LandCover>& theLandC
   return theLandCover->coverType(theLongitude, theLatitude);
 }
 
-// ----------------------------------------------------------------------
 /*!
  * \brief Constructor
  */
@@ -1412,6 +1411,20 @@ const std::string& Engine::errorMessage() const
 {
   return itsErrorMessage;
 }
+
+  // DEM height
+double Engine::demHeight(double theLongitude, double theLatitude) const
+{
+  return demheight(dem(), theLongitude, theLatitude, maxDemResolution());
+}
+
+  // Cover type
+Fmi::LandCover::Type Engine::coverType(double theLongitude, double theLatitude) const
+{
+  return covertype(landCover(), theLongitude, theLatitude);
+}
+
+// ----------------------------------------------------------------------
 
 }  // namespace Geonames
 }  // namespace Engine

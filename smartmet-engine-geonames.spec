@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.2.18
+Version: 21.4.12
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -24,6 +24,7 @@ BuildRequires: smartmet-library-gis-devel >= 21.2.11
 BuildRequires: smartmet-library-locus-devel >= 21.2.18
 BuildRequires: smartmet-library-macgyver-devel >= 21.1.25
 BuildRequires: smartmet-library-spine-devel >= 21.2.5
+
 Requires: boost169-date-time
 Requires: boost169-filesystem
 Requires: boost169-iostreams
@@ -95,6 +96,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Apr 12 2021 Anssi Reponen <anssi.reponen@fmi.fi> - 21.4.12-1.fmi
+- Added functions for demheight and covertype, needed by timeseries area-query (BRAINSTORM-2040)
+
 * Thu Feb 18 2021 Anssi Reponen <anssi.reponen@fmi.fi> - 21.2.18-1.fmi
 - New parseLocations-function added to get locations for FMISs,WMOs,LPNNs (BRAINSTORM-1848)
 

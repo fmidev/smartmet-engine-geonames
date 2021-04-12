@@ -192,6 +192,12 @@ class Engine : public Spine::SmartMetEngine
   // LandCover data
   boost::shared_ptr<Fmi::LandCover> landCover() const;
 
+  // DEM height
+  double demHeight(double theLongitude, double theLatitude) const;
+
+  // Cover type
+  Fmi::LandCover::Type coverType(double theLongitude, double theLatitude) const;
+
   // Has autocomplete data been initialized?
   bool isSuggestReady() const;
 

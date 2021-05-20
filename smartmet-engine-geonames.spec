@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.4.12
+Version: 21.5.20
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -20,10 +20,10 @@ BuildRequires: libpqxx-devel < 1:7.0
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 21.2.11
-BuildRequires: smartmet-library-locus-devel >= 21.2.18
-BuildRequires: smartmet-library-macgyver-devel >= 21.1.25
-BuildRequires: smartmet-library-spine-devel >= 21.2.5
+BuildRequires: smartmet-library-gis-devel >= 21.5.20
+BuildRequires: smartmet-library-locus-devel >= 21.5.20
+BuildRequires: smartmet-library-macgyver-devel >= 21.5.20
+BuildRequires: smartmet-library-spine-devel >= 21.5.20
 
 Requires: boost169-date-time
 Requires: boost169-filesystem
@@ -36,10 +36,10 @@ Requires: gdal32-libs
 Requires: libatomic
 Requires: libicu
 Requires: libpqxx < 1:7.0
-Requires: smartmet-library-gis >= 21.2.11
-Requires: smartmet-library-locus >= 21.2.18
-Requires: smartmet-library-macgyver >= 21.1.25
-Requires: smartmet-library-spine >= 21.2.5
+Requires: smartmet-library-gis >= 21.5.20
+Requires: smartmet-library-locus >= 21.5.20
+Requires: smartmet-library-macgyver >= 21.5.20
+Requires: smartmet-library-spine >= 21.5.20
 Requires: smartmet-server >= 21.1.14
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
@@ -96,6 +96,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Thu May 20 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.5.20-1.fmi
+- Use Fmi hash functions, boost::hash_combine produces too many collisions
+
 * Mon Apr 12 2021 Anssi Reponen <anssi.reponen@fmi.fi> - 21.4.12-1.fmi
 - Added functions for demheight and covertype, needed by timeseries area-query (BRAINSTORM-2040)
 

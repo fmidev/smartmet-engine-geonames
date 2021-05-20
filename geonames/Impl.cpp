@@ -5,21 +5,18 @@
 // ======================================================================
 
 #include "Impl.h"
-
 #include "Engine.h"
-
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/asio/ip/host_name.hpp>
-#include <boost/functional/hash.hpp>
 #include <boost/locale.hpp>
 #include <boost/thread.hpp>
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
 #include <macgyver/Exception.h>
+#include <macgyver/Hash.h>
 #include <macgyver/StringConversion.h>
 #include <spine/Location.h>
 #include <sys/types.h>
-
 #include <cassert>
 #include <cmath>
 #include <csignal>
@@ -2425,8 +2422,8 @@ Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOpti
 
   try
   {
-    std::size_t key = boost::hash_value(theName);
-    boost::hash_combine(key, theOptions.HashValue());
+    std::size_t key = Fmi::hash_value(theName);
+    Fmi::hash_combine(key, theOptions.HashValue());
 
     auto pos = itsNameSearchCache.find(key);
     if (pos)
@@ -2481,10 +2478,10 @@ Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOptions &theOp
 
   try
   {
-    std::size_t key = boost::hash_value(theLongitude);
-    boost::hash_combine(key, boost::hash_value(theLatitude));
-    boost::hash_combine(key, boost::hash_value(theRadius));
-    boost::hash_combine(key, theOptions.HashValue());
+    std::size_t key = Fmi::hash_value(theLongitude);
+    Fmi::hash_combine(key, Fmi::hash_value(theLatitude));
+    Fmi::hash_combine(key, Fmi::hash_value(theRadius));
+    Fmi::hash_combine(key, theOptions.HashValue());
 
     auto pos = itsNameSearchCache.find(key);
     if (pos)
@@ -2522,8 +2519,8 @@ Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions &theOption
 
   try
   {
-    std::size_t key = boost::hash_value(theId);
-    boost::hash_combine(key, theOptions.HashValue());
+    std::size_t key = Fmi::hash_value(theId);
+    Fmi::hash_combine(key, theOptions.HashValue());
 
     auto pos = itsNameSearchCache.find(key);
     if (pos)
@@ -2566,8 +2563,8 @@ Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theO
     // Just in case there is a keyword equal to an actual location name
     // we do not start the start hashing directly from the keyword
     std::size_t key = 0x12345678;
-    boost::hash_combine(key, boost::hash_value(theKeyword));
-    boost::hash_combine(key, theOptions.HashValue());
+    Fmi::hash_combine(key, Fmi::hash_value(theKeyword));
+    Fmi::hash_combine(key, theOptions.HashValue());
 
     auto pos = itsNameSearchCache.find(key);
     if (pos)
@@ -2668,12 +2665,12 @@ std::size_t Engine::Impl::cache_key(const std::string &pattern,
                                     unsigned int maxresults,
                                     bool duplicates) const
 {
-  auto hash = boost::hash_value(pattern);
-  boost::hash_combine(hash, boost::hash_value(lang));
-  boost::hash_combine(hash, boost::hash_value(keyword));
-  boost::hash_combine(hash, boost::hash_value(page));
-  boost::hash_combine(hash, boost::hash_value(maxresults));
-  boost::hash_combine(hash, boost::hash_value(duplicates));
+  auto hash = Fmi::hash_value(pattern);
+  Fmi::hash_combine(hash, Fmi::hash_value(lang));
+  Fmi::hash_combine(hash, Fmi::hash_value(keyword));
+  Fmi::hash_combine(hash, Fmi::hash_value(page));
+  Fmi::hash_combine(hash, Fmi::hash_value(maxresults));
+  Fmi::hash_combine(hash, Fmi::hash_value(duplicates));
   return hash;
 }
 

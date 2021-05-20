@@ -163,10 +163,10 @@ class Engine : public Spine::SmartMetEngine
 
   // Parse locations from FMISIDs,LPNNs,WMOs
   LocationOptions parseLocations(const std::vector<int>& fmisids,
-								 const std::vector<int>& lpnns,
-								 const std::vector<int>& wmos,
-								 const std::string& language) const;
-  
+                                 const std::vector<int>& lpnns,
+                                 const std::vector<int>& wmos,
+                                 const std::string& language) const;
+
   // Parse location-related HTTP options
   LocationOptions parseLocations(const Spine::HTTP::Request& theReq) const;
 

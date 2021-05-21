@@ -4,7 +4,7 @@
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
 Version: 21.5.20
-Release: 1%{?dist}.fmi
+Release: 2%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -96,6 +96,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Thu May 20 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.5.20-2.fmi
+- Repackaged with improved hashing functions
+
 * Thu May 20 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.5.20-1.fmi
 - Use Fmi hash functions, boost::hash_combine produces too many collisions
 

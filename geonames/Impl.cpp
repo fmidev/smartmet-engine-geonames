@@ -696,23 +696,18 @@ void Engine::Impl::init(bool first_construction)
     std::string landcoverdir;
     itsConfig.lookupValue("landcoverdir", landcoverdir);
 
-    boost::thread_group threads;
-    threads.add_thread(new boost::thread(boost::bind(&Engine::Impl::initDEM, this)));  // NOLINT
-    threads.add_thread(
-        new boost::thread(boost::bind(&Engine::Impl::initLandCover, this)));  // NOLINT
-    threads.join_all();
-
-    // Early abort if so requested
-
-    if (handleShutDownRequest())
-      return;
+    tg1.stop_on_error(true);
+    tg1.on_task_error([](const std::string& s) { throw Fmi::Exception::Trace(BCP, "Operation failed: " + s); });
+    tg1.add("initDEM", [this]() { initDEM(); });
+    tg1.add("initLandCover", [this]() { initLandCover(); });
+    tg1.wait();
 
     // If we're doing a reload, we must do full initialization in this thread.
     // Otherwise we'll initialize autocomplete in a separate thread
     if (!first_construction)
       initSuggest(false);
     else
-      boost::thread(boost::bind(&Engine::Impl::initSuggest, this, true));
+      tg1.add("initSuggest", [this]() { initSuggest(true); });
 
     // Done apart from autocomplete. Ready to shutdown now though.
     itsReady = true;
@@ -735,9 +730,8 @@ void Engine::Impl::shutdown()
   {
     std::cout << "  -- Shutdown requested (Impl)\n";
     itsShutdownRequested = true;
-
-    while (!itsReady)
-      boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+    tg1.stop();
+    tg1.wait();
   }
   catch (...)
   {
@@ -758,9 +752,8 @@ void Engine::Impl::shutdownRequestFlagSet()
 
 bool Engine::Impl::handleShutDownRequest()
 {
-  if (itsShutdownRequested)
-    itsReady = true;
-  return itsShutdownRequested;
+  Fmi::AsyncTask::interruption_point();
+  return false;
 }
 
 // ----------------------------------------------------------------------

@@ -15,6 +15,7 @@
 #include <boost/move/unique_ptr.hpp>
 #include <boost/thread.hpp>
 #include <gis/LandCover.h>
+#include <macgyver/AsyncTaskGroup.h>
 #include <macgyver/Cache.h>
 #include <macgyver/Geometry.h>
 #include <macgyver/NearTree.h>
@@ -262,6 +263,9 @@ class Engine::Impl : private boost::noncopyable
   std::string itsPass;
   std::string itsDatabase;
   std::string itsPort;
+
+  Fmi::AsyncTaskGroup tg1;
+  boost::shared_ptr<Fmi::AsyncTask> initSuggestTask;
 
  private:
   Impl();

@@ -550,8 +550,7 @@ void Engine::Impl::initSuggest(bool threaded)
 
         read_database_hash_value(conn);
 
-        if (handleShutDownRequest())
-          return;
+        Fmi::AsyncTask::interruption_point();
 
         // These are needed in regression tests even in mock mode
         read_countries(conn);
@@ -559,31 +558,22 @@ void Engine::Impl::initSuggest(bool threaded)
 
         if (!itsAutocompleteDisabled)
         {
-          if (handleShutDownRequest())
-            return;
+          Fmi::AsyncTask::interruption_point();
           read_municipalities(conn);
 
-          if (handleShutDownRequest())
-            return;
+          Fmi::AsyncTask::interruption_point();
           read_geonames(conn);  // requires read_municipalities, read_countries
 
-          if (handleShutDownRequest())
-            return;
+          Fmi::AsyncTask::interruption_point();
           build_geoid_map();  // requires read_geonames
 
-          if (handleShutDownRequest())
-            return;
+          Fmi::AsyncTask::interruption_point();
           read_alternate_geonames(conn);  // requires build_geoid_map
 
-          if (handleShutDownRequest())
-            return;
+          Fmi::AsyncTask::interruption_point();
           read_alternate_municipalities(conn);
 
-          if (handleShutDownRequest())
-            return;
-
-          if (handleShutDownRequest())
-            return;
+          Fmi::AsyncTask::interruption_point();
           read_keywords(conn);  // requires build_geoid_map
         }
       }
@@ -617,20 +607,16 @@ void Engine::Impl::initSuggest(bool threaded)
     // hence these are done outside the try..catch block
     // to close the connection.
 
-    if (handleShutDownRequest())
-      return;
+    Fmi::AsyncTask::interruption_point();
     build_geotrees();  // requires ?
 
-    if (handleShutDownRequest())
-      return;
+    Fmi::AsyncTask::interruption_point();
     build_ternarytrees();  // requires ?
 
-    if (handleShutDownRequest())
-      return;
+    Fmi::AsyncTask::interruption_point();
     build_lang_ternarytrees();  // requires ?
 
-    if (handleShutDownRequest())
-      return;
+    Fmi::AsyncTask::interruption_point();
     assign_priorities(itsLocations);  // requires read_geonames
 
     // Ready
@@ -688,9 +674,6 @@ void Engine::Impl::init(bool first_construction)
 {
   try
   {
-    if (handleShutDownRequest())
-      return;
-
     // Read DEM and GlobCover data in parallel for speed
 
     std::string landcoverdir;
@@ -742,18 +725,6 @@ void Engine::Impl::shutdown()
 void Engine::Impl::shutdownRequestFlagSet()
 {
   itsShutdownRequested = true;
-}
-
-// ----------------------------------------------------------------------
-/*!
- * \brief Prepare for a possible shutdown
- */
-// ----------------------------------------------------------------------
-
-bool Engine::Impl::handleShutDownRequest()
-{
-  Fmi::AsyncTask::interruption_point();
-  return false;
 }
 
 // ----------------------------------------------------------------------

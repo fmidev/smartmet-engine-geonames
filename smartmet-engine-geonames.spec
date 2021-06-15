@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.6.7
+Version: 21.6.15
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -20,10 +20,10 @@ BuildRequires: libpqxx-devel < 1:7.0
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 21.5.20
+BuildRequires: smartmet-library-gis-devel >= 21.6.7
 BuildRequires: smartmet-library-locus-devel >= 21.5.20
-BuildRequires: smartmet-library-macgyver-devel >= 21.5.20
-BuildRequires: smartmet-library-spine-devel >= 21.5.20
+BuildRequires: smartmet-library-macgyver-devel >= 21.6.10
+BuildRequires: smartmet-library-spine-devel >= 21.5.31
 
 Requires: boost169-date-time
 Requires: boost169-filesystem
@@ -36,11 +36,11 @@ Requires: gdal32-libs
 Requires: libatomic
 Requires: libicu
 Requires: libpqxx < 1:7.0
-Requires: smartmet-library-gis >= 21.5.20
+Requires: smartmet-library-gis >= 21.6.7
 Requires: smartmet-library-locus >= 21.5.20
-Requires: smartmet-library-macgyver >= 21.5.20
-Requires: smartmet-library-spine >= 21.5.20
-Requires: smartmet-server >= 21.1.14
+Requires: smartmet-library-macgyver >= 21.6.10
+Requires: smartmet-library-spine >= 21.5.31
+Requires: smartmet-server >= 21.6.3
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -96,7 +96,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
-* Mon Jul  7 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.7-1.fmi
+* Tue Jun 15 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.6.15-1.fmi
+- Added support for multilanguage autocomplete
+
+* Mon Jun  7 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.7-1.fmi
 - Use Fmi::AsyncTaskGroup
 
 * Thu May 20 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.5.20-2.fmi

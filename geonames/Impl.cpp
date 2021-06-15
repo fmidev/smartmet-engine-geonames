@@ -38,6 +38,23 @@ const int priority_scale = 1000;
 
 #ifndef NDEBUG
 
+void print(const SmartMet::Spine::Location &loc)
+{
+  std::cout << "Geoid:\t" << loc.geoid << std::endl
+            << "Name:\t" << loc.name << std::endl
+            << "Feature:\t" << loc.feature << std::endl
+            << "ISO2:\t" << loc.iso2 << std::endl
+            << "Area:\t" << loc.area << std::endl
+            << "Country:\t" << loc.country << std::endl
+            << "Lon:\t" << loc.longitude << std::endl
+            << "Lat:\t" << loc.latitude << std::endl
+            << "TZ:\t" << loc.timezone << std::endl
+            << "Popu:\t" << loc.population << std::endl
+            << "Elev:\t" << loc.elevation << std::endl
+            << "DEM:\t" << loc.dem << std::endl
+            << "Priority:\t" << loc.priority << std::endl;
+}
+
 void print(const SmartMet::Spine::LocationPtr &ptr)
 {
   try
@@ -45,20 +62,7 @@ void print(const SmartMet::Spine::LocationPtr &ptr)
     if (!ptr)
       std::cout << "No location to print" << std::endl;
     else
-    {
-      std::cout << "Geoid:\t" << ptr->geoid << std::endl
-                << "Name:\t" << ptr->name << std::endl
-                << "Feature:\t" << ptr->feature << std::endl
-                << "ISO2:\t" << ptr->iso2 << std::endl
-                << "Area:\t" << ptr->area << std::endl
-                << "Lon:\t" << ptr->longitude << std::endl
-                << "Lat:\t" << ptr->latitude << std::endl
-                << "TZ:\t" << ptr->timezone << std::endl
-                << "Popu:\t" << ptr->population << std::endl
-                << "Elev:\t" << ptr->elevation << std::endl
-                << "DEM:\t" << ptr->dem << std::endl
-                << "Priority:\t" << ptr->priority << std::endl;
-    }
+      print(*ptr);
   }
   catch (...)
   {
@@ -680,7 +684,8 @@ void Engine::Impl::init(bool first_construction)
     itsConfig.lookupValue("landcoverdir", landcoverdir);
 
     tg1.stop_on_error(true);
-    tg1.on_task_error([](const std::string& s) { throw Fmi::Exception::Trace(BCP, "Operation failed: " + s); });
+    tg1.on_task_error([](const std::string &s)
+                      { throw Fmi::Exception::Trace(BCP, "Operation failed: " + s); });
     tg1.add("initDEM", [this]() { initDEM(); });
     tg1.add("initLandCover", [this]() { initLandCover(); });
     tg1.wait();
@@ -2007,6 +2012,11 @@ void Engine::Impl::translate_area(Spine::Location &loc, const std::string &lang)
                                                 : loc.area.substr(0, comma + 2).append(pos->second);
       }
     }
+
+    // Prevent name==area after translation just like Spine::Location constructor does on
+    // initialization
+    if (loc.name == loc.area)
+      loc.area.clear();
   }
   catch (...)
   {
@@ -2025,9 +2035,12 @@ void Engine::Impl::translate(Spine::LocationPtr &loc, const std::string &lang) c
   try
   {
     std::unique_ptr<Spine::Location> newloc(new Spine::Location(*loc));
+
     translate_name(*newloc, lang);
     translate_area(*newloc, lang);
+
     newloc->country = translate_country(newloc->iso2, lang);
+
     loc.reset(newloc.release());
   }
   catch (...)
@@ -2324,6 +2337,109 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
 
 // ----------------------------------------------------------------------
 /*!
+ * \brief Suggest translations for several languages
+ */
+// ----------------------------------------------------------------------
+
+std::vector<Spine::LocationList> Engine::Impl::suggest(const std::string &pattern,
+                                                       const std::vector<std::string> &languages,
+                                                       const std::string &keyword,
+                                                       unsigned int page,
+                                                       unsigned int maxresults,
+                                                       bool duplicates) const
+{
+  try
+  {
+    if (!itsSuggestReadyFlag)
+      throw Fmi::Exception(BCP, "Attempt to use geonames suggest before it is ready!");
+
+    if (languages.empty())
+      throw Fmi::Exception(BCP, "Must provide atleast one language for autocomplete");
+
+    std::vector<Spine::LocationList> ret;
+
+    if (languages.size() == 1)
+    {
+      ret.push_back(suggest(pattern, languages.front(), keyword, page, maxresults, duplicates));
+      return ret;
+    }
+
+    // return null if keyword is wrong
+
+    auto it = itsTernaryTrees.find(keyword);
+    if (it == itsTernaryTrees.end())
+      return ret;
+
+    // transform pattern to collated form and find it from the search tree
+
+    std::string name = to_treeword(pattern);
+    auto candidates = it->second->findprefix(name);
+
+    // check if there are language specific translations
+
+    for (const auto &lang : languages)
+    {
+      std::string lg = to_language(lang);
+
+      auto lt = itsLangTernaryTreeMap.find(lg);
+      if (lt != itsLangTernaryTreeMap.end())
+      {
+        auto tit = lt->second->find(keyword);
+        if (tit != lt->second->end())
+        {
+          std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
+          for (const Spine::LocationPtr &ptr : tmpx)
+            candidates.push_back(ptr);
+        }
+      }
+    }
+
+    // Remove duplicates
+
+    candidates.sort(basicSort);
+    if (!duplicates)
+      candidates.unique(closeEnough);  // remove duplicate name,area matches
+    else
+      candidates.unique(reallyClose);  // remove duplicate geoids
+
+    // Sort based on priorities. Note that the multilanguage version does not
+    // give extra scores to exact matches since the used algorithm sorts before
+    // translating the candidates. This is something that perhaps should be
+    // improved later on.
+
+    candidates.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
+
+    // Keep the desired part.
+
+    if (maxresults > 0)
+    {
+      // should do this using erase
+      unsigned int first = page * maxresults;
+      for (std::size_t i = 0; i < first; i++)
+        candidates.pop_front();
+      while (candidates.size() > maxresults)
+        candidates.pop_back();
+    }
+
+    // Build translated results
+
+    for (const auto &lang : languages)
+    {
+      auto tmp = candidates;
+      translate(tmp, lang);
+      ret.push_back(tmp);
+    }
+
+    return ret;
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
  * \brief Convert FmiNames location list to SmartMet location list
  */
 // ----------------------------------------------------------------------
@@ -2339,8 +2455,7 @@ Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_typ
       auto covertype = coverType(loc.lon, loc.lat);
 
       // Select administrative area. In particular, if the location is the
-      // administrative
-      // area itself, select the country instead.
+      // administrative area itself, select the country instead.
 
       std::string area = loc.admin;
       if (area == loc.name || area.empty())

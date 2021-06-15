@@ -595,6 +595,36 @@ Spine::LocationList Engine::suggestDuplicates(const std::string& thePattern,
 
 // ----------------------------------------------------------------------
 /*!
+ * \brief Find alphabetical complations for more than one language
+ */
+// ----------------------------------------------------------------------
+
+std::vector<Spine::LocationList> Engine::suggest(const std::string& thePattern,
+                                                 const std::vector<std::string>& theLanguages,
+                                                 const std::string& theKeyword,
+                                                 unsigned int thePage,
+                                                 unsigned int theMaxResults) const
+{
+  try
+  {
+    Spine::LocationList ret;
+
+    ++itsSuggestCount;
+
+    bool duplicates = false;
+
+    auto mycopy = boost::atomic_load(&impl);
+    return mycopy->suggest(
+        thePattern, theLanguages, theKeyword, thePage, theMaxResults, duplicates);
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
  * \brief Find nearest point from keyword
  *
  * Returns Spine::LocationPtr(0) if none is found.

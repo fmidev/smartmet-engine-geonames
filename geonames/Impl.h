@@ -126,6 +126,13 @@ class Engine::Impl : private boost::noncopyable
                               unsigned int maxresults,
                               bool duplicates) const;
 
+  std::vector<Spine::LocationList> suggest(const std::string& pattern,
+                                           const std::vector<std::string>& languages,
+                                           const std::string& keyword,
+                                           unsigned int page,
+                                           unsigned int maxresults,
+                                           bool duplicates) const;
+
   Spine::LocationList name_search(const Locus::QueryOptions& theOptions,
                                   const std::string& theName);
 

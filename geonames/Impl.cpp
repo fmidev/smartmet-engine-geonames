@@ -2317,12 +2317,18 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
 
     if (maxresults > 0)
     {
-      // should do this using erase
+      // Erase the pages before the desired one
       unsigned int first = page * maxresults;
-      for (std::size_t i = 0; i < first; i++)
-        ret.pop_front();
-      while (ret.size() > maxresults)
-        ret.pop_back();
+      auto pos1 = ret.begin();
+      auto pos2 = pos1;
+      std::advance(pos2, first);
+      ret.erase(pos1, pos2);
+
+      // Erase the remaining elements after the size of 'maxelements'.
+      pos1 = ret.begin();
+      auto npos2 = std::min(ret.size(), static_cast<std::size_t>(maxresults));
+      std::advance(pos1, npos2);
+      ret.erase(pos1, ret.end());
     }
 
     itsSuggestCache->insert(key, ret);

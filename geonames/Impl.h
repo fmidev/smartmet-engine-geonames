@@ -102,6 +102,10 @@ class Engine::Impl : private boost::noncopyable
   using SuggestCache = Fmi::TimedCache::Cache<std::size_t, Spine::LocationList>;
   boost::movelib::unique_ptr<SuggestCache> itsSuggestCache;
 
+  using LanguagesSuggestCache =
+      Fmi::TimedCache::Cache<std::size_t, std::vector<Spine::LocationList>>;
+  boost::movelib::unique_ptr<LanguagesSuggestCache> itsLanguagesSuggestCache;
+
  public:
   Impl(std::string configfile, bool reloading);
   ~Impl();
@@ -304,13 +308,6 @@ class Engine::Impl : private boost::noncopyable
   void build_lang_ternarytrees();
   void build_lang_ternarytrees_all();
   void build_lang_ternarytrees_keywords();
-
-  std::size_t cache_key(const std::string& pattern,
-                        const std::string& lang,
-                        const std::string& keyword,
-                        unsigned int page,
-                        unsigned int maxresults,
-                        bool duplicates) const;
 
 };  // Impl
 

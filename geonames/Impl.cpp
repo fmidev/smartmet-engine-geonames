@@ -87,6 +87,48 @@ void print(const std::list<SmartMet::Spine::LocationPtr *> &ptrs)
 }
 #endif
 
+namespace
+{
+// ----------------------------------------------------------------------
+/*!
+ * \brief Cache key for a suggestion
+ */
+// ----------------------------------------------------------------------
+
+std::size_t cache_key(const std::string &pattern,
+                      const std::string &lang,
+                      const std::string &keyword,
+                      unsigned int page,
+                      unsigned int maxresults,
+                      bool duplicates)
+{
+  auto hash = Fmi::hash_value(pattern);
+  Fmi::hash_combine(hash, Fmi::hash_value(lang));
+  Fmi::hash_combine(hash, Fmi::hash_value(keyword));
+  Fmi::hash_combine(hash, Fmi::hash_value(page));
+  Fmi::hash_combine(hash, Fmi::hash_value(maxresults));
+  Fmi::hash_combine(hash, Fmi::hash_value(duplicates));
+  return hash;
+}
+
+std::size_t cache_key(const std::string &pattern,
+                      const std::vector<std::string> &languages,
+                      const std::string &keyword,
+                      unsigned int page,
+                      unsigned int maxresults,
+                      bool duplicates)
+{
+  auto hash = Fmi::hash_value(pattern);
+  Fmi::hash_combine(hash, Fmi::hash_value(languages));
+  Fmi::hash_combine(hash, Fmi::hash_value(keyword));
+  Fmi::hash_combine(hash, Fmi::hash_value(page));
+  Fmi::hash_combine(hash, Fmi::hash_value(maxresults));
+  Fmi::hash_combine(hash, Fmi::hash_value(duplicates));
+  return hash;
+}
+
+}  // namespace
+
 namespace SmartMet
 {
 namespace Engine
@@ -181,6 +223,8 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
       unsigned int suggestCacheSize = 10000;
       itsConfig.lookupValue("cache.suggest_max_size", suggestCacheSize);
       itsSuggestCache = boost::movelib::make_unique<SuggestCache>(suggestCacheSize);
+      itsLanguagesSuggestCache =
+          boost::movelib::make_unique<LanguagesSuggestCache>(suggestCacheSize);
 
       // Establish collator
 
@@ -2362,15 +2406,18 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(const std::string &patter
     if (languages.empty())
       throw Fmi::Exception(BCP, "Must provide atleast one language for autocomplete");
 
-    std::vector<Spine::LocationList> ret;
+    if (languages.size() < 2)
+      throw Fmi::Exception(BCP, "Called autocomplete for N languages with less than 2 languages");
 
-    if (languages.size() == 1)
-    {
-      ret.push_back(suggest(pattern, languages.front(), keyword, page, maxresults, duplicates));
-      return ret;
-    }
+    // Try using the cache first
+    auto key = cache_key(pattern, languages, keyword, page, maxresults, duplicates);
+    auto cached_result = itsLanguagesSuggestCache->find(key);
+    if (cached_result)
+      return *cached_result;
 
     // return null if keyword is wrong
+
+    std::vector<Spine::LocationList> ret;
 
     auto it = itsTernaryTrees.find(keyword);
     if (it == itsTernaryTrees.end())
@@ -2419,12 +2466,18 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(const std::string &patter
 
     if (maxresults > 0)
     {
-      // should do this using erase
+      // Erase the pages before the desired one
       unsigned int first = page * maxresults;
-      for (std::size_t i = 0; i < first; i++)
-        candidates.pop_front();
-      while (candidates.size() > maxresults)
-        candidates.pop_back();
+      auto pos1 = candidates.begin();
+      auto pos2 = pos1;
+      std::advance(pos2, first);
+      candidates.erase(pos1, pos2);
+
+      // Erase the remaining elements after the size of 'maxelements'.
+      pos1 = candidates.begin();
+      auto npos2 = std::min(candidates.size(), static_cast<std::size_t>(maxresults));
+      std::advance(pos1, npos2);
+      candidates.erase(pos1, candidates.end());
     }
 
     // Build translated results
@@ -2435,6 +2488,8 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(const std::string &patter
       translate(tmp, lang);
       ret.push_back(tmp);
     }
+
+    itsLanguagesSuggestCache->insert(key, ret);
 
     return ret;
   }
@@ -2735,28 +2790,6 @@ void Engine::Impl::name_cache_status(const boost::shared_ptr<Spine::Table> &tabl
 bool Engine::Impl::isSuggestReady() const
 {
   return itsSuggestReadyFlag;
-}
-
-// ----------------------------------------------------------------------
-/*!
- * \brief Cache key for a suggestion
- */
-// ----------------------------------------------------------------------
-
-std::size_t Engine::Impl::cache_key(const std::string &pattern,
-                                    const std::string &lang,
-                                    const std::string &keyword,
-                                    unsigned int page,
-                                    unsigned int maxresults,
-                                    bool duplicates) const
-{
-  auto hash = Fmi::hash_value(pattern);
-  Fmi::hash_combine(hash, Fmi::hash_value(lang));
-  Fmi::hash_combine(hash, Fmi::hash_value(keyword));
-  Fmi::hash_combine(hash, Fmi::hash_value(page));
-  Fmi::hash_combine(hash, Fmi::hash_value(maxresults));
-  Fmi::hash_combine(hash, Fmi::hash_value(duplicates));
-  return hash;
 }
 
 }  // namespace Geonames

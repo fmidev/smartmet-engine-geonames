@@ -3,8 +3,8 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.6.16
-Release: 2%{?dist}.fmi
+Version: 21.6.18
+Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -20,9 +20,9 @@ BuildRequires: libpqxx-devel < 1:7.0
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 21.6.16
-BuildRequires: smartmet-library-locus-devel >= 21.6.16
-BuildRequires: smartmet-library-macgyver-devel >= 21.6.16
+BuildRequires: smartmet-library-gis-devel >= 21.6.18
+BuildRequires: smartmet-library-locus-devel >= 21.6.18
+BuildRequires: smartmet-library-macgyver-devel >= 21.6.17
 BuildRequires: smartmet-library-spine-devel >= 21.6.15
 
 Requires: boost169-date-time
@@ -36,9 +36,9 @@ Requires: gdal32-libs
 Requires: libatomic
 Requires: libicu
 Requires: libpqxx < 1:7.0
-Requires: smartmet-library-gis >= 21.6.16
-Requires: smartmet-library-locus >= 21.6.16
-Requires: smartmet-library-macgyver >= 21.6.16
+Requires: smartmet-library-gis >= 21.6.18
+Requires: smartmet-library-locus >= 21.6.18
+Requires: smartmet-library-macgyver >= 21.6.17
 Requires: smartmet-library-spine >= 21.6.15
 Requires: smartmet-server >= 21.6.3
 %if 0%{rhel} >= 8
@@ -96,6 +96,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Fri Jun 18 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.6.18-1.fmi
+- Repackaged since locus API changed a little
+
 * Wed Jun 16 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.6.16-2.fmi
 - Added caching for autocomplete for queries with multiple languages
 

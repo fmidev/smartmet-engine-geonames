@@ -286,14 +286,14 @@ class Engine::Impl : private boost::noncopyable
   void read_config_priorities();
   void read_config_prioritymap(const std::string& partname, Priorities& priomap);
 
-  void read_database_hash_value(Locus::Connection& conn);
+  void read_database_hash_value(Fmi::Database::PostgreSQLConnection& conn);
 
-  void read_countries(Locus::Connection& conn);
-  void read_alternate_countries(Locus::Connection& conn);
-  void read_municipalities(Locus::Connection& conn);
-  void read_alternate_geonames(Locus::Connection& conn);
-  void read_alternate_municipalities(Locus::Connection& conn);
-  void read_geonames(Locus::Connection& conn);
+  void read_countries(Fmi::Database::PostgreSQLConnection& conn);
+  void read_alternate_countries(Fmi::Database::PostgreSQLConnection& conn);
+  void read_municipalities(Fmi::Database::PostgreSQLConnection& conn);
+  void read_alternate_geonames(Fmi::Database::PostgreSQLConnection& conn);
+  void read_alternate_municipalities(Fmi::Database::PostgreSQLConnection& conn);
+  void read_geonames(Fmi::Database::PostgreSQLConnection& conn);
   void assign_priorities(Spine::LocationList& locs) const;
   int population_priority(const Spine::Location& loc) const;
   int area_priority(const Spine::Location& loc) const;
@@ -301,7 +301,7 @@ class Engine::Impl : private boost::noncopyable
   int feature_priority(const Spine::Location& loc) const;
 
   void build_geoid_map();
-  void read_keywords(Locus::Connection& conn);
+  void read_keywords(Fmi::Database::PostgreSQLConnection& conn);
 
   void build_geotrees();
   void build_ternarytrees();

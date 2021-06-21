@@ -591,7 +591,15 @@ void Engine::Impl::initSuggest(bool threaded)
         std::cerr << "Warning: Geonames database is disabled" << std::endl;
       else
       {
-        Locus::Connection conn(itsHost, itsUser, itsPass, itsDatabase, "UTF8", itsPort, false);
+	Fmi::Database::PostgreSQLConnectionOptions opt;
+	opt.host = itsHost;
+	opt.port = boost::lexical_cast<unsigned int>(itsPort);
+	opt.database = itsDatabase;
+	opt.username = itsUser;
+	opt.password = itsPass;
+	opt.encoding = "UTF8";
+        Fmi::Database::PostgreSQLConnection conn;
+	conn.open(opt);
 
         if (!conn.isConnected())
           throw Fmi::Exception(BCP, "Failed to connect to fminames database");
@@ -1005,7 +1013,7 @@ void Engine::Impl::read_config_prioritymap(const std::string &partname, Prioriti
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_database_hash_value(Locus::Connection &conn)
+void Engine::Impl::read_database_hash_value(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1046,7 +1054,7 @@ void Engine::Impl::read_database_hash_value(Locus::Connection &conn)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_countries(Locus::Connection &conn)
+void Engine::Impl::read_countries(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1096,7 +1104,7 @@ void Engine::Impl::read_countries(Locus::Connection &conn)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
+void Engine::Impl::read_alternate_countries(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1157,7 +1165,7 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_municipalities(Locus::Connection &conn)
+void Engine::Impl::read_municipalities(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1195,7 +1203,7 @@ void Engine::Impl::read_municipalities(Locus::Connection &conn)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_geonames(Locus::Connection &conn)
+void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1310,7 +1318,7 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
+void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1416,7 +1424,7 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn)
+void Engine::Impl::read_alternate_municipalities(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1611,7 +1619,7 @@ int Engine::Impl::feature_priority(const Spine::Location &loc) const
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_keywords(Locus::Connection &conn)
+void Engine::Impl::read_keywords(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {

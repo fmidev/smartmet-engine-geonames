@@ -4,7 +4,7 @@
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
 Version: 21.6.21
-Release: 1%{?dist}.fmi
+Release: 2%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -96,6 +96,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Jul 21 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.21-2.fmi
+- Fix missing include
+
 * Mon Jul 21 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.21-1.fmi
 - Use Fmi::Database::PostgreSQLConnection instead of Locus::Connection
 

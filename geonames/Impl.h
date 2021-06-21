@@ -19,6 +19,7 @@
 #include <macgyver/Cache.h>
 #include <macgyver/Geometry.h>
 #include <macgyver/NearTree.h>
+#include <macgyver/PostgreSQLConnection.h>
 #include <macgyver/TernarySearchTree.h>
 #include <macgyver/TimedCache.h>
 

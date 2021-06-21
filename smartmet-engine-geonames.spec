@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.6.18
+Version: 21.6.21
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -21,7 +21,7 @@ BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-library-gis-devel >= 21.6.18
-BuildRequires: smartmet-library-locus-devel >= 21.6.18
+BuildRequires: smartmet-library-locus-devel >= 21.6.21
 BuildRequires: smartmet-library-macgyver-devel >= 21.6.17
 BuildRequires: smartmet-library-spine-devel >= 21.6.15
 
@@ -37,7 +37,7 @@ Requires: libatomic
 Requires: libicu
 Requires: libpqxx < 1:7.0
 Requires: smartmet-library-gis >= 21.6.18
-Requires: smartmet-library-locus >= 21.6.18
+Requires: smartmet-library-locus >= 21.6.21
 Requires: smartmet-library-macgyver >= 21.6.17
 Requires: smartmet-library-spine >= 21.6.15
 Requires: smartmet-server >= 21.6.3
@@ -96,6 +96,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Jul 21 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.21-1.fmi
+- Use Fmi::Database::PostgreSQLConnection instead of Locus::Connection
+
 * Fri Jun 18 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.6.18-1.fmi
 - Repackaged since locus API changed a little
 

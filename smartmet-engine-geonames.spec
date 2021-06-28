@@ -96,10 +96,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
-* Mon Jul 21 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.21-2.fmi
+* Mon Jun 21 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.21-2.fmi
 - Fix missing include
 
-* Mon Jul 21 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.21-1.fmi
+* Mon Jun 21 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.21-1.fmi
 - Use Fmi::Database::PostgreSQLConnection instead of Locus::Connection
 
 * Fri Jun 18 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.6.18-1.fmi

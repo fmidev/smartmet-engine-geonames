@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include <gis/Box.h>
 #include <macgyver/Exception.h>
+#include <ogr_geometry.h>
 
 namespace SmartMet
 {

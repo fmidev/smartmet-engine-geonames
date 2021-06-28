@@ -591,15 +591,15 @@ void Engine::Impl::initSuggest(bool threaded)
         std::cerr << "Warning: Geonames database is disabled" << std::endl;
       else
       {
-	Fmi::Database::PostgreSQLConnectionOptions opt;
-	opt.host = itsHost;
-	opt.port = boost::lexical_cast<unsigned int>(itsPort);
-	opt.database = itsDatabase;
-	opt.username = itsUser;
-	opt.password = itsPass;
-	opt.encoding = "UTF8";
+        Fmi::Database::PostgreSQLConnectionOptions opt;
+        opt.host = itsHost;
+        opt.port = boost::lexical_cast<unsigned int>(itsPort);
+        opt.database = itsDatabase;
+        opt.username = itsUser;
+        opt.password = itsPass;
+        opt.encoding = "UTF8";
         Fmi::Database::PostgreSQLConnection conn;
-	conn.open(opt);
+        conn.open(opt);
 
         if (!conn.isConnected())
           throw Fmi::Exception(BCP, "Failed to connect to fminames database");

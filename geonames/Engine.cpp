@@ -878,8 +878,8 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         boost::algorithm::split(parts, bbox, boost::algorithm::is_any_of(","));
         if (parts.size() != 4)
           throw Fmi::Exception(BCP,
-                                 "Invalid bbox parameter " + bbox +
-                                     ", should be in format 'lon,lat,lon,lat[:radius]'!");
+                               "Invalid bbox parameter " + bbox +
+                                   ", should be in format 'lon,lat,lon,lat[:radius]'!");
 
         double radius = 0.0;
         std::string bbox_string = parse_radius(bbox, radius);
@@ -900,9 +900,9 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         boost::algorithm::split(coordinates, bboxes, boost::algorithm::is_any_of(","));
         if (coordinates.size() % 4 != 0)
           throw Fmi::Exception(BCP,
-                                 "Invalid bboxes parameter " + bboxes +
-                                     ", should be in format "
-                                     "'lon,lat,lon,lat[:radius],lon,lat,lon,lat[:radius],...'!");
+                               "Invalid bboxes parameter " + bboxes +
+                                   ", should be in format "
+                                   "'lon,lat,lon,lat[:radius],lon,lat,lon,lat[:radius],...'!");
 
         for (unsigned int i = 0; i < coordinates.size(); i += 4)
         {

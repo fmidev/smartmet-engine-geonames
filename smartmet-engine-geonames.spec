@@ -3,8 +3,8 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.1.25
-Release: 1%{?dist}.fmi
+Version: 21.6.21
+Release: 2%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -20,10 +20,11 @@ BuildRequires: libpqxx-devel < 1:7.0
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 21.1.14
-BuildRequires: smartmet-library-locus-devel >= 21.1.14
-BuildRequires: smartmet-library-macgyver-devel >= 21.1.14
-BuildRequires: smartmet-library-spine-devel >= 21.1.14
+BuildRequires: smartmet-library-gis-devel >= 21.6.18
+BuildRequires: smartmet-library-locus-devel >= 21.6.21
+BuildRequires: smartmet-library-macgyver-devel >= 21.6.17
+BuildRequires: smartmet-library-spine-devel >= 21.6.15
+
 Requires: boost169-date-time
 Requires: boost169-filesystem
 Requires: boost169-iostreams
@@ -35,11 +36,11 @@ Requires: gdal32-libs
 Requires: libatomic
 Requires: libicu
 Requires: libpqxx < 1:7.0
-Requires: smartmet-library-gis >= 21.1.14
-Requires: smartmet-library-locus >= 21.1.14
-Requires: smartmet-library-macgyver >= 21.1.14
-Requires: smartmet-library-spine >= 21.1.14
-Requires: smartmet-server >= 21.1.14
+Requires: smartmet-library-gis >= 21.6.18
+Requires: smartmet-library-locus >= 21.6.21
+Requires: smartmet-library-macgyver >= 21.6.17
+Requires: smartmet-library-spine >= 21.6.15
+Requires: smartmet-server >= 21.6.3
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -96,6 +97,39 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Jun 21 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.21-2.fmi
+- Fix missing include
+
+* Mon Jun 21 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.21-1.fmi
+- Use Fmi::Database::PostgreSQLConnection instead of Locus::Connection
+
+* Fri Jun 18 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.6.18-1.fmi
+- Repackaged since locus API changed a little
+
+* Wed Jun 16 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.6.16-2.fmi
+- Added caching for autocomplete for queries with multiple languages
+
+* Wed Jun 16 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.6.16-1.fmi
+- Optimized autocomplete for speed by not using std::list::size() in a loop
+
+* Tue Jun 15 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.6.15-1.fmi
+- Added support for multilanguage autocomplete
+
+* Mon Jun  7 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.7-1.fmi
+- Use Fmi::AsyncTaskGroup
+
+* Thu May 20 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.5.20-2.fmi
+- Repackaged with improved hashing functions
+
+* Thu May 20 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.5.20-1.fmi
+- Use Fmi hash functions, boost::hash_combine produces too many collisions
+
+* Mon Apr 12 2021 Anssi Reponen <anssi.reponen@fmi.fi> - 21.4.12-1.fmi
+- Added functions for demheight and covertype, needed by timeseries area-query (BRAINSTORM-2040)
+
+* Thu Feb 18 2021 Anssi Reponen <anssi.reponen@fmi.fi> - 21.2.18-1.fmi
+- New parseLocations-function added to get locations for FMISs,WMOs,LPNNs (BRAINSTORM-1848)
+
 * Mon Jan 25 2021 Anssi Reponen <anssi.reponen@fmi.fi> - 21.1.25-1.fmi
 - Added function to change tagged locations in LocationOptions class
 

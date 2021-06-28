@@ -157,9 +157,22 @@ class Engine : public Spine::SmartMetEngine
       unsigned int thePage = 0,
       unsigned int theMaxResults = fminames_default_maxresults) const;
 
+  std::vector<Spine::LocationList> suggest(
+      const std::string& thePattern,
+      const std::vector<std::string>& theLanguages,
+      const std::string& theKeyword = FMINAMES_DEFAULT_KEYWORD,
+      unsigned int thePage = 0,
+      unsigned int theMaxResults = fminames_default_maxresults) const;
+
   // find name of country
 
   std::string countryName(const std::string& theIso2, const std::string& theLang = "fi") const;
+
+  // Parse locations from FMISIDs,LPNNs,WMOs
+  LocationOptions parseLocations(const std::vector<int>& fmisids,
+                                 const std::vector<int>& lpnns,
+                                 const std::vector<int>& wmos,
+                                 const std::string& language) const;
 
   // Parse location-related HTTP options
   LocationOptions parseLocations(const Spine::HTTP::Request& theReq) const;
@@ -185,6 +198,12 @@ class Engine : public Spine::SmartMetEngine
 
   // LandCover data
   boost::shared_ptr<Fmi::LandCover> landCover() const;
+
+  // DEM height
+  double demHeight(double theLongitude, double theLatitude) const;
+
+  // Cover type
+  Fmi::LandCover::Type coverType(double theLongitude, double theLatitude) const;
 
   // Has autocomplete data been initialized?
   bool isSuggestReady() const;

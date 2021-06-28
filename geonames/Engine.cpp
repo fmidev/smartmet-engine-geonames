@@ -12,11 +12,11 @@
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
 #include <locus/Query.h>
+#include <macgyver/Exception.h>
 #include <macgyver/StringConversion.h>
 #include <macgyver/TimeZoneFactory.h>
 #include <spine/Convenience.h>
 #include <spine/DebugFormatter.h>
-#include <macgyver/Exception.h>
 #include <spine/Location.h>
 #include <spine/TableFormatterOptions.h>
 #include <algorithm>
@@ -93,7 +93,6 @@ Fmi::LandCover::Type covertype(const boost::shared_ptr<Fmi::LandCover>& theLandC
   return theLandCover->coverType(theLongitude, theLatitude);
 }
 
-// ----------------------------------------------------------------------
 /*!
  * \brief Constructor
  */
@@ -595,6 +594,36 @@ Spine::LocationList Engine::suggestDuplicates(const std::string& thePattern,
 
 // ----------------------------------------------------------------------
 /*!
+ * \brief Find alphabetical complations for more than one language
+ */
+// ----------------------------------------------------------------------
+
+std::vector<Spine::LocationList> Engine::suggest(const std::string& thePattern,
+                                                 const std::vector<std::string>& theLanguages,
+                                                 const std::string& theKeyword,
+                                                 unsigned int thePage,
+                                                 unsigned int theMaxResults) const
+{
+  try
+  {
+    Spine::LocationList ret;
+
+    ++itsSuggestCount;
+
+    bool duplicates = false;
+
+    auto mycopy = boost::atomic_load(&impl);
+    return mycopy->suggest(
+        thePattern, theLanguages, theKeyword, thePage, theMaxResults, duplicates);
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
  * \brief Find nearest point from keyword
  *
  * Returns Spine::LocationPtr(0) if none is found.
@@ -641,6 +670,53 @@ Spine::LocationPtr Engine::keywordSearch(double theLongitude,
     Spine::LocationPtr newptr(new Spine::Location(**ptr));
     mycopy->translate(newptr, theLang);
     return newptr;
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+LocationOptions Engine::parseLocations(const std::vector<int>& fmisids,
+                                       const std::vector<int>& lpnns,
+                                       const std::vector<int>& wmos,
+                                       const std::string& language) const
+{
+  try
+  {
+    LocationOptions options;
+
+    Locus::QueryOptions opts;
+    opts.SetCountries("all");
+    opts.SetFullCountrySearch(true);
+    opts.SetFeatures("SYNOP,FINAVIA,STUK");
+    opts.SetSearchVariants(true);
+    opts.SetLanguage(language);
+    opts.SetResultLimit(1);
+
+    opts.SetNameType("fmisid");
+    for (const auto& id : fmisids)
+    {
+      Spine::LocationList ll = nameSearch(opts, Fmi::to_string(id));
+      if (ll.size() > 0)
+        options.add(Fmi::to_string(id), ll.front());
+    }
+    opts.SetNameType("lpnn");
+    for (const auto& id : lpnns)
+    {
+      Spine::LocationList ll = nameSearch(opts, Fmi::to_string(id));
+      if (ll.size() > 0)
+        options.add(Fmi::to_string(id), ll.front());
+    }
+    opts.SetNameType("wmo");
+    for (const auto& id : wmos)
+    {
+      Spine::LocationList ll = nameSearch(opts, Fmi::to_string(id));
+      if (ll.size() > 0)
+        options.add(Fmi::to_string(id), ll.front());
+    }
+
+    return options;
   }
   catch (...)
   {
@@ -992,8 +1068,7 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
         opts.SetLanguage(language);
         Spine::LocationList places = this->keywordSearch(opts, keyword);
         if (places.empty())
-          throw Fmi::Exception(BCP,
-                                 "No locations for keyword " + std::string(keyword) + " found");
+          throw Fmi::Exception(BCP, "No locations for keyword " + std::string(keyword) + " found");
 
         for (Spine::LocationPtr& place : places)
         {
@@ -1363,6 +1438,20 @@ const std::string& Engine::errorMessage() const
 {
   return itsErrorMessage;
 }
+
+// DEM height
+double Engine::demHeight(double theLongitude, double theLatitude) const
+{
+  return demheight(dem(), theLongitude, theLatitude, maxDemResolution());
+}
+
+// Cover type
+Fmi::LandCover::Type Engine::coverType(double theLongitude, double theLatitude) const
+{
+  return covertype(landCover(), theLongitude, theLatitude);
+}
+
+// ----------------------------------------------------------------------
 
 }  // namespace Geonames
 }  // namespace Engine

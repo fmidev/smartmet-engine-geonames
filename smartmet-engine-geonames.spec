@@ -3,8 +3,8 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.6.21
-Release: 2%{?dist}.fmi
+Version: 21.7.8
+Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -16,13 +16,12 @@ BuildRequires: gcc-c++
 BuildRequires: gdal32-devel
 BuildRequires: libatomic
 BuildRequires: libicu-devel
-BuildRequires: libpqxx-devel < 1:7.0
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-library-gis-devel >= 21.6.18
-BuildRequires: smartmet-library-locus-devel >= 21.6.21
-BuildRequires: smartmet-library-macgyver-devel >= 21.6.17
+BuildRequires: smartmet-library-locus-devel >= 21.7.8
+BuildRequires: smartmet-library-macgyver-devel >= 21.7.8
 BuildRequires: smartmet-library-spine-devel >= 21.6.15
 
 Requires: boost169-date-time
@@ -35,16 +34,28 @@ Requires: fmt >= 7.1.3
 Requires: gdal32-libs
 Requires: libatomic
 Requires: libicu
-Requires: libpqxx < 1:7.0
 Requires: smartmet-library-gis >= 21.6.18
-Requires: smartmet-library-locus >= 21.6.21
-Requires: smartmet-library-macgyver >= 21.6.17
+Requires: smartmet-library-locus >= 21.7.8
+Requires: smartmet-library-macgyver >= 21.7.8
 Requires: smartmet-library-spine >= 21.6.15
 Requires: smartmet-server >= 21.6.3
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
 Requires: mariadb-libs
+%endif
+
+%if %{defined el7}
+Requires: libpqxx < 1:7.0
+BuildRequires: libpqxx-devel < 1:7.0
+%else
+%if %{defined el8}
+Requires: libpqxx >= 1:7.0
+BuildRequires: libpqxx-devel >= 1:7.0
+%else
+Requires: libpqxx
+BuildRequires: libpqxx-devel
+%endif
 %endif
 
 Provides: %{SPECNAME}
@@ -97,6 +108,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Thu Jul  8 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.7.8-1.fmi
+- Use libpqxx7 for RHEL8
+
 * Mon Jun 21 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.21-2.fmi
 - Fix missing include
 

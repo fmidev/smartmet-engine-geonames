@@ -17,6 +17,7 @@
 #include <gis/LandCover.h>
 #include <macgyver/AsyncTaskGroup.h>
 #include <macgyver/Cache.h>
+#include <macgyver/CharsetConverter.h>
 #include <macgyver/Geometry.h>
 #include <macgyver/NearTree.h>
 #include <macgyver/PostgreSQLConnection.h>
@@ -253,7 +254,7 @@ class Engine::Impl : private boost::noncopyable
   const Collator* itsCollator = nullptr;  // perhaps should delete in destructor?
 
   bool itsAsciiAutocomplete = false;
-  iconv_t itsIconv;  // Note:: boost::locale from_utf does not handle translitteration
+  std::unique_ptr<Fmi::CharsetConverter> utf8_to_latin1;
 
   // DEM data
   boost::shared_ptr<Fmi::DEM> itsDEM;

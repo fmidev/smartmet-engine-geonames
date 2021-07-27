@@ -12,6 +12,7 @@
 #include <boost/thread.hpp>
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
+#include <macgyver/CharsetTools.h>
 #include <macgyver/Exception.h>
 #include <macgyver/Hash.h>
 #include <macgyver/StringConversion.h>
@@ -146,32 +147,8 @@ namespace Geonames
 
 std::string Engine::Impl::iconvName(const std::string &name) const
 {
-  std::vector<char> input(name.begin(), name.end());
-
-  char *addr = &input[0];
-  size_t len = name.size();
-  size_t outlen = 0;
-
-  std::vector<char> output(1024);  // should be enough for all location names
-  char *outptr = nullptr;
-
-  std::string result;
-
-  while (len > 0)
-  {
-    outptr = &output[0];
-    outlen = output.size();
-    size_t n = ::iconv(itsIconv, &addr, &len, &outptr, &outlen);
-
-    if (n == (size_t)-1)
-    {
-      result = "";  // do not permit question marks or similar kludges in autocomplete
-      break;
-    }
-    result.append(&output[0], output.size() - outlen);
-  }
-
-  return result;
+  assert(utf8_to_latin1);
+  return utf8_to_latin1->convert(name);
 }
 // ---------------------------------------------------------------------
 /*!
@@ -181,8 +158,6 @@ std::string Engine::Impl::iconvName(const std::string &name) const
 
 Engine::Impl::~Impl()
 {
-  if (itsAsciiAutocomplete)
-    iconv_close(itsIconv);
 }
 
 // ----------------------------------------------------------------------
@@ -238,11 +213,16 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
 
       if (itsAsciiAutocomplete)
       {
-        itsIconv = ::iconv_open("ascii//translit", "utf-8");
-        if (itsIconv == (iconv_t)-1)
-          throw std::runtime_error(
-              "Initializing iconv from UTF-8 to ascii//translit failed. Set "
-              "ascii_autocomplete=false to solve the problem.");
+	try
+	{
+	  utf8_to_latin1.reset(new Fmi::CharsetConverter("UTF-8", "ascii//translit", 256));
+	}
+	catch (Fmi::Exception& e)
+	{
+	  e.addDetail("You may try to set ascii_autocomplete=false"
+		      " to workaround problem");
+	  throw;
+	}
       }
     }
     catch (const libconfig::SettingException &e)

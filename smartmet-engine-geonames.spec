@@ -21,7 +21,7 @@ BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-library-gis-devel >= 21.6.18
 BuildRequires: smartmet-library-locus-devel >= 21.7.8
-BuildRequires: smartmet-library-macgyver-devel >= 21.7.8
+BuildRequires: smartmet-library-macgyver-devel >= 21.7.27
 BuildRequires: smartmet-library-spine-devel >= 21.6.15
 
 Requires: boost169-date-time
@@ -36,7 +36,7 @@ Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 21.6.18
 Requires: smartmet-library-locus >= 21.7.8
-Requires: smartmet-library-macgyver >= 21.7.8
+Requires: smartmet-library-macgyver >= 21.7.27
 Requires: smartmet-library-spine >= 21.6.15
 Requires: smartmet-server >= 21.6.3
 %if 0%{rhel} >= 8

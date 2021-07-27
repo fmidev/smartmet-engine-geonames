@@ -256,6 +256,9 @@ class Engine::Impl : private boost::noncopyable
   bool itsAsciiAutocomplete = false;
   std::unique_ptr<Fmi::CharsetConverter> utf8_to_latin1;
 
+  /// Converters to UTF-8 from possible fallback charsets
+  std::vector<std::shared_ptr<Fmi::CharsetConverter> > fallback_converters;
+
   // DEM data
   boost::shared_ptr<Fmi::DEM> itsDEM;
   unsigned int itsMaxDemResolution = 0;  // allow highest possible resolution

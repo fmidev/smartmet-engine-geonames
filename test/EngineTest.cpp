@@ -398,6 +398,14 @@ void suggest()
     TEST_FAILED("Country of first match for 'stockholm' should be 'Sweden', not " +
                 ptrs.front()->country);
 
+  // BRAINSTORM-2113: SIGABRT
+  ptrs = names->suggest("\344\344", "fi"); // ää in latin1
+  if (ptrs.size() < 1)
+    TEST_FAILED("Failed to find suggestions by provided 'ää' in Latin1 encoding");
+  if (ptrs.front()->name != "Äänekoski")
+    TEST_FAILED("Name of the first match for 'ää' in Latin1 encoding should be"
+		" 'Äänekoski ', not '" + ptrs.front()->name + "'");
+
   TEST_PASSED();
 }
 

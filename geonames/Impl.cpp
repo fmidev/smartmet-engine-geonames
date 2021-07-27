@@ -224,6 +224,11 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
 	  throw;
 	}
       }
+
+      // FIXME: make fallback converters configurable
+      fallback_converters
+	.emplace_back(std::make_shared<Fmi::CharsetConverter>("latin1", "UTF-8", 256));
+
     }
     catch (const libconfig::SettingException &e)
     {
@@ -2282,37 +2287,74 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
     // return null if keyword is wrong
 
     Spine::LocationList ret;
-
     auto it = itsTernaryTrees.find(keyword);
     if (it == itsTernaryTrees.end())
       return ret;
 
     // transform to collated form
 
-    std::string name = to_treeword(pattern);
+    std::string name;
 
-    // find it
-
-    ret = it->second->findprefix(name);
-
-    // check if there are language specific translations
-
-    std::string lg = to_language(lang);
-
-    auto lt = itsLangTernaryTreeMap.find(lg);
-    if (lt != itsLangTernaryTreeMap.end())
-    {
-      auto tit = lt->second->find(keyword);
-      if (tit != lt->second->end())
+    const auto try_pattern =
+      [this, &ret, &name, &lang, &keyword, it]
+      (const std::string& pattern) -> void
       {
-        std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
-        for (const Spine::LocationPtr &ptr : tmpx)
-        {
-          ret.push_back(ptr);
-        }
+	name = to_treeword(pattern);
+
+	// find it
+
+	ret = it->second->findprefix(name);
+
+	// check if there are language specific translations
+
+	std::string lg = to_language(lang);
+
+	auto lt = itsLangTernaryTreeMap.find(lg);
+	if (lt != itsLangTernaryTreeMap.end())
+	  {
+	    auto tit = lt->second->find(keyword);
+	    if (tit != lt->second->end())
+	      {
+		std::list<Spine::LocationPtr> tmpx =
+		  tit->second->findprefix(name);
+		for (const Spine::LocationPtr &ptr : tmpx)
+		  {
+		    ret.push_back(ptr);
+		  }
+	      }
+	  }
+      };
+
+    if (Fmi::is_utf8(pattern))
+    {
+      try_pattern(pattern);
+    }
+    else
+    {
+      for (auto it2 = fallback_converters.begin();
+	   ret.empty() && it2 != fallback_converters.end();
+	   ++it2)
+      {
+	std::string tmp;
+
+	try
+	{
+	  tmp = (*it2)->convert(pattern);
+	}
+	catch (const Fmi::Exception& e)
+	{
+	  // We are not interested about conversion errors. Just take next converter
+	  // in that case.
+	}
+
+	try_pattern(tmp);
+	if (! ret.empty())
+	{
+	  break;
+	}
       }
     }
-
+      
     // Translate the names
 
     translate(ret, lang);

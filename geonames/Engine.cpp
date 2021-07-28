@@ -1333,7 +1333,8 @@ StatusReturnType Engine::metadataStatus() const
     auto duration = now - itsStartTime;
     long secs = duration.total_seconds();
 
-    unsigned int row = 0, column = 0;
+    unsigned int row = 0;
+    unsigned int column = 0;
 
     auto mycopy = boost::atomic_load(&impl);
 

@@ -1578,7 +1578,7 @@ int Engine::Impl::feature_priority(const Spine::Location &loc) const
     if (it == itsFeaturePriorities.end())
       return 0;
 
-    auto &priomap = it->second;
+    const auto &priomap = it->second;
 
     auto jt = priomap.find(loc.feature);
 
@@ -1991,7 +1991,7 @@ void Engine::Impl::translate_name(Spine::Location &loc, const std::string &lang)
 
     std::string lg = to_language(lang);
 
-    auto &translations = trans->second;
+    const auto &translations = trans->second;
     auto pos = translations.find(lg);
 
     if (pos == translations.end())

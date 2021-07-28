@@ -212,7 +212,7 @@ void WktGeometry::svgPathsFromGeometry()
   if (is_multi_geometry(*itsGeom))
   {
     std::list<const OGRGeometry*> glist = get_geometry_list(itsGeom);
-    for (auto g : glist)
+    for (const auto* g : glist)
       itsSvgPaths.push_back(get_svg_path(*g));
   }
 }
@@ -232,7 +232,7 @@ void WktGeometry::locationsFromGeometry(const Spine::LocationPtr loc,
   if (is_multi_geometry(*itsGeom))
   {
     std::list<const OGRGeometry*> glist = get_geometry_list(itsGeom);
-    for (auto g : glist)
+    for (const auto* g : glist)
       itsLocations.push_back(locationFromGeometry(g, loc, language, geoengine));
   }
 }

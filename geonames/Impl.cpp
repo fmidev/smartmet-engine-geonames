@@ -2599,7 +2599,7 @@ Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOpti
     // increase the limit to at least 100 names.
     auto options = theOptions;
     if (options.GetResultLimit() > 0)
-      options.SetResultLimit(std::max(theOptions.GetResultLimit(), 100u));
+      options.SetResultLimit(std::max(theOptions.GetResultLimit(), 100U));
 
     Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
     Spine::LocationList ptrs = to_locationlist(lq.FetchByName(options, theName));

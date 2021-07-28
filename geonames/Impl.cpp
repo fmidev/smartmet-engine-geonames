@@ -1060,9 +1060,9 @@ void Engine::Impl::read_countries(Fmi::Database::PostgreSQLConnection &conn)
     {
       if (itsStrict)
         throw Fmi::Exception(BCP, "FmiNames: Found no PCLI/PCLF/PCLD places from geonames table");
-      else
-        std::cerr << "Warning: FmiNames: Found no PCLI/PCLF/PCLD places from geonames table"
-                  << std::endl;
+
+      std::cerr << "Warning: FmiNames: Found no PCLI/PCLF/PCLD places from geonames table"
+                << std::endl;
     }
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
@@ -1109,8 +1109,8 @@ void Engine::Impl::read_alternate_countries(Fmi::Database::PostgreSQLConnection 
     {
       if (itsStrict)
         throw Fmi::Exception(BCP, "Found no country translations");
-      else
-        std::cerr << "Warning: Found no country translations" << std::endl;
+
+      std::cerr << "Warning: Found no country translations" << std::endl;
     }
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
@@ -1215,8 +1215,8 @@ void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
     {
       if (itsStrict)
         throw Fmi::Exception(BCP, "Found nothing from fminames database");
-      else
-        std::cerr << "Warning: Found nothing from fminames database" << std::endl;
+
+      std::cerr << "Warning: Found nothing from fminames database" << std::endl;
     }
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
@@ -1345,8 +1345,8 @@ void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &
     {
       if (itsStrict)
         throw Fmi::Exception(BCP, "Found nothing from alternate_geonames database");
-      else
-        std::cerr << "Warning: Found nothing from alternate_geonames database" << std::endl;
+
+      std::cerr << "Warning: Found nothing from alternate_geonames database" << std::endl;
     }
 
     if (itsVerbose)

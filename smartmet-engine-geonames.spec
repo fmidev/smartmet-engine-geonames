@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.7.8
+Version: 21.7.28
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -19,10 +19,10 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 21.6.18
+BuildRequires: smartmet-library-gis-devel >= 21.7.27
 BuildRequires: smartmet-library-locus-devel >= 21.7.8
-BuildRequires: smartmet-library-macgyver-devel >= 21.7.27
-BuildRequires: smartmet-library-spine-devel >= 21.6.15
+BuildRequires: smartmet-library-macgyver-devel >= 21.7.28
+BuildRequires: smartmet-library-spine-devel >= 21.7.28
 
 Requires: boost169-date-time
 Requires: boost169-filesystem
@@ -34,10 +34,10 @@ Requires: fmt >= 7.1.3
 Requires: gdal32-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 21.6.18
+Requires: smartmet-library-gis >= 21.7.27
 Requires: smartmet-library-locus >= 21.7.8
-Requires: smartmet-library-macgyver >= 21.7.27
-Requires: smartmet-library-spine >= 21.6.15
+Requires: smartmet-library-macgyver >= 21.7.28
+Requires: smartmet-library-spine >= 21.7.28
 Requires: smartmet-server >= 21.6.3
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
@@ -50,8 +50,8 @@ Requires: libpqxx < 1:7.0
 BuildRequires: libpqxx-devel < 1:7.0
 %else
 %if %{defined el8}
-Requires: libpqxx >= 1:7.0
-BuildRequires: libpqxx-devel >= 1:7.0
+Requires: libpqxx >= 5.0.1
+BuildRequires: libpqxx-devel >= 5.0.1
 %else
 Requires: libpqxx
 BuildRequires: libpqxx-devel
@@ -108,6 +108,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Jul 28 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.7.28-1.fmi
+- Silenced compiler warnings
+
 * Thu Jul  8 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.7.8-1.fmi
 - Use libpqxx7 for RHEL8
 

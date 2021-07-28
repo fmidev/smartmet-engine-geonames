@@ -108,7 +108,6 @@ class Engine::Impl : private boost::noncopyable
       Fmi::TimedCache::Cache<std::size_t, std::vector<Spine::LocationList>>;
   boost::movelib::unique_ptr<LanguagesSuggestCache> itsLanguagesSuggestCache;
 
- public:
   Impl(std::string configfile, bool reloading);
   ~Impl();
 
@@ -257,7 +256,7 @@ class Engine::Impl : private boost::noncopyable
   std::unique_ptr<Fmi::CharsetConverter> utf8_to_latin1;
 
   /// Converters to UTF-8 from possible fallback charsets
-  std::vector<std::shared_ptr<Fmi::CharsetConverter> > fallback_converters;
+  std::vector<std::shared_ptr<Fmi::CharsetConverter>> fallback_converters;
 
   // DEM data
   boost::shared_ptr<Fmi::DEM> itsDEM;
@@ -283,7 +282,6 @@ class Engine::Impl : private boost::noncopyable
   Fmi::AsyncTaskGroup tg1;
   boost::shared_ptr<Fmi::AsyncTask> initSuggestTask;
 
- private:
   Impl();
   bool handleShutDownRequest();
 

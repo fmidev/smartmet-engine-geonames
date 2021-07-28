@@ -89,7 +89,7 @@ class Engine : public Spine::SmartMetEngine
 
  public:
   Engine(const std::string& theConfigFile);
-  ~Engine();
+  ~Engine() override;
 
   std::size_t hash_value() const;
 
@@ -209,9 +209,9 @@ class Engine : public Spine::SmartMetEngine
   bool isSuggestReady() const;
 
  protected:
-  virtual void init();
-  void shutdown();
-  void shutdownRequestFlagSet();
+  virtual void init() override;
+  void shutdown() override;
+  void shutdownRequestFlagSet() override;
 
  private:
   unsigned int maxDemResolution() const;

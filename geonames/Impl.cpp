@@ -1067,8 +1067,8 @@ void Engine::Impl::read_countries(Fmi::Database::PostgreSQLConnection &conn)
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      std::string name = row["name"].as<std::string>();
-      std::string iso2 = row["iso2"].as<std::string>();
+      auto name = row["name"].as<std::string>();
+      auto iso2 = row["iso2"].as<std::string>();
       itsCountries[iso2] = name;
     }
 
@@ -1115,9 +1115,9 @@ void Engine::Impl::read_alternate_countries(Fmi::Database::PostgreSQLConnection 
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      std::string lang = row["language"].as<std::string>();
-      std::string name = row["gname"].as<std::string>();
-      std::string translation = row["alt_gname"].as<std::string>();
+      auto lang = row["language"].as<std::string>();
+      auto name = row["gname"].as<std::string>();
+      auto translation = row["alt_gname"].as<std::string>();
 
       auto it = itsAlternateCountries.find(name);
       if (it == itsAlternateCountries.end())
@@ -1134,6 +1134,7 @@ void Engine::Impl::read_alternate_countries(Fmi::Database::PostgreSQLConnection 
     }
 
     if (itsVerbose)
+
       std::cout << "read_alternate_countries: " << res.size() << " translations" << std::endl;
   }
   catch (...)
@@ -1166,7 +1167,7 @@ void Engine::Impl::read_municipalities(Fmi::Database::PostgreSQLConnection &conn
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
       int id = row["id"].as<int>();
-      std::string name = row["name"].as<std::string>();
+      auto name = row["name"].as<std::string>();
       itsMunicipalities[id] = name;
     }
 

@@ -19,9 +19,9 @@
 #include <spine/Location.h>
 #include <sys/types.h>
 #include <cassert>
+#include <cerrno>  // iconv uses errno
 #include <cmath>
 #include <csignal>
-#include <errno.h>  // iconv uses errno
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -156,9 +156,7 @@ std::string Engine::Impl::iconvName(const std::string &name) const
  */
 // ----------------------------------------------------------------------
 
-Engine::Impl::~Impl()
-{
-}
+Engine::Impl::~Impl() {}
 
 // ----------------------------------------------------------------------
 /*!
@@ -213,22 +211,22 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
 
       if (itsAsciiAutocomplete)
       {
-	try
-	{
-	  utf8_to_latin1.reset(new Fmi::CharsetConverter("UTF-8", "ascii//translit", 256));
-	}
-	catch (Fmi::Exception& e)
-	{
-	  e.addDetail("You may try to set ascii_autocomplete=false"
-		      " to workaround problem");
-	  throw;
-	}
+        try
+        {
+          utf8_to_latin1.reset(new Fmi::CharsetConverter("UTF-8", "ascii//translit", 256));
+        }
+        catch (Fmi::Exception &e)
+        {
+          e.addDetail(
+              "You may try to set ascii_autocomplete=false"
+              " to workaround problem");
+          throw;
+        }
       }
 
       // FIXME: make fallback converters configurable
-      fallback_converters
-	.emplace_back(std::make_shared<Fmi::CharsetConverter>("latin1", "UTF-8", 256));
-
+      fallback_converters.emplace_back(
+          std::make_shared<Fmi::CharsetConverter>("latin1", "UTF-8", 256));
     }
     catch (const libconfig::SettingException &e)
     {
@@ -2296,34 +2294,32 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
     std::string name;
 
     const auto try_pattern =
-      [this, &ret, &name, &lang, &keyword, it]
-      (const std::string& pattern) -> void
+        [this, &ret, &name, &lang, &keyword, it](const std::string &pattern) -> void
+    {
+      name = to_treeword(pattern);
+
+      // find it
+
+      ret = it->second->findprefix(name);
+
+      // check if there are language specific translations
+
+      std::string lg = to_language(lang);
+
+      auto lt = itsLangTernaryTreeMap.find(lg);
+      if (lt != itsLangTernaryTreeMap.end())
       {
-	name = to_treeword(pattern);
-
-	// find it
-
-	ret = it->second->findprefix(name);
-
-	// check if there are language specific translations
-
-	std::string lg = to_language(lang);
-
-	auto lt = itsLangTernaryTreeMap.find(lg);
-	if (lt != itsLangTernaryTreeMap.end())
-	  {
-	    auto tit = lt->second->find(keyword);
-	    if (tit != lt->second->end())
-	      {
-		std::list<Spine::LocationPtr> tmpx =
-		  tit->second->findprefix(name);
-		for (const Spine::LocationPtr &ptr : tmpx)
-		  {
-		    ret.push_back(ptr);
-		  }
-	      }
-	  }
-      };
+        auto tit = lt->second->find(keyword);
+        if (tit != lt->second->end())
+        {
+          std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
+          for (const Spine::LocationPtr &ptr : tmpx)
+          {
+            ret.push_back(ptr);
+          }
+        }
+      }
+    };
 
     if (Fmi::is_utf8(pattern))
     {
@@ -2331,30 +2327,29 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
     }
     else
     {
-      for (auto it2 = fallback_converters.begin();
-	   ret.empty() && it2 != fallback_converters.end();
-	   ++it2)
+      for (auto it2 = fallback_converters.begin(); ret.empty() && it2 != fallback_converters.end();
+           ++it2)
       {
-	std::string tmp;
+        std::string tmp;
 
-	try
-	{
-	  tmp = (*it2)->convert(pattern);
-	}
-	catch (const Fmi::Exception& e)
-	{
-	  // We are not interested about conversion errors. Just take next converter
-	  // in that case.
-	}
+        try
+        {
+          tmp = (*it2)->convert(pattern);
+        }
+        catch (const Fmi::Exception &e)
+        {
+          // We are not interested about conversion errors. Just take next converter
+          // in that case.
+        }
 
-	try_pattern(tmp);
-	if (! ret.empty())
-	{
-	  break;
-	}
+        try_pattern(tmp);
+        if (!ret.empty())
+        {
+          break;
+        }
       }
     }
-      
+
     // Translate the names
 
     translate(ret, lang);

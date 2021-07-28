@@ -65,7 +65,7 @@ class LocationOptions
 
 };  // class LocationOptions
 
-typedef std::pair<boost::shared_ptr<Spine::Table>, Spine::TableFormatter::Names> StatusReturnType;
+using StatusReturnType = std::pair<boost::shared_ptr<Spine::Table>, Spine::TableFormatter::Names>;
 
 class Engine : public Spine::SmartMetEngine
 {

@@ -66,7 +66,7 @@ class WktGeometry
   Spine::LocationList itsLocations;    // Locations for geometries inside multipart geometry
 };
 
-typedef std::shared_ptr<const WktGeometry> WktGeometryPtr;
+using WktGeometryPtr = std::shared_ptr<const WktGeometry>;
 
 class WktGeometries
 {

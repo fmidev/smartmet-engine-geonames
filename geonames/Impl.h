@@ -288,6 +288,7 @@ class Engine::Impl : private boost::noncopyable
   void read_config();
   void read_config_priorities();
   void read_config_prioritymap(const std::string& partname, Priorities& priomap);
+  void setup_fallback_encodings();
 
   void read_database_hash_value(Fmi::Database::PostgreSQLConnection& conn);
 

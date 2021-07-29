@@ -224,9 +224,7 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
         }
       }
 
-      // FIXME: make fallback converters configurable
-      fallback_converters.emplace_back(
-          std::make_shared<Fmi::CharsetConverter>("latin1", "UTF-8", 256));
+      setup_fallback_encodings();
     }
     catch (const libconfig::SettingException &e)
     {
@@ -552,6 +550,69 @@ const libconfig::Setting &Engine::Impl::lookup_database(const std::string &setti
   catch (const libconfig::SettingNotFoundException &ex)
   {
     throw Fmi::Exception(BCP, "Override configuration error: " + setting, nullptr);
+  }
+}
+
+void Engine::Impl::setup_fallback_encodings()
+{
+  std::vector<std::string> encodings;
+
+  try
+  {
+    const char* s_name = "fallback_encodings";
+    if (itsConfig.exists(s_name))
+    {
+      const libconfig::Setting& s_enc = itsConfig.lookup(s_name);
+      if (s_enc.isArray())
+      {
+	for (auto it = s_enc.begin(); it != s_enc.end(); ++it)
+	{
+	  if (it->getType() == libconfig::Setting::TypeString)
+	  {
+	    encodings.push_back((std::string)*it);
+	  }
+	  else
+	  {
+	    std::ostringstream tmp;
+	    tmp << "Invalid value in fallback encoding array (string expected)";
+	    throw Fmi::Exception(BCP, tmp.str());
+	  }
+	}
+      }
+      else if (s_enc.getType() == libconfig::Setting::TypeString)
+      {
+	encodings.push_back((std::string)s_enc);
+      }
+      else
+      {
+	std::ostringstream tmp;
+	tmp << "Invalid config setting fallback_encoding (string or string array expected)";
+	throw Fmi::Exception(BCP, tmp.str());
+      }
+    }
+    else
+    {
+      encodings.push_back("latin1");
+    }
+  }
+  catch (const libconfig::ConfigException &ex)
+  {
+    throw Fmi::Exception(BCP, "Unexpected configuration error");
+  }
+
+  std::set<std::string> duplicate_check;
+  for (const auto& encoding : encodings)
+  {
+    if (duplicate_check.insert(encoding).second)
+    {
+      fallback_converters.emplace_back(new Fmi::CharsetConverter(encoding, "UTF-8", 256));
+      // if (itsVerbose)
+      std::cout << "Geonames: Added fallback charset converter " << encoding << " --> UTF-8" << std::endl;
+    }
+    else
+    {
+      throw Fmi::Exception(BCP, "Duplicate fallback encoding '" + encoding + "'");
+    }
   }
 }
 

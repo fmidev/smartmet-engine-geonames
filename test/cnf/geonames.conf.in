@@ -17,6 +17,13 @@ locale = "fi_FI.UTF-8";
 # Common iconv ascii//translit mode not enabled by default.
 ascii_autocomplete = false;
 
+# Fallback encodings: charset encodings to try by suggest() when
+# provided string is not UTF-8. Default to latin1 if not specified.
+# Value must be one of
+# - string
+# - array of strings
+fallback_encodings = [ "latin7", "latin1" ];
+
 # DEM data. If this is omitted, the dem value will always be NaN
 # demdir = "/usr/share/smartmet/test/data/gis/rasters/viewfinder";
 demdir = "/usr/share/smartmet/test/data/gis/rasters/viewfinder";

@@ -569,7 +569,7 @@ void Engine::Impl::setup_fallback_encodings()
 	{
 	  if (it->getType() == libconfig::Setting::TypeString)
 	  {
-	    encodings.push_back((std::string)*it);
+            encodings.push_back(it->c_str());
 	  }
 	  else
 	  {
@@ -581,7 +581,7 @@ void Engine::Impl::setup_fallback_encodings()
       }
       else if (s_enc.getType() == libconfig::Setting::TypeString)
       {
-	encodings.push_back((std::string)s_enc);
+        encodings.push_back(s_enc.c_str());
       }
       else
       {

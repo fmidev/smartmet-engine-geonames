@@ -5,9 +5,7 @@
 // ======================================================================
 
 #include "Engine.h"
-
 #include "Impl.h"
-
 #include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <fmt/format.h>
 #include <fmt/printf.h>
@@ -25,6 +23,7 @@
 #include <atomic>
 #include <iterator>
 #include <limits>
+#include <ogr_geometry.h>
 #include <sstream>
 #include <string>
 #include <unistd.h>
@@ -586,6 +585,36 @@ Spine::LocationList Engine::suggestDuplicates(const std::string& thePattern,
 
     auto mycopy = boost::atomic_load(&impl);
     return mycopy->suggest(thePattern, theLang, theKeyword, thePage, theMaxResults, true);
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Find alphabetical complations for more than one language
+ */
+// ----------------------------------------------------------------------
+
+std::vector<Spine::LocationList> Engine::suggest(const std::string& thePattern,
+                                                 const std::vector<std::string>& theLanguages,
+                                                 const std::string& theKeyword,
+                                                 unsigned int thePage,
+                                                 unsigned int theMaxResults) const
+{
+  try
+  {
+    Spine::LocationList ret;
+
+    ++itsSuggestCount;
+
+    bool duplicates = false;
+
+    auto mycopy = boost::atomic_load(&impl);
+    return mycopy->suggest(
+        thePattern, theLanguages, theKeyword, thePage, theMaxResults, duplicates);
   }
   catch (...)
   {
@@ -1304,7 +1333,8 @@ StatusReturnType Engine::metadataStatus() const
     auto duration = now - itsStartTime;
     long secs = duration.total_seconds();
 
-    unsigned int row = 0, column = 0;
+    unsigned int row = 0;
+    unsigned int column = 0;
 
     auto mycopy = boost::atomic_load(&impl);
 

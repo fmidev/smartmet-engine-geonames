@@ -12,15 +12,16 @@
 #include <boost/thread.hpp>
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
+#include <macgyver/CharsetTools.h>
 #include <macgyver/Exception.h>
 #include <macgyver/Hash.h>
 #include <macgyver/StringConversion.h>
 #include <spine/Location.h>
 #include <sys/types.h>
 #include <cassert>
+#include <cerrno>  // iconv uses errno
 #include <cmath>
 #include <csignal>
-#include <errno.h>  // iconv uses errno
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -38,6 +39,23 @@ const int priority_scale = 1000;
 
 #ifndef NDEBUG
 
+void print(const SmartMet::Spine::Location &loc)
+{
+  std::cout << "Geoid:\t" << loc.geoid << std::endl
+            << "Name:\t" << loc.name << std::endl
+            << "Feature:\t" << loc.feature << std::endl
+            << "ISO2:\t" << loc.iso2 << std::endl
+            << "Area:\t" << loc.area << std::endl
+            << "Country:\t" << loc.country << std::endl
+            << "Lon:\t" << loc.longitude << std::endl
+            << "Lat:\t" << loc.latitude << std::endl
+            << "TZ:\t" << loc.timezone << std::endl
+            << "Popu:\t" << loc.population << std::endl
+            << "Elev:\t" << loc.elevation << std::endl
+            << "DEM:\t" << loc.dem << std::endl
+            << "Priority:\t" << loc.priority << std::endl;
+}
+
 void print(const SmartMet::Spine::LocationPtr &ptr)
 {
   try
@@ -45,20 +63,7 @@ void print(const SmartMet::Spine::LocationPtr &ptr)
     if (!ptr)
       std::cout << "No location to print" << std::endl;
     else
-    {
-      std::cout << "Geoid:\t" << ptr->geoid << std::endl
-                << "Name:\t" << ptr->name << std::endl
-                << "Feature:\t" << ptr->feature << std::endl
-                << "ISO2:\t" << ptr->iso2 << std::endl
-                << "Area:\t" << ptr->area << std::endl
-                << "Lon:\t" << ptr->longitude << std::endl
-                << "Lat:\t" << ptr->latitude << std::endl
-                << "TZ:\t" << ptr->timezone << std::endl
-                << "Popu:\t" << ptr->population << std::endl
-                << "Elev:\t" << ptr->elevation << std::endl
-                << "DEM:\t" << ptr->dem << std::endl
-                << "Priority:\t" << ptr->priority << std::endl;
-    }
+      print(*ptr);
   }
   catch (...)
   {
@@ -83,6 +88,48 @@ void print(const std::list<SmartMet::Spine::LocationPtr *> &ptrs)
 }
 #endif
 
+namespace
+{
+// ----------------------------------------------------------------------
+/*!
+ * \brief Cache key for a suggestion
+ */
+// ----------------------------------------------------------------------
+
+std::size_t cache_key(const std::string &pattern,
+                      const std::string &lang,
+                      const std::string &keyword,
+                      unsigned int page,
+                      unsigned int maxresults,
+                      bool duplicates)
+{
+  auto hash = Fmi::hash_value(pattern);
+  Fmi::hash_combine(hash, Fmi::hash_value(lang));
+  Fmi::hash_combine(hash, Fmi::hash_value(keyword));
+  Fmi::hash_combine(hash, Fmi::hash_value(page));
+  Fmi::hash_combine(hash, Fmi::hash_value(maxresults));
+  Fmi::hash_combine(hash, Fmi::hash_value(duplicates));
+  return hash;
+}
+
+std::size_t cache_key(const std::string &pattern,
+                      const std::vector<std::string> &languages,
+                      const std::string &keyword,
+                      unsigned int page,
+                      unsigned int maxresults,
+                      bool duplicates)
+{
+  auto hash = Fmi::hash_value(pattern);
+  Fmi::hash_combine(hash, Fmi::hash_value(languages));
+  Fmi::hash_combine(hash, Fmi::hash_value(keyword));
+  Fmi::hash_combine(hash, Fmi::hash_value(page));
+  Fmi::hash_combine(hash, Fmi::hash_value(maxresults));
+  Fmi::hash_combine(hash, Fmi::hash_value(duplicates));
+  return hash;
+}
+
+}  // namespace
+
 namespace SmartMet
 {
 namespace Engine
@@ -100,32 +147,8 @@ namespace Geonames
 
 std::string Engine::Impl::iconvName(const std::string &name) const
 {
-  std::vector<char> input(name.begin(), name.end());
-
-  char *addr = &input[0];
-  size_t len = name.size();
-  size_t outlen = 0;
-
-  std::vector<char> output(1024);  // should be enough for all location names
-  char *outptr = nullptr;
-
-  std::string result;
-
-  while (len > 0)
-  {
-    outptr = &output[0];
-    outlen = output.size();
-    size_t n = ::iconv(itsIconv, &addr, &len, &outptr, &outlen);
-
-    if (n == (size_t)-1)
-    {
-      result = "";  // do not permit question marks or similar kludges in autocomplete
-      break;
-    }
-    result.append(&output[0], output.size() - outlen);
-  }
-
-  return result;
+  assert(utf8_to_latin1);
+  return utf8_to_latin1->convert(name);
 }
 // ---------------------------------------------------------------------
 /*!
@@ -133,11 +156,7 @@ std::string Engine::Impl::iconvName(const std::string &name) const
  */
 // ----------------------------------------------------------------------
 
-Engine::Impl::~Impl()
-{
-  if (itsAsciiAutocomplete)
-    iconv_close(itsIconv);
-}
+Engine::Impl::~Impl() {}
 
 // ----------------------------------------------------------------------
 /*!
@@ -177,6 +196,8 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
       unsigned int suggestCacheSize = 10000;
       itsConfig.lookupValue("cache.suggest_max_size", suggestCacheSize);
       itsSuggestCache = boost::movelib::make_unique<SuggestCache>(suggestCacheSize);
+      itsLanguagesSuggestCache =
+          boost::movelib::make_unique<LanguagesSuggestCache>(suggestCacheSize);
 
       // Establish collator
 
@@ -190,12 +211,20 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
 
       if (itsAsciiAutocomplete)
       {
-        itsIconv = ::iconv_open("ascii//translit", "utf-8");
-        if (itsIconv == (iconv_t)-1)
-          throw std::runtime_error(
-              "Initializing iconv from UTF-8 to ascii//translit failed. Set "
-              "ascii_autocomplete=false to solve the problem.");
+        try
+        {
+          utf8_to_latin1.reset(new Fmi::CharsetConverter("UTF-8", "ascii//translit", 256));
+        }
+        catch (Fmi::Exception &e)
+        {
+          e.addDetail(
+              "You may try to set ascii_autocomplete=false"
+              " to workaround problem");
+          throw;
+        }
       }
+
+      setup_fallback_encodings();
     }
     catch (const libconfig::SettingException &e)
     {
@@ -424,8 +453,11 @@ std::string Engine::Impl::to_treeword(const std::string &name) const
 {
   try
   {
-    std::string tmp = name;
-    boost::algorithm::erase_all(tmp, " ");
+    std::string tmp;
+    std::remove_copy_if(name.begin(), name.end(), std::back_inserter(tmp),
+			[](char c) { return std::isspace(c); });
+    if (tmp == "")
+      return "";
     tmp = itsCollator->transform(boost::locale::collator_base::primary, tmp);
 
     // The standard library std::string provided in RHEL6 cannot handle
@@ -524,6 +556,69 @@ const libconfig::Setting &Engine::Impl::lookup_database(const std::string &setti
   }
 }
 
+void Engine::Impl::setup_fallback_encodings()
+{
+  std::vector<std::string> encodings;
+
+  try
+  {
+    const char* s_name = "fallback_encodings";
+    if (itsConfig.exists(s_name))
+    {
+      const libconfig::Setting& s_enc = itsConfig.lookup(s_name);
+      if (s_enc.isArray())
+      {
+	for (auto it = s_enc.begin(); it != s_enc.end(); ++it)
+	{
+	  if (it->getType() == libconfig::Setting::TypeString)
+	  {
+            encodings.push_back(it->c_str());
+	  }
+	  else
+	  {
+	    std::ostringstream tmp;
+	    tmp << "Invalid value in fallback encoding array (string expected)";
+	    throw Fmi::Exception(BCP, tmp.str());
+	  }
+	}
+      }
+      else if (s_enc.getType() == libconfig::Setting::TypeString)
+      {
+        encodings.push_back(s_enc.c_str());
+      }
+      else
+      {
+	std::ostringstream tmp;
+	tmp << "Invalid config setting fallback_encoding (string or string array expected)";
+	throw Fmi::Exception(BCP, tmp.str());
+      }
+    }
+    else
+    {
+      encodings.push_back("latin1");
+    }
+  }
+  catch (const libconfig::ConfigException &ex)
+  {
+    throw Fmi::Exception(BCP, "Unexpected configuration error");
+  }
+
+  std::set<std::string> duplicate_check;
+  for (const auto& encoding : encodings)
+  {
+    if (duplicate_check.insert(encoding).second)
+    {
+      fallback_converters.emplace_back(new Fmi::CharsetConverter(encoding, "UTF-8", 256));
+      // if (itsVerbose)
+      std::cout << "Geonames: Added fallback charset converter " << encoding << " --> UTF-8" << std::endl;
+    }
+    else
+    {
+      throw Fmi::Exception(BCP, "Duplicate fallback encoding '" + encoding + "'");
+    }
+  }
+}
+
 // ----------------------------------------------------------------------
 /*!
  * \brief Initialize autocomplete data
@@ -543,15 +638,22 @@ void Engine::Impl::initSuggest(bool threaded)
         std::cerr << "Warning: Geonames database is disabled" << std::endl;
       else
       {
-        Locus::Connection conn(itsHost, itsUser, itsPass, itsDatabase, "UTF8", itsPort, false);
+        Fmi::Database::PostgreSQLConnectionOptions opt;
+        opt.host = itsHost;
+        opt.port = boost::lexical_cast<unsigned int>(itsPort);
+        opt.database = itsDatabase;
+        opt.username = itsUser;
+        opt.password = itsPass;
+        opt.encoding = "UTF8";
+        Fmi::Database::PostgreSQLConnection conn;
+        conn.open(opt);
 
         if (!conn.isConnected())
           throw Fmi::Exception(BCP, "Failed to connect to fminames database");
 
         read_database_hash_value(conn);
 
-        if (handleShutDownRequest())
-          return;
+        Fmi::AsyncTask::interruption_point();
 
         // These are needed in regression tests even in mock mode
         read_countries(conn);
@@ -559,31 +661,22 @@ void Engine::Impl::initSuggest(bool threaded)
 
         if (!itsAutocompleteDisabled)
         {
-          if (handleShutDownRequest())
-            return;
+          Fmi::AsyncTask::interruption_point();
           read_municipalities(conn);
 
-          if (handleShutDownRequest())
-            return;
+          Fmi::AsyncTask::interruption_point();
           read_geonames(conn);  // requires read_municipalities, read_countries
 
-          if (handleShutDownRequest())
-            return;
+          Fmi::AsyncTask::interruption_point();
           build_geoid_map();  // requires read_geonames
 
-          if (handleShutDownRequest())
-            return;
+          Fmi::AsyncTask::interruption_point();
           read_alternate_geonames(conn);  // requires build_geoid_map
 
-          if (handleShutDownRequest())
-            return;
+          Fmi::AsyncTask::interruption_point();
           read_alternate_municipalities(conn);
 
-          if (handleShutDownRequest())
-            return;
-
-          if (handleShutDownRequest())
-            return;
+          Fmi::AsyncTask::interruption_point();
           read_keywords(conn);  // requires build_geoid_map
         }
       }
@@ -617,20 +710,16 @@ void Engine::Impl::initSuggest(bool threaded)
     // hence these are done outside the try..catch block
     // to close the connection.
 
-    if (handleShutDownRequest())
-      return;
+    Fmi::AsyncTask::interruption_point();
     build_geotrees();  // requires ?
 
-    if (handleShutDownRequest())
-      return;
+    Fmi::AsyncTask::interruption_point();
     build_ternarytrees();  // requires ?
 
-    if (handleShutDownRequest())
-      return;
+    Fmi::AsyncTask::interruption_point();
     build_lang_ternarytrees();  // requires ?
 
-    if (handleShutDownRequest())
-      return;
+    Fmi::AsyncTask::interruption_point();
     assign_priorities(itsLocations);  // requires read_geonames
 
     // Ready
@@ -688,31 +777,24 @@ void Engine::Impl::init(bool first_construction)
 {
   try
   {
-    if (handleShutDownRequest())
-      return;
-
     // Read DEM and GlobCover data in parallel for speed
 
     std::string landcoverdir;
     itsConfig.lookupValue("landcoverdir", landcoverdir);
 
-    boost::thread_group threads;
-    threads.add_thread(new boost::thread(boost::bind(&Engine::Impl::initDEM, this)));  // NOLINT
-    threads.add_thread(
-        new boost::thread(boost::bind(&Engine::Impl::initLandCover, this)));  // NOLINT
-    threads.join_all();
-
-    // Early abort if so requested
-
-    if (handleShutDownRequest())
-      return;
+    tg1.stop_on_error(true);
+    tg1.on_task_error([](const std::string &s)
+                      { throw Fmi::Exception::Trace(BCP, "Operation failed: " + s); });
+    tg1.add("initDEM", [this]() { initDEM(); });
+    tg1.add("initLandCover", [this]() { initLandCover(); });
+    tg1.wait();
 
     // If we're doing a reload, we must do full initialization in this thread.
     // Otherwise we'll initialize autocomplete in a separate thread
     if (!first_construction)
       initSuggest(false);
     else
-      boost::thread(boost::bind(&Engine::Impl::initSuggest, this, true));
+      tg1.add("initSuggest", [this]() { initSuggest(true); });
 
     // Done apart from autocomplete. Ready to shutdown now though.
     itsReady = true;
@@ -735,9 +817,8 @@ void Engine::Impl::shutdown()
   {
     std::cout << "  -- Shutdown requested (Impl)\n";
     itsShutdownRequested = true;
-
-    while (!itsReady)
-      boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+    tg1.stop();
+    tg1.wait();
   }
   catch (...)
   {
@@ -748,19 +829,6 @@ void Engine::Impl::shutdown()
 void Engine::Impl::shutdownRequestFlagSet()
 {
   itsShutdownRequested = true;
-}
-
-// ----------------------------------------------------------------------
-/*!
- * \brief Prepare for a possible shutdown
- */
-// ----------------------------------------------------------------------
-
-bool Engine::Impl::handleShutDownRequest()
-{
-  if (itsShutdownRequested)
-    itsReady = true;
-  return itsShutdownRequested;
 }
 
 // ----------------------------------------------------------------------
@@ -992,7 +1060,7 @@ void Engine::Impl::read_config_prioritymap(const std::string &partname, Prioriti
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_database_hash_value(Locus::Connection &conn)
+void Engine::Impl::read_database_hash_value(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1033,7 +1101,7 @@ void Engine::Impl::read_database_hash_value(Locus::Connection &conn)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_countries(Locus::Connection &conn)
+void Engine::Impl::read_countries(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1056,15 +1124,15 @@ void Engine::Impl::read_countries(Locus::Connection &conn)
     {
       if (itsStrict)
         throw Fmi::Exception(BCP, "FmiNames: Found no PCLI/PCLF/PCLD places from geonames table");
-      else
-        std::cerr << "Warning: FmiNames: Found no PCLI/PCLF/PCLD places from geonames table"
-                  << std::endl;
+
+      std::cerr << "Warning: FmiNames: Found no PCLI/PCLF/PCLD places from geonames table"
+                << std::endl;
     }
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      std::string name = row["name"].as<std::string>();
-      std::string iso2 = row["iso2"].as<std::string>();
+      auto name = row["name"].as<std::string>();
+      auto iso2 = row["iso2"].as<std::string>();
       itsCountries[iso2] = name;
     }
 
@@ -1083,7 +1151,7 @@ void Engine::Impl::read_countries(Locus::Connection &conn)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
+void Engine::Impl::read_alternate_countries(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1105,15 +1173,15 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
     {
       if (itsStrict)
         throw Fmi::Exception(BCP, "Found no country translations");
-      else
-        std::cerr << "Warning: Found no country translations" << std::endl;
+
+      std::cerr << "Warning: Found no country translations" << std::endl;
     }
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      std::string lang = row["language"].as<std::string>();
-      std::string name = row["gname"].as<std::string>();
-      std::string translation = row["alt_gname"].as<std::string>();
+      auto lang = row["language"].as<std::string>();
+      auto name = row["gname"].as<std::string>();
+      auto translation = row["alt_gname"].as<std::string>();
 
       auto it = itsAlternateCountries.find(name);
       if (it == itsAlternateCountries.end())
@@ -1130,6 +1198,7 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
     }
 
     if (itsVerbose)
+
       std::cout << "read_alternate_countries: " << res.size() << " translations" << std::endl;
   }
   catch (...)
@@ -1144,7 +1213,7 @@ void Engine::Impl::read_alternate_countries(Locus::Connection &conn)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_municipalities(Locus::Connection &conn)
+void Engine::Impl::read_municipalities(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1162,7 +1231,7 @@ void Engine::Impl::read_municipalities(Locus::Connection &conn)
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
       int id = row["id"].as<int>();
-      std::string name = row["name"].as<std::string>();
+      auto name = row["name"].as<std::string>();
       itsMunicipalities[id] = name;
     }
 
@@ -1182,7 +1251,7 @@ void Engine::Impl::read_municipalities(Locus::Connection &conn)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_geonames(Locus::Connection &conn)
+void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1210,8 +1279,8 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
     {
       if (itsStrict)
         throw Fmi::Exception(BCP, "Found nothing from fminames database");
-      else
-        std::cerr << "Warning: Found nothing from fminames database" << std::endl;
+
+      std::cerr << "Warning: Found nothing from fminames database" << std::endl;
     }
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
@@ -1297,7 +1366,7 @@ void Engine::Impl::read_geonames(Locus::Connection &conn)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
+void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1340,8 +1409,8 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
     {
       if (itsStrict)
         throw Fmi::Exception(BCP, "Found nothing from alternate_geonames database");
-      else
-        std::cerr << "Warning: Found nothing from alternate_geonames database" << std::endl;
+
+      std::cerr << "Warning: Found nothing from alternate_geonames database" << std::endl;
     }
 
     if (itsVerbose)
@@ -1403,7 +1472,7 @@ void Engine::Impl::read_alternate_geonames(Locus::Connection &conn)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_alternate_municipalities(Locus::Connection &conn)
+void Engine::Impl::read_alternate_municipalities(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1573,7 +1642,7 @@ int Engine::Impl::feature_priority(const Spine::Location &loc) const
     if (it == itsFeaturePriorities.end())
       return 0;
 
-    auto &priomap = it->second;
+    const auto &priomap = it->second;
 
     auto jt = priomap.find(loc.feature);
 
@@ -1598,7 +1667,7 @@ int Engine::Impl::feature_priority(const Spine::Location &loc) const
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_keywords(Locus::Connection &conn)
+void Engine::Impl::read_keywords(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1986,7 +2055,7 @@ void Engine::Impl::translate_name(Spine::Location &loc, const std::string &lang)
 
     std::string lg = to_language(lang);
 
-    auto &translations = trans->second;
+    const auto &translations = trans->second;
     auto pos = translations.find(lg);
 
     if (pos == translations.end())
@@ -2043,6 +2112,11 @@ void Engine::Impl::translate_area(Spine::Location &loc, const std::string &lang)
                                                 : loc.area.substr(0, comma + 2).append(pos->second);
       }
     }
+
+    // Prevent name==area after translation just like Spine::Location constructor does on
+    // initialization
+    if (loc.name == loc.area)
+      loc.area.clear();
   }
   catch (...)
   {
@@ -2061,9 +2135,12 @@ void Engine::Impl::translate(Spine::LocationPtr &loc, const std::string &lang) c
   try
   {
     std::unique_ptr<Spine::Location> newloc(new Spine::Location(*loc));
+
     translate_name(*newloc, lang);
     translate_area(*newloc, lang);
+
     newloc->country = translate_country(newloc->iso2, lang);
+
     loc.reset(newloc.release());
   }
   catch (...)
@@ -2273,33 +2350,67 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
     // return null if keyword is wrong
 
     Spine::LocationList ret;
-
     auto it = itsTernaryTrees.find(keyword);
     if (it == itsTernaryTrees.end())
       return ret;
 
     // transform to collated form
 
-    std::string name = to_treeword(pattern);
+    std::string name;
 
-    // find it
-
-    ret = it->second->findprefix(name);
-
-    // check if there are language specific translations
-
-    std::string lg = to_language(lang);
-
-    auto lt = itsLangTernaryTreeMap.find(lg);
-    if (lt != itsLangTernaryTreeMap.end())
+    const auto try_pattern =
+        [this, &ret, &name, &lang, &keyword, it](const std::string &pattern) -> void
     {
-      auto tit = lt->second->find(keyword);
-      if (tit != lt->second->end())
+      name = to_treeword(pattern);
+
+      // find it
+
+      ret = it->second->findprefix(name);
+
+      // check if there are language specific translations
+
+      std::string lg = to_language(lang);
+
+      auto lt = itsLangTernaryTreeMap.find(lg);
+      if (lt != itsLangTernaryTreeMap.end())
       {
-        std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
-        for (const Spine::LocationPtr &ptr : tmpx)
+        auto tit = lt->second->find(keyword);
+        if (tit != lt->second->end())
         {
-          ret.push_back(ptr);
+          std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
+          for (const Spine::LocationPtr &ptr : tmpx)
+          {
+            ret.push_back(ptr);
+          }
+        }
+      }
+    };
+
+    if (Fmi::is_utf8(pattern))
+    {
+      try_pattern(pattern);
+    }
+    else
+    {
+      for (auto it2 = fallback_converters.begin(); ret.empty() && it2 != fallback_converters.end();
+           ++it2)
+      {
+        std::string tmp;
+
+        try
+        {
+          tmp = (*it2)->convert(pattern);
+        }
+        catch (const Fmi::Exception &e)
+        {
+          // We are not interested about conversion errors. Just take next converter
+          // in that case.
+        }
+
+        try_pattern(tmp);
+        if (!ret.empty())
+        {
+          break;
         }
       }
     }
@@ -2340,15 +2451,135 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
 
     if (maxresults > 0)
     {
-      // should do this using erase
+      // Erase the pages before the desired one
       unsigned int first = page * maxresults;
-      for (std::size_t i = 0; i < first; i++)
-        ret.pop_front();
-      while (ret.size() > maxresults)
-        ret.pop_back();
+      auto pos1 = ret.begin();
+      auto pos2 = pos1;
+      std::advance(pos2, first);
+      ret.erase(pos1, pos2);
+
+      // Erase the remaining elements after the size of 'maxelements'.
+      pos1 = ret.begin();
+      auto npos2 = std::min(ret.size(), static_cast<std::size_t>(maxresults));
+      std::advance(pos1, npos2);
+      ret.erase(pos1, ret.end());
     }
 
     itsSuggestCache->insert(key, ret);
+
+    return ret;
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Suggest translations for several languages
+ */
+// ----------------------------------------------------------------------
+
+std::vector<Spine::LocationList> Engine::Impl::suggest(const std::string &pattern,
+                                                       const std::vector<std::string> &languages,
+                                                       const std::string &keyword,
+                                                       unsigned int page,
+                                                       unsigned int maxresults,
+                                                       bool duplicates) const
+{
+  try
+  {
+    if (!itsSuggestReadyFlag)
+      throw Fmi::Exception(BCP, "Attempt to use geonames suggest before it is ready!");
+
+    if (languages.empty())
+      throw Fmi::Exception(BCP, "Must provide atleast one language for autocomplete");
+
+    if (languages.size() < 2)
+      throw Fmi::Exception(BCP, "Called autocomplete for N languages with less than 2 languages");
+
+    // Try using the cache first
+    auto key = cache_key(pattern, languages, keyword, page, maxresults, duplicates);
+    auto cached_result = itsLanguagesSuggestCache->find(key);
+    if (cached_result)
+      return *cached_result;
+
+    // return null if keyword is wrong
+
+    std::vector<Spine::LocationList> ret;
+
+    auto it = itsTernaryTrees.find(keyword);
+    if (it == itsTernaryTrees.end())
+      return ret;
+
+    // transform pattern to collated form and find it from the search tree
+
+    std::string name = to_treeword(pattern);
+    auto candidates = it->second->findprefix(name);
+
+    // check if there are language specific translations
+
+    for (const auto &lang : languages)
+    {
+      std::string lg = to_language(lang);
+
+      auto lt = itsLangTernaryTreeMap.find(lg);
+      if (lt != itsLangTernaryTreeMap.end())
+      {
+        auto tit = lt->second->find(keyword);
+        if (tit != lt->second->end())
+        {
+          std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
+          for (const Spine::LocationPtr &ptr : tmpx)
+            candidates.push_back(ptr);
+        }
+      }
+    }
+
+    // Remove duplicates
+
+    candidates.sort(basicSort);
+    if (!duplicates)
+      candidates.unique(closeEnough);  // remove duplicate name,area matches
+    else
+      candidates.unique(reallyClose);  // remove duplicate geoids
+
+    // Sort based on priorities. Note that the multilanguage version does not
+    // give extra scores to exact matches since the used algorithm sorts before
+    // translating the candidates. This is something that perhaps should be
+    // improved later on.
+
+    candidates.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
+
+    // Keep the desired part.
+
+    if (maxresults > 0)
+    {
+      // Erase the pages before the desired one
+      unsigned int first = page * maxresults;
+      auto pos1 = candidates.begin();
+      auto pos2 = pos1;
+      std::advance(pos2, first);
+      candidates.erase(pos1, pos2);
+
+      // Erase the remaining elements after the size of 'maxelements'.
+      pos1 = candidates.begin();
+      auto npos2 = std::min(candidates.size(), static_cast<std::size_t>(maxresults));
+      std::advance(pos1, npos2);
+      candidates.erase(pos1, candidates.end());
+    }
+
+    // Build translated results
+
+    for (const auto &lang : languages)
+    {
+      auto tmp = candidates;
+      translate(tmp, lang);
+      ret.push_back(tmp);
+    }
+
+    itsLanguagesSuggestCache->insert(key, ret);
 
     return ret;
   }
@@ -2375,8 +2606,7 @@ Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_typ
       auto covertype = coverType(loc.lon, loc.lat);
 
       // Select administrative area. In particular, if the location is the
-      // administrative
-      // area itself, select the country instead.
+      // administrative area itself, select the country instead.
 
       std::string area = loc.admin;
       if (area == loc.name || area.empty())
@@ -2433,7 +2663,7 @@ Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOpti
     // increase the limit to at least 100 names.
     auto options = theOptions;
     if (options.GetResultLimit() > 0)
-      options.SetResultLimit(std::max(theOptions.GetResultLimit(), 100u));
+      options.SetResultLimit(std::max(theOptions.GetResultLimit(), 100U));
 
     Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
     Spine::LocationList ptrs = to_locationlist(lq.FetchByName(options, theName));
@@ -2650,28 +2880,6 @@ void Engine::Impl::name_cache_status(const boost::shared_ptr<Spine::Table> &tabl
 bool Engine::Impl::isSuggestReady() const
 {
   return itsSuggestReadyFlag;
-}
-
-// ----------------------------------------------------------------------
-/*!
- * \brief Cache key for a suggestion
- */
-// ----------------------------------------------------------------------
-
-std::size_t Engine::Impl::cache_key(const std::string &pattern,
-                                    const std::string &lang,
-                                    const std::string &keyword,
-                                    unsigned int page,
-                                    unsigned int maxresults,
-                                    bool duplicates) const
-{
-  auto hash = Fmi::hash_value(pattern);
-  Fmi::hash_combine(hash, Fmi::hash_value(lang));
-  Fmi::hash_combine(hash, Fmi::hash_value(keyword));
-  Fmi::hash_combine(hash, Fmi::hash_value(page));
-  Fmi::hash_combine(hash, Fmi::hash_value(maxresults));
-  Fmi::hash_combine(hash, Fmi::hash_value(duplicates));
-  return hash;
 }
 
 }  // namespace Geonames

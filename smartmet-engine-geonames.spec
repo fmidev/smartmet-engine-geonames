@@ -3,8 +3,8 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.5.20
-Release: 2%{?dist}.fmi
+Version: 21.8.2
+Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -16,14 +16,13 @@ BuildRequires: gcc-c++
 BuildRequires: gdal32-devel
 BuildRequires: libatomic
 BuildRequires: libicu-devel
-BuildRequires: libpqxx-devel < 1:7.0
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 21.5.20
-BuildRequires: smartmet-library-locus-devel >= 21.5.20
-BuildRequires: smartmet-library-macgyver-devel >= 21.5.20
-BuildRequires: smartmet-library-spine-devel >= 21.5.20
+BuildRequires: smartmet-library-gis-devel >= 21.7.27
+BuildRequires: smartmet-library-locus-devel >= 21.7.8
+BuildRequires: smartmet-library-macgyver-devel >= 21.7.28
+BuildRequires: smartmet-library-spine-devel >= 21.7.28
 
 Requires: boost169-date-time
 Requires: boost169-filesystem
@@ -35,17 +34,30 @@ Requires: fmt >= 7.1.3
 Requires: gdal32-libs
 Requires: libatomic
 Requires: libicu
-Requires: libpqxx < 1:7.0
-Requires: smartmet-library-gis >= 21.5.20
-Requires: smartmet-library-locus >= 21.5.20
-Requires: smartmet-library-macgyver >= 21.5.20
-Requires: smartmet-library-spine >= 21.5.20
-Requires: smartmet-server >= 21.1.14
+Requires: smartmet-library-gis >= 21.7.27
+Requires: smartmet-library-locus >= 21.7.8
+Requires: smartmet-library-macgyver >= 21.7.28
+Requires: smartmet-library-spine >= 21.7.28
+Requires: smartmet-server >= 21.6.3
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
 Requires: mariadb-libs
 %endif
+
+%if %{defined el7}
+Requires: libpqxx < 1:7.0
+BuildRequires: libpqxx-devel < 1:7.0
+%else
+%if %{defined el8}
+Requires: libpqxx >= 5.0.1
+BuildRequires: libpqxx-devel >= 5.0.1
+%else
+Requires: libpqxx
+BuildRequires: libpqxx-devel
+%endif
+%endif
+
 Provides: %{SPECNAME}
 Obsoletes: smartmet-brainstorm-geoengine < 16.11.1
 Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
@@ -96,6 +108,39 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Aug  2 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.8.2-1.fmi
+- Update white-space and empty string handling in to_treeword
+
+* Thu Jul 29 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.7.29-1.fmi
+- Attempt to convert strings in incoming requests to UTF-8 when necessary
+
+* Wed Jul 28 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.7.28-1.fmi
+- Silenced compiler warnings
+
+* Thu Jul  8 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.7.8-1.fmi
+- Use libpqxx7 for RHEL8
+
+* Mon Jun 21 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.21-2.fmi
+- Fix missing include
+
+* Mon Jun 21 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.21-1.fmi
+- Use Fmi::Database::PostgreSQLConnection instead of Locus::Connection
+
+* Fri Jun 18 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.6.18-1.fmi
+- Repackaged since locus API changed a little
+
+* Wed Jun 16 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.6.16-2.fmi
+- Added caching for autocomplete for queries with multiple languages
+
+* Wed Jun 16 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.6.16-1.fmi
+- Optimized autocomplete for speed by not using std::list::size() in a loop
+
+* Tue Jun 15 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.6.15-1.fmi
+- Added support for multilanguage autocomplete
+
+* Mon Jun  7 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.6.7-1.fmi
+- Use Fmi::AsyncTaskGroup
+
 * Thu May 20 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.5.20-2.fmi
 - Repackaged with improved hashing functions
 
@@ -138,11 +183,26 @@ rm -rf $RPM_BUILD_ROOT
 * Fri Aug 21 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.8.21-1.fmi
 - Upgrade to fmt 6.2
 
+* Fri Jul 31 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.7.31-1.fmi
+- Repackaged due to libpqxx upgrade
+
 * Mon Jun  8 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.6.8-1.fmi
 - Upgraded libpqxx dependencies
 
+* Wed Apr 22 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.4.20-1.fmi
+- Improved gdal30 detection
+
 * Sat Apr 18 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.4.18-1.fmi
 - Upgrade to Boost 1.69
+
+* Mon Mar 30 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.3.30-1.fmi
+- Repackaged due to NFmiArea ABI changes
+
+* Fri Feb 14 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.2.14-1.fmi
+- Upgrade to pgdg12
+
+* Fri Feb  7 2020 Mika Heiskanen <mika.heiskanen@fmi.fi> - 20.2.7-1.fmi
+- Upgrade to GDAL 3
 
 * Thu Dec  5 2019 Mika Heiskanen <mika.heiskanen@fmi.fi> - 19.12.5-1.fmi
 - Use -fno-omit-frame-pointer for a better profiling and debugging experience

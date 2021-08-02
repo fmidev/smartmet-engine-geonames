@@ -65,7 +65,7 @@ class LocationOptions
 
 };  // class LocationOptions
 
-typedef std::pair<boost::shared_ptr<Spine::Table>, Spine::TableFormatter::Names> StatusReturnType;
+using StatusReturnType = std::pair<boost::shared_ptr<Spine::Table>, Spine::TableFormatter::Names>;
 
 class Engine : public Spine::SmartMetEngine
 {
@@ -89,7 +89,7 @@ class Engine : public Spine::SmartMetEngine
 
  public:
   Engine(const std::string& theConfigFile);
-  ~Engine();
+  ~Engine() override;
 
   std::size_t hash_value() const;
 
@@ -157,6 +157,13 @@ class Engine : public Spine::SmartMetEngine
       unsigned int thePage = 0,
       unsigned int theMaxResults = fminames_default_maxresults) const;
 
+  std::vector<Spine::LocationList> suggest(
+      const std::string& thePattern,
+      const std::vector<std::string>& theLanguages,
+      const std::string& theKeyword = FMINAMES_DEFAULT_KEYWORD,
+      unsigned int thePage = 0,
+      unsigned int theMaxResults = fminames_default_maxresults) const;
+
   // find name of country
 
   std::string countryName(const std::string& theIso2, const std::string& theLang = "fi") const;
@@ -202,9 +209,9 @@ class Engine : public Spine::SmartMetEngine
   bool isSuggestReady() const;
 
  protected:
-  virtual void init();
-  void shutdown();
-  void shutdownRequestFlagSet();
+  virtual void init() override;
+  void shutdown() override;
+  void shutdownRequestFlagSet() override;
 
  private:
   unsigned int maxDemResolution() const;

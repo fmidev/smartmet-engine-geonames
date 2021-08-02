@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include <gis/Box.h>
 #include <macgyver/Exception.h>
+#include <ogr_geometry.h>
 
 namespace SmartMet
 {
@@ -68,7 +69,7 @@ std::list<const OGRGeometry*> get_geometry_list(const OGRGeometry* geom)
     case wkbMultiPoint:
     {
       // OGRMultiPoint geometry -> extract OGRPoints
-      const OGRMultiPoint* mpGeom = static_cast<const OGRMultiPoint*>(geom);
+      const auto* mpGeom = static_cast<const OGRMultiPoint*>(geom);
       int numGeoms = mpGeom->getNumGeometries();
       for (int i = 0; i < numGeoms; i++)
         ret.push_back(mpGeom->getGeometryRef(i));
@@ -77,7 +78,7 @@ std::list<const OGRGeometry*> get_geometry_list(const OGRGeometry* geom)
     case wkbMultiLineString:
     {
       // OGRMultiLineString geometry -> extract OGRLineStrings
-      const OGRMultiLineString* mlsGeom = static_cast<const OGRMultiLineString*>(geom);
+      const auto* mlsGeom = static_cast<const OGRMultiLineString*>(geom);
       int numGeoms = mlsGeom->getNumGeometries();
       for (int i = 0; i < numGeoms; i++)
         ret.push_back(mlsGeom->getGeometryRef(i));
@@ -86,7 +87,7 @@ std::list<const OGRGeometry*> get_geometry_list(const OGRGeometry* geom)
     case wkbMultiPolygon:
     {
       // OGRMultiLineString geometry -> extract OGRLineStrings
-      const OGRMultiPolygon* mpolGeom = static_cast<const OGRMultiPolygon*>(geom);
+      const auto* mpolGeom = static_cast<const OGRMultiPolygon*>(geom);
       int numGeoms = mpolGeom->getNumGeometries();
       for (int i = 0; i < numGeoms; i++)
         ret.push_back(mpolGeom->getGeometryRef(i));
@@ -171,7 +172,7 @@ void WktGeometry::init(const Spine::LocationPtr loc,
   }
   catch (...)
   {
-    throw Fmi::Exception(BCP, "Operation failed!", NULL);
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -211,7 +212,7 @@ void WktGeometry::svgPathsFromGeometry()
   if (is_multi_geometry(*itsGeom))
   {
     std::list<const OGRGeometry*> glist = get_geometry_list(itsGeom);
-    for (auto g : glist)
+    for (const auto* g : glist)
       itsSvgPaths.push_back(get_svg_path(*g));
   }
 }
@@ -231,7 +232,7 @@ void WktGeometry::locationsFromGeometry(const Spine::LocationPtr loc,
   if (is_multi_geometry(*itsGeom))
   {
     std::list<const OGRGeometry*> glist = get_geometry_list(itsGeom);
-    for (auto g : glist)
+    for (const auto* g : glist)
       itsLocations.push_back(locationFromGeometry(g, loc, language, geoengine));
   }
 }

@@ -172,7 +172,7 @@ void suggest()
   if (ptrs.front()->name != "Helsinki")
     TEST_FAILED("First match for 'he' should be Helsinki, not " + ptrs.front()->name);
   if (ptrs.front()->area != "")
-    TEST_FAILED("Helsinki area should be ''");
+    TEST_FAILED("Helsinki area should be '', not " + ptrs.front()->area);
   if (ptrs.front()->country != "Suomi")
     TEST_FAILED("Helsinki country should be 'Finland'");
 
@@ -398,6 +398,20 @@ void suggest()
     TEST_FAILED("Country of first match for 'stockholm' should be 'Sweden', not " +
                 ptrs.front()->country);
 
+  // BRAINSTORM-2113: SIGABRT (must handle case when non UTF-8 text entered)
+  ptrs = names->suggest("\344\344", "fi"); // ää in latin1
+  if (ptrs.size() < 1)
+    TEST_FAILED("Failed to find suggestions by provided 'ää' in Latin1 encoding");
+  if (ptrs.front()->name != "Äänekoski")
+    TEST_FAILED("Name of the first match for 'ää' in Latin1 encoding should be"
+		" 'Äänekoski ', not '" + ptrs.front()->name + "'");
+
+  // BRAINSTORM-2113: SIGABRT (must handle case when empty string or whitespace only entered)
+  ptrs = names->suggest("", "fi");
+  if (ptrs.size() != 0)
+    TEST_FAILED("No suggestions expected when empty string or whitespace only provided. Got "
+		+ std::to_string(int(ptrs.size())) + " suggestions");
+
   TEST_PASSED();
 }
 
@@ -425,7 +439,7 @@ void suggest_duplicates()
   if (ptrs.front()->name != "Helsinki")
     TEST_FAILED("First match for 'he' should be Helsinki PPLC, not " + ptrs.front()->name);
   if (ptrs.front()->area != "")
-    TEST_FAILED("Helsinki area should be ''");
+    TEST_FAILED("Helsinki area should be '', not " + ptrs.front()->area);
   if (ptrs.front()->country != "Suomi")
     TEST_FAILED("Helsinki country should be 'Finland'");
 
@@ -518,6 +532,76 @@ void suggest_duplicates()
   ptrs.pop_front();
   if (ptrs.front()->feature != "SYNOP")
     TEST_FAILED("Second match should be SYNOP, not '" + ptrs.front()->feature + "'");
+
+  TEST_PASSED();
+}
+
+// ----------------------------------------------------------------------
+
+void suggest_languages()
+{
+  // Wait for autocomplete data to be loaded
+  // Technically this is not needed as long as we run the "nearest" test first,
+  // since internally the engine will then wait for autocomplete to be ready.
+
+  while (!names->isSuggestReady())
+  {
+    boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+  }
+
+  std::vector<std::string> languages{"fi", "sv", "en"};
+
+  // Match he
+
+  auto ptrs = names->suggest("he", languages);
+
+  if (ptrs.size() != 3)
+    TEST_FAILED("Should find 3 translation lists with 'he'");
+
+  if (ptrs[0].size() != 15)
+    TEST_FAILED("Should find 15 places starting with 'he', not " +
+                boost::lexical_cast<string>(ptrs[0].size()));
+
+  if (ptrs[0].front()->name != "Helsinki")
+    TEST_FAILED("First match for 'he' should be Helsinki, not " + ptrs[0].front()->name);
+  if (ptrs[0].front()->area != "")
+    TEST_FAILED("Helsinki area in 'fi' should be '', not " + ptrs[0].front()->area);
+  if (ptrs[0].front()->country != "Suomi")
+    TEST_FAILED("Helsinki country should be 'Suomi'");
+
+  if (ptrs[1].front()->name != "Helsingfors")
+    TEST_FAILED("First match for 'he' should be Helsingfors, not " + ptrs[1].front()->name);
+  if (ptrs[1].front()->area != "")
+    TEST_FAILED("Helsinki area in 'sv' should be '', not " + ptrs[1].front()->area);
+  if (ptrs[1].front()->country != "Finland")
+    TEST_FAILED("Helsinki country should be 'Finland'");
+
+  if (ptrs[2].front()->name != "Helsinki")
+    TEST_FAILED("First match for 'he' should be Helsinki, not " + ptrs[2].front()->name);
+  if (ptrs[2].front()->area != "")
+    TEST_FAILED("Helsinki area in 'en' should be '', not " + ptrs[2].front()->area);
+  if (ptrs[2].front()->country != "Finland")
+    TEST_FAILED("Helsinki country should be 'Finland'");
+
+  // Match Åbo
+
+  ptrs = names->suggest("Åb", languages);
+
+  if (ptrs.size() != 3)
+    TEST_FAILED("Should find 3 translation lists with 'Åb'");
+
+  if (ptrs[0].size() < 7)
+    TEST_FAILED("Should find at least 7 places starting with 'Åbo', not " +
+                boost::lexical_cast<string>(ptrs.size()));
+
+  if (ptrs[0].front()->name != "Turku")
+    TEST_FAILED("Should find Turku with lang=fi for 'Åbo'");
+
+  if (ptrs[1].front()->name != "Åbo")
+    TEST_FAILED("Should find Åbo with lang=sv for 'Åbo'");
+
+  if (ptrs[0].front()->name != "Turku")
+    TEST_FAILED("Should find Turku with lang=en for 'Åbo'");
 
   TEST_PASSED();
 }
@@ -933,6 +1017,7 @@ class tests : public tframe::tests
     TEST(keywordSearch);
     TEST(suggest);
     TEST(suggest_duplicates);
+    TEST(suggest_languages);
     // TEST(reload);
   }
 

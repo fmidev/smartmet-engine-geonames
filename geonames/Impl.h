@@ -15,9 +15,12 @@
 #include <boost/move/unique_ptr.hpp>
 #include <boost/thread.hpp>
 #include <gis/LandCover.h>
+#include <macgyver/AsyncTaskGroup.h>
 #include <macgyver/Cache.h>
+#include <macgyver/CharsetConverter.h>
 #include <macgyver/Geometry.h>
 #include <macgyver/NearTree.h>
+#include <macgyver/PostgreSQLConnection.h>
 #include <macgyver/TernarySearchTree.h>
 #include <macgyver/TimedCache.h>
 
@@ -101,7 +104,10 @@ class Engine::Impl : private boost::noncopyable
   using SuggestCache = Fmi::TimedCache::Cache<std::size_t, Spine::LocationList>;
   boost::movelib::unique_ptr<SuggestCache> itsSuggestCache;
 
- public:
+  using LanguagesSuggestCache =
+      Fmi::TimedCache::Cache<std::size_t, std::vector<Spine::LocationList>>;
+  boost::movelib::unique_ptr<LanguagesSuggestCache> itsLanguagesSuggestCache;
+
   Impl(std::string configfile, bool reloading);
   ~Impl();
 
@@ -124,6 +130,13 @@ class Engine::Impl : private boost::noncopyable
                               unsigned int page,
                               unsigned int maxresults,
                               bool duplicates) const;
+
+  std::vector<Spine::LocationList> suggest(const std::string& pattern,
+                                           const std::vector<std::string>& languages,
+                                           const std::string& keyword,
+                                           unsigned int page,
+                                           unsigned int maxresults,
+                                           bool duplicates) const;
 
   Spine::LocationList name_search(const Locus::QueryOptions& theOptions,
                                   const std::string& theName);
@@ -240,7 +253,10 @@ class Engine::Impl : private boost::noncopyable
   const Collator* itsCollator = nullptr;  // perhaps should delete in destructor?
 
   bool itsAsciiAutocomplete = false;
-  iconv_t itsIconv;  // Note:: boost::locale from_utf does not handle translitteration
+  std::unique_ptr<Fmi::CharsetConverter> utf8_to_latin1;
+
+  /// Converters to UTF-8 from possible fallback charsets
+  std::vector<std::shared_ptr<Fmi::CharsetConverter>> fallback_converters;
 
   // DEM data
   boost::shared_ptr<Fmi::DEM> itsDEM;
@@ -263,22 +279,25 @@ class Engine::Impl : private boost::noncopyable
   std::string itsDatabase;
   std::string itsPort;
 
- private:
+  Fmi::AsyncTaskGroup tg1;
+  boost::shared_ptr<Fmi::AsyncTask> initSuggestTask;
+
   Impl();
   bool handleShutDownRequest();
 
   void read_config();
   void read_config_priorities();
   void read_config_prioritymap(const std::string& partname, Priorities& priomap);
+  void setup_fallback_encodings();
 
-  void read_database_hash_value(Locus::Connection& conn);
+  void read_database_hash_value(Fmi::Database::PostgreSQLConnection& conn);
 
-  void read_countries(Locus::Connection& conn);
-  void read_alternate_countries(Locus::Connection& conn);
-  void read_municipalities(Locus::Connection& conn);
-  void read_alternate_geonames(Locus::Connection& conn);
-  void read_alternate_municipalities(Locus::Connection& conn);
-  void read_geonames(Locus::Connection& conn);
+  void read_countries(Fmi::Database::PostgreSQLConnection& conn);
+  void read_alternate_countries(Fmi::Database::PostgreSQLConnection& conn);
+  void read_municipalities(Fmi::Database::PostgreSQLConnection& conn);
+  void read_alternate_geonames(Fmi::Database::PostgreSQLConnection& conn);
+  void read_alternate_municipalities(Fmi::Database::PostgreSQLConnection& conn);
+  void read_geonames(Fmi::Database::PostgreSQLConnection& conn);
   void assign_priorities(Spine::LocationList& locs) const;
   int population_priority(const Spine::Location& loc) const;
   int area_priority(const Spine::Location& loc) const;
@@ -286,20 +305,13 @@ class Engine::Impl : private boost::noncopyable
   int feature_priority(const Spine::Location& loc) const;
 
   void build_geoid_map();
-  void read_keywords(Locus::Connection& conn);
+  void read_keywords(Fmi::Database::PostgreSQLConnection& conn);
 
   void build_geotrees();
   void build_ternarytrees();
   void build_lang_ternarytrees();
   void build_lang_ternarytrees_all();
   void build_lang_ternarytrees_keywords();
-
-  std::size_t cache_key(const std::string& pattern,
-                        const std::string& lang,
-                        const std::string& keyword,
-                        unsigned int page,
-                        unsigned int maxresults,
-                        bool duplicates) const;
 
 };  // Impl
 

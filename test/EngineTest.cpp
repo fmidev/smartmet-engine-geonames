@@ -398,13 +398,19 @@ void suggest()
     TEST_FAILED("Country of first match for 'stockholm' should be 'Sweden', not " +
                 ptrs.front()->country);
 
-  // BRAINSTORM-2113: SIGABRT
+  // BRAINSTORM-2113: SIGABRT (must handle case when non UTF-8 text entered)
   ptrs = names->suggest("\344\344", "fi"); // ää in latin1
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find suggestions by provided 'ää' in Latin1 encoding");
   if (ptrs.front()->name != "Äänekoski")
     TEST_FAILED("Name of the first match for 'ää' in Latin1 encoding should be"
 		" 'Äänekoski ', not '" + ptrs.front()->name + "'");
+
+  // BRAINSTORM-2113: SIGABRT (must handle case when empty string or whitespace only entered)
+  ptrs = names->suggest("", "fi");
+  if (ptrs.size() != 0)
+    TEST_FAILED("No suggestions expected when empty string or whitespace only provided. Got "
+		+ std::to_string(int(ptrs.size())) + " suggestions");
 
   TEST_PASSED();
 }

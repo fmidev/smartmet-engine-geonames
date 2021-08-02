@@ -453,8 +453,11 @@ std::string Engine::Impl::to_treeword(const std::string &name) const
 {
   try
   {
-    std::string tmp = name;
-    boost::algorithm::erase_all(tmp, " ");
+    std::string tmp;
+    std::remove_copy_if(name.begin(), name.end(), std::back_inserter(tmp),
+			[](char c) { return std::isspace(c); });
+    if (tmp == "")
+      return "";
     tmp = itsCollator->transform(boost::locale::collator_base::primary, tmp);
 
     // The standard library std::string provided in RHEL6 cannot handle

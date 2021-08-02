@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.7.29
+Version: 21.8.2
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -108,6 +108,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Aug  2 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.8.2-1.fmi
+- Update white-space and empty string handling in to_treeword
+
 * Thu Jul 29 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.7.29-1.fmi
 - Attempt to convert strings in incoming requests to UTF-8 when necessary
 

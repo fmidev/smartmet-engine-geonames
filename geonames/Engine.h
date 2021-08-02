@@ -7,22 +7,19 @@
 #pragma once
 
 #include "WktGeometry.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/smart_ptr/atomic_shared_ptr.hpp>
+#include <boost/utility.hpp>
 #include <gis/OGR.h>
+#include <locus/Query.h>
+#include <macgyver/TimeZones.h>
 #include <spine/HTTP.h>
 #include <spine/Location.h>
 #include <spine/SmartMetEngine.h>
 #include <spine/Table.h>
 #include <spine/TableFormatter.h>
 #include <spine/Thread.h>
-
-#include <macgyver/TimeZones.h>
-
-#include <locus/Query.h>
-
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/utility.hpp>
-
 #include <string>
 
 #define FMINAMES_DEFAULT_KEYWORD "all"
@@ -73,7 +70,7 @@ class Engine : public Spine::SmartMetEngine
   Engine();  // must give config file
 
   class Impl;
-  boost::shared_ptr<Impl> impl;
+  boost::atomic_shared_ptr<Impl> impl;
   boost::shared_ptr<Impl> tmpImpl;
   Fmi::TimeZones itsTimeZones;
   boost::posix_time::ptime itsStartTime;

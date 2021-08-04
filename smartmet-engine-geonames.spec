@@ -3,8 +3,8 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.8.2
-Release: 2%{?dist}.fmi
+Version: 21.8.4
+Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -108,6 +108,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Aug  4 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.8.4-1.fmi
+- Allow autocomplete suggest keyword to be a comma separated list
+
 * Mon Aug  2 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.8.2-2.fmi
 - Use atomic_shared_ptr
 

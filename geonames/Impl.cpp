@@ -454,8 +454,8 @@ std::string Engine::Impl::to_treeword(const std::string &name) const
   try
   {
     std::string tmp;
-    std::remove_copy_if(name.begin(), name.end(), std::back_inserter(tmp),
-			[](char c) { return std::isspace(c); });
+    std::remove_copy_if(
+        name.begin(), name.end(), std::back_inserter(tmp), [](char c) { return std::isspace(c); });
     if (tmp == "")
       return "";
     tmp = itsCollator->transform(boost::locale::collator_base::primary, tmp);
@@ -562,25 +562,25 @@ void Engine::Impl::setup_fallback_encodings()
 
   try
   {
-    const char* s_name = "fallback_encodings";
+    const char *s_name = "fallback_encodings";
     if (itsConfig.exists(s_name))
     {
-      const libconfig::Setting& s_enc = itsConfig.lookup(s_name);
+      const libconfig::Setting &s_enc = itsConfig.lookup(s_name);
       if (s_enc.isArray())
       {
-	for (auto it = s_enc.begin(); it != s_enc.end(); ++it)
-	{
-	  if (it->getType() == libconfig::Setting::TypeString)
-	  {
+        for (auto it = s_enc.begin(); it != s_enc.end(); ++it)
+        {
+          if (it->getType() == libconfig::Setting::TypeString)
+          {
             encodings.push_back(it->c_str());
-	  }
-	  else
-	  {
-	    std::ostringstream tmp;
-	    tmp << "Invalid value in fallback encoding array (string expected)";
-	    throw Fmi::Exception(BCP, tmp.str());
-	  }
-	}
+          }
+          else
+          {
+            std::ostringstream tmp;
+            tmp << "Invalid value in fallback encoding array (string expected)";
+            throw Fmi::Exception(BCP, tmp.str());
+          }
+        }
       }
       else if (s_enc.getType() == libconfig::Setting::TypeString)
       {
@@ -588,9 +588,9 @@ void Engine::Impl::setup_fallback_encodings()
       }
       else
       {
-	std::ostringstream tmp;
-	tmp << "Invalid config setting fallback_encoding (string or string array expected)";
-	throw Fmi::Exception(BCP, tmp.str());
+        std::ostringstream tmp;
+        tmp << "Invalid config setting fallback_encoding (string or string array expected)";
+        throw Fmi::Exception(BCP, tmp.str());
       }
     }
     else
@@ -604,13 +604,14 @@ void Engine::Impl::setup_fallback_encodings()
   }
 
   std::set<std::string> duplicate_check;
-  for (const auto& encoding : encodings)
+  for (const auto &encoding : encodings)
   {
     if (duplicate_check.insert(encoding).second)
     {
       fallback_converters.emplace_back(new Fmi::CharsetConverter(encoding, "UTF-8", 256));
       // if (itsVerbose)
-      std::cout << "Geonames: Added fallback charset converter " << encoding << " --> UTF-8" << std::endl;
+      std::cout << "Geonames: Added fallback charset converter " << encoding << " --> UTF-8"
+                << std::endl;
     }
     else
     {
@@ -2342,77 +2343,92 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
   try
   {
     // Try using the cache first
-    auto key = cache_key(pattern, lang, keyword, page, maxresults, duplicates);
-    auto cached_result = itsSuggestCache->find(key);
+    auto cachekey = cache_key(pattern, lang, keyword, page, maxresults, duplicates);
+    auto cached_result = itsSuggestCache->find(cachekey);
     if (cached_result)
       return *cached_result;
 
-    // return null if keyword is wrong
-
     Spine::LocationList ret;
-    auto it = itsTernaryTrees.find(keyword);
-    if (it == itsTernaryTrees.end())
-      return ret;
 
-    // transform to collated form
+    // return null if any keyword is wrong, this mimics previous behaviour
 
+    std::vector<std::string> keywords;
+    boost::algorithm::split(keywords, keyword, boost::algorithm::is_any_of(","));
+
+    for (const auto &key : keywords)
+      if (itsTernaryTrees.find(key) == itsTernaryTrees.end())
+        return ret;
+
+    // collated form of the search key
     std::string name;
 
-    const auto try_pattern =
-        [this, &ret, &name, &lang, &keyword, it](const std::string &pattern) -> void
+    // Process all keywords
+
+    for (const auto &key : keywords)
     {
-      name = to_treeword(pattern);
+      auto it = itsTernaryTrees.find(key);
 
-      // find it
+      Spine::LocationList result;
 
-      ret = it->second->findprefix(name);
-
-      // check if there are language specific translations
-
-      std::string lg = to_language(lang);
-
-      auto lt = itsLangTernaryTreeMap.find(lg);
-      if (lt != itsLangTernaryTreeMap.end())
+      const auto try_pattern =
+          [this, &result, &name, &lang, &key, it](const std::string &pattern) -> void
       {
-        auto tit = lt->second->find(keyword);
-        if (tit != lt->second->end())
+        // find it
+        name = to_treeword(pattern);
+
+        result = it->second->findprefix(name);
+
+        // check if there are language specific translations
+
+        std::string lg = to_language(lang);
+
+        auto lt = itsLangTernaryTreeMap.find(lg);
+        if (lt != itsLangTernaryTreeMap.end())
         {
-          std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
-          for (const Spine::LocationPtr &ptr : tmpx)
+          auto tit = lt->second->find(key);
+          if (tit != lt->second->end())
           {
-            ret.push_back(ptr);
+            std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
+            for (const Spine::LocationPtr &ptr : tmpx)
+            {
+              result.push_back(ptr);
+            }
           }
         }
-      }
-    };
+      };
 
-    if (Fmi::is_utf8(pattern))
-    {
-      try_pattern(pattern);
-    }
-    else
-    {
-      for (auto it2 = fallback_converters.begin(); ret.empty() && it2 != fallback_converters.end();
-           ++it2)
+      if (Fmi::is_utf8(pattern))
       {
-        std::string tmp;
+        try_pattern(pattern);
+      }
+      else
+      {
+        for (const auto &converter : fallback_converters)
+        {
+          std::string tmp;
 
-        try
-        {
-          tmp = (*it2)->convert(pattern);
-        }
-        catch (const Fmi::Exception &e)
-        {
-          // We are not interested about conversion errors. Just take next converter
-          // in that case.
-        }
+          try
+          {
+            tmp = converter->convert(pattern);
+          }
+          catch (const Fmi::Exception &e)
+          {
+            // Not interested in errors, just try the next converter.
+            continue;
+          }
 
-        try_pattern(tmp);
-        if (!ret.empty())
-        {
-          break;
+          try_pattern(tmp);
+
+          if (!result.empty())
+            break;  // done if the encoding produced matches
         }
       }
+
+      // Append to result for all keywords (speed optimized for first keyword)
+      if (ret.empty())
+        std::swap(ret, result);
+      else
+        ret.insert(ret.end(), result.begin(), result.end());
     }
 
     // Translate the names
@@ -2465,7 +2481,7 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
       ret.erase(pos1, ret.end());
     }
 
-    itsSuggestCache->insert(key, ret);
+    itsSuggestCache->insert(cachekey, ret);
 
     return ret;
   }

@@ -1065,15 +1065,20 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     {
       for (const std::string& keyword : searchName)
       {
-        Locus::QueryOptions opts;
-        opts.SetLanguage(language);
-        Spine::LocationList places = this->keywordSearch(opts, keyword);
-        if (places.empty())
-          throw Fmi::Exception(BCP, "No locations for keyword " + std::string(keyword) + " found");
-
-        for (Spine::LocationPtr& place : places)
+        std::list<std::string> parts;
+        boost::algorithm::split(parts, keyword, boost::algorithm::is_any_of(","));
+        for (const std::string& key : parts)
         {
-          options.add(place->name, place);
+          Locus::QueryOptions opts;
+          opts.SetLanguage(language);
+          Spine::LocationList places = this->keywordSearch(opts, key);
+          if (places.empty())
+            throw Fmi::Exception(BCP, "No locations for keyword " + std::string(key) + " found");
+
+          for (Spine::LocationPtr& place : places)
+          {
+            options.add(place->name, place);
+          }
         }
       }
     }

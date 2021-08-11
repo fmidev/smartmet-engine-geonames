@@ -131,7 +131,7 @@ void Engine::init()
     tmpImpl = boost::make_shared<Impl>(itsConfigFile, false);
     bool first_construction = true;
     tmpImpl->init(first_construction);
-    boost::atomic_store(&impl, tmpImpl);
+    impl.store(tmpImpl);
   }
   catch (...)
   {
@@ -153,7 +153,7 @@ void Engine::shutdown()
 
     while (true)
     {
-      auto mycopy = boost::atomic_load(&impl);
+      auto mycopy = impl.load();
       if (mycopy)
       {
         mycopy->shutdown();
@@ -186,7 +186,8 @@ void Engine::shutdownRequestFlagSet()
     // running. That's because there is Impl object available before the initialization
     // is ready.
 
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
+
     if (mycopy)
     {
       mycopy->shutdownRequestFlagSet();
@@ -214,7 +215,7 @@ std::size_t Engine::hash_value() const
 {
   try
   {
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
     return mycopy->hash_value();
   }
   catch (...)
@@ -385,7 +386,7 @@ Spine::LocationList Engine::nameSearch(const Locus::QueryOptions& theOptions,
   try
   {
     ++itsNameSearchCount;
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
     return mycopy->name_search(theOptions, theName);
   }
   catch (...)
@@ -430,7 +431,7 @@ Spine::LocationList Engine::lonlatSearch(const Locus::QueryOptions& theOptions,
   try
   {
     ++itsLonLatSearchCount;
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
     return mycopy->lonlat_search(theOptions, theLongitude, theLatitude, theRadius);
   }
   catch (...)
@@ -450,7 +451,7 @@ Spine::LocationList Engine::idSearch(const Locus::QueryOptions& theOptions, int 
   try
   {
     ++itsIdSearchCount;
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
     return mycopy->id_search(theOptions, theId);
   }
   catch (...)
@@ -471,7 +472,7 @@ Spine::LocationList Engine::keywordSearch(const Locus::QueryOptions& theOptions,
   try
   {
     ++itsKeywordSearchCount;
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
     return mycopy->keyword_search(theOptions, theKeyword);
   }
   catch (...)
@@ -556,7 +557,7 @@ Spine::LocationList Engine::suggest(const std::string& thePattern,
 
     ++itsSuggestCount;
 
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
     return mycopy->suggest(thePattern, theLang, theKeyword, thePage, theMaxResults, false);
   }
   catch (...)
@@ -583,7 +584,7 @@ Spine::LocationList Engine::suggestDuplicates(const std::string& thePattern,
 
     ++itsSuggestCount;
 
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
     return mycopy->suggest(thePattern, theLang, theKeyword, thePage, theMaxResults, true);
   }
   catch (...)
@@ -612,7 +613,7 @@ std::vector<Spine::LocationList> Engine::suggest(const std::string& thePattern,
 
     bool duplicates = false;
 
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
     return mycopy->suggest(
         thePattern, theLanguages, theKeyword, thePage, theMaxResults, duplicates);
   }
@@ -641,7 +642,7 @@ Spine::LocationPtr Engine::keywordSearch(double theLongitude,
   {
     ++itsLonLatSearchCount;
 
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
 
     // We need suggest to be ready
 
@@ -1064,15 +1065,20 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     {
       for (const std::string& keyword : searchName)
       {
-        Locus::QueryOptions opts;
-        opts.SetLanguage(language);
-        Spine::LocationList places = this->keywordSearch(opts, keyword);
-        if (places.empty())
-          throw Fmi::Exception(BCP, "No locations for keyword " + std::string(keyword) + " found");
-
-        for (Spine::LocationPtr& place : places)
+        std::list<std::string> parts;
+        boost::algorithm::split(parts, keyword, boost::algorithm::is_any_of(","));
+        for (const std::string& key : parts)
         {
-          options.add(place->name, place);
+          Locus::QueryOptions opts;
+          opts.SetLanguage(language);
+          Spine::LocationList places = this->keywordSearch(opts, key);
+          if (places.empty())
+            throw Fmi::Exception(BCP, "No locations for keyword " + std::string(key) + " found");
+
+          for (Spine::LocationPtr& place : places)
+          {
+            options.add(place->name, place);
+          }
         }
       }
     }
@@ -1133,7 +1139,7 @@ std::string Engine::countryName(const std::string& theIso2, const std::string& t
 {
   try
   {
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
     return mycopy->translate_country(theIso2, theLang);
   }
   catch (...)
@@ -1152,7 +1158,7 @@ boost::shared_ptr<Fmi::DEM> Engine::dem() const
 {
   try
   {
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
     return mycopy->dem();
   }
   catch (...)
@@ -1171,7 +1177,7 @@ unsigned int Engine::maxDemResolution() const
 {
   try
   {
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
     return mycopy->maxDemResolution();
   }
   catch (...)
@@ -1190,7 +1196,7 @@ boost::shared_ptr<Fmi::LandCover> Engine::landCover() const
 {
   try
   {
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
     return mycopy->landCover();
   }
   catch (...)
@@ -1214,7 +1220,7 @@ boost::shared_ptr<Fmi::LandCover> Engine::landCover() const
 
 bool Engine::isSuggestReady() const
 {
-  auto mycopy = boost::atomic_load(&impl);
+  auto mycopy = impl.load();
   return mycopy->isSuggestReady();
 }
 
@@ -1228,7 +1234,7 @@ void Engine::sort(Spine::LocationList& theLocations) const
 {
   try
   {
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
     mycopy->sort(theLocations);  // uses Impl::itsCollator, hence lock is needed
   }
   catch (...)
@@ -1271,7 +1277,7 @@ bool Engine::reload()
       return false;
     }
 
-    boost::atomic_store(&impl, p);
+    impl.store(p);
 
     itsLastReload = boost::posix_time::second_clock::local_time();
     itsErrorMessage = "";
@@ -1336,7 +1342,7 @@ StatusReturnType Engine::metadataStatus() const
     unsigned int row = 0;
     unsigned int column = 0;
 
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
 
     std::stringstream ss;
 
@@ -1418,7 +1424,7 @@ StatusReturnType Engine::cacheStatus() const
     boost::shared_ptr<Spine::Table> cacheTable(new Spine::Table());
     Spine::TableFormatter::Names cacheHeaders;
 
-    auto mycopy = boost::atomic_load(&impl);
+    auto mycopy = impl.load();
     mycopy->name_cache_status(cacheTable, cacheHeaders);
 
     return std::make_pair(cacheTable, cacheHeaders);

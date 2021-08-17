@@ -208,7 +208,6 @@ class Engine : public Spine::SmartMetEngine
  protected:
   virtual void init() override;
   void shutdown() override;
-  void shutdownRequestFlagSet() override;
 
  private:
   unsigned int maxDemResolution() const;

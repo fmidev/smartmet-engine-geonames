@@ -178,33 +178,6 @@ void Engine::shutdown()
   }
 }
 
-void Engine::shutdownRequestFlagSet()
-{
-  try
-  {
-    // Unfortunately this does not work as it shoud when the initialization is still
-    // running. That's because there is Impl object available before the initialization
-    // is ready.
-
-    auto mycopy = impl.load();
-
-    if (mycopy)
-    {
-      mycopy->shutdownRequestFlagSet();
-    }
-    else
-    {
-      if (tmpImpl)
-        tmpImpl->shutdownRequestFlagSet();
-      ;
-    }
-  }
-  catch (...)
-  {
-    throw Fmi::Exception::Trace(BCP, "Operation failed!");
-  }
-}
-
 // ----------------------------------------------------------------------
 /*!
  * \brief Hash value for the data read during initialization

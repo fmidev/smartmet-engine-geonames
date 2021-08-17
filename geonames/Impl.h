@@ -169,7 +169,6 @@ class Engine::Impl : private boost::noncopyable
                          Spine::TableFormatter::Names& theNames);
 
   void shutdown();
-  void shutdownRequestFlagSet();
 
   bool isSuggestReady() const;
 
@@ -268,8 +267,6 @@ class Engine::Impl : private boost::noncopyable
   // Hash value
   std::size_t itsHashValue = 0;
 
-  bool itsShutdownRequested = false;
-
   // We store these as data members to avoid calling libconfig which
   // uses exceptions for normal control flow
 
@@ -283,7 +280,6 @@ class Engine::Impl : private boost::noncopyable
   boost::shared_ptr<Fmi::AsyncTask> initSuggestTask;
 
   Impl();
-  bool handleShutDownRequest();
 
   void read_config();
   void read_config_priorities();

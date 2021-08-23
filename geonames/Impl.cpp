@@ -817,7 +817,6 @@ void Engine::Impl::shutdown()
   try
   {
     std::cout << "  -- Shutdown requested (Impl)\n";
-    itsShutdownRequested = true;
     tg1.stop();
     tg1.wait();
   }
@@ -825,11 +824,6 @@ void Engine::Impl::shutdown()
   {
     throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
-}
-
-void Engine::Impl::shutdownRequestFlagSet()
-{
-  itsShutdownRequested = true;
 }
 
 // ----------------------------------------------------------------------

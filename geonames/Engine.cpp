@@ -1431,6 +1431,13 @@ Fmi::LandCover::Type Engine::coverType(double theLongitude, double theLatitude) 
   return covertype(landCover(), theLongitude, theLatitude);
 }
 
+Fmi::Cache::CacheStatistics Engine::getCacheStats() const
+{
+  auto mycopy = impl.load();
+  
+  return mycopy->getCacheStats();
+}
+
 // ----------------------------------------------------------------------
 
 }  // namespace Geonames

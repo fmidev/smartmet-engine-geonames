@@ -172,6 +172,8 @@ class Engine::Impl : private boost::noncopyable
 
   bool isSuggestReady() const;
 
+  Fmi::Cache::CacheStatistics getCacheStats() const;
+
   bool itsReady = false;
   bool itsReloading = false;
   bool itsReloadOK = false;

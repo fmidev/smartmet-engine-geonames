@@ -14,6 +14,7 @@
 #include <gis/OGR.h>
 #include <locus/Query.h>
 #include <macgyver/TimeZones.h>
+#include <macgyver/CacheStats.h>
 #include <spine/HTTP.h>
 #include <spine/Location.h>
 #include <spine/SmartMetEngine.h>
@@ -212,6 +213,7 @@ class Engine : public Spine::SmartMetEngine
  private:
   unsigned int maxDemResolution() const;
   void cache_cleaner();
+  Fmi::Cache::CacheStatistics getCacheStats() const override;
 
 };  // class Geo
 

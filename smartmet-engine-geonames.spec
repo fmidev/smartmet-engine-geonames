@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.8.17
+Version: 21.8.30
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -19,10 +19,10 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 21.8.3
+BuildRequires: smartmet-library-gis-devel >= 21.8.30
 BuildRequires: smartmet-library-locus-devel >= 21.8.11
-BuildRequires: smartmet-library-macgyver-devel >= 21.8.5
-BuildRequires: smartmet-library-spine-devel >= 21.8.17
+BuildRequires: smartmet-library-macgyver-devel >= 21.8.30
+BuildRequires: smartmet-library-spine-devel >= 21.8.30
 
 Requires: boost169-date-time
 Requires: boost169-filesystem
@@ -34,10 +34,10 @@ Requires: fmt >= 7.1.3
 Requires: gdal32-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 21.8.3
+Requires: smartmet-library-gis >= 21.8.30
 Requires: smartmet-library-locus >= 21.8.11
-Requires: smartmet-library-macgyver >= 21.8.5
-Requires: smartmet-library-spine >= 21.8.17
+Requires: smartmet-library-macgyver >= 21.8.30
+Requires: smartmet-library-spine >= 21.8.30
 Requires: smartmet-server >= 21.6.3
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
@@ -108,6 +108,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Aug 30 2021 Anssi Reponen <anssi.reponen@fmi.fi> - 21.8.30-1.fmi
+- Cache counters added (BRAINSTORM-1005)
+
 * Tue Aug 17 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.8.17-1.fmi
 - Changed to use the latest shutdown API
 

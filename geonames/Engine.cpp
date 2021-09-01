@@ -1419,13 +1419,13 @@ const std::string& Engine::errorMessage() const
   return itsErrorMessage;
 }
 
-  // DEM height
+// DEM height
 double Engine::demHeight(double theLongitude, double theLatitude) const
 {
   return demheight(dem(), theLongitude, theLatitude, maxDemResolution());
 }
 
-  // Cover type
+// Cover type
 Fmi::LandCover::Type Engine::coverType(double theLongitude, double theLatitude) const
 {
   return covertype(landCover(), theLongitude, theLatitude);
@@ -1434,7 +1434,7 @@ Fmi::LandCover::Type Engine::coverType(double theLongitude, double theLatitude) 
 Fmi::Cache::CacheStatistics Engine::getCacheStats() const
 {
   auto mycopy = impl.load();
-  
+
   return mycopy->getCacheStats();
 }
 

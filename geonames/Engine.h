@@ -13,8 +13,8 @@
 #include <boost/utility.hpp>
 #include <gis/OGR.h>
 #include <locus/Query.h>
-#include <macgyver/TimeZones.h>
 #include <macgyver/CacheStats.h>
+#include <macgyver/TimeZones.h>
 #include <spine/HTTP.h>
 #include <spine/Location.h>
 #include <spine/SmartMetEngine.h>

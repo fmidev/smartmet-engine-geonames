@@ -2901,12 +2901,24 @@ Fmi::Cache::CacheStatistics Engine::Impl::getCacheStats() const
 
   // TimedCaches
   Fmi::TimedCache::CacheStatistics suggestStats = itsSuggestCache->getCacheStatistics();
-  boost::posix_time::ptime suggest_time = boost::posix_time::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(suggestStats.getConstructionTime().time_since_epoch()).count());
-  ret.insert(std::make_pair("Geonames::suggest_cache", Fmi::Cache::CacheStats(suggestStats.getHits(), suggestStats.getMisses(), suggest_time)));
+  boost::posix_time::ptime suggest_time =
+      boost::posix_time::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(
+                                         suggestStats.getConstructionTime().time_since_epoch())
+                                         .count());
+  ret.insert(std::make_pair(
+      "Geonames::suggest_cache",
+      Fmi::Cache::CacheStats(suggestStats.getHits(), suggestStats.getMisses(), suggest_time)));
 
-  Fmi::TimedCache::CacheStatistics languageSuggestStats = itsLanguagesSuggestCache->getCacheStatistics();
-  boost::posix_time::ptime language_suggest_time = boost::posix_time::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(languageSuggestStats.getConstructionTime().time_since_epoch()).count());
-  ret.insert(std::make_pair("Geonames::language_suggest_cache", Fmi::Cache::CacheStats(languageSuggestStats.getHits(), languageSuggestStats.getMisses(), language_suggest_time)));
+  Fmi::TimedCache::CacheStatistics languageSuggestStats =
+      itsLanguagesSuggestCache->getCacheStatistics();
+  boost::posix_time::ptime language_suggest_time = boost::posix_time::from_time_t(
+      std::chrono::duration_cast<std::chrono::seconds>(
+          languageSuggestStats.getConstructionTime().time_since_epoch())
+          .count());
+  ret.insert(std::make_pair("Geonames::language_suggest_cache",
+                            Fmi::Cache::CacheStats(languageSuggestStats.getHits(),
+                                                   languageSuggestStats.getMisses(),
+                                                   language_suggest_time)));
 
   return ret;
 }

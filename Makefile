@@ -2,8 +2,7 @@ SUBNAME = geonames
 SPEC = smartmet-engine-$(SUBNAME)
 INCDIR = smartmet/engines/$(SUBNAME)
 
-REQUIRES = gdal icu-i18n
-
+REQUIRES = gdal icu-i18n configpp
 include $(shell echo $${PREFIX-/usr})/share/smartmet/devel/makefile.inc
 
 DEFINES = -DUNIX -D_REENTRANT

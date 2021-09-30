@@ -367,6 +367,9 @@ void Engine::Impl::add_treewords(std::set<std::string> &words,
 {
   try
   {
+    // Insert without whitespace removal first
+    words.insert(to_treeword(name, area));
+
     // Create a mapping
 
     namespace bb = boost::locale::boundary;
@@ -375,6 +378,15 @@ void Engine::Impl::add_treewords(std::set<std::string> &words,
 
     // Ignore white space
     map.rule(bb::word_any);
+
+    // Process only if there is more than one part
+
+    int count = 0;
+    for (auto it = map.begin(), end = map.end(); it != end; ++it)
+      ++count;
+
+    if (count < 2)
+      return;
 
     // Extract the remaining name starting from all word boundaries
 
@@ -1818,6 +1830,7 @@ void Engine::Impl::build_ternarytrees()
       auto simple_name = preprocess_name(ptr->name);
 
       auto names = to_treewords(simple_name, specifier);
+
       for (const auto &name : names)
         it->second->insert(name, ptr);
     }
@@ -2901,12 +2914,24 @@ Fmi::Cache::CacheStatistics Engine::Impl::getCacheStats() const
 
   // TimedCaches
   Fmi::TimedCache::CacheStatistics suggestStats = itsSuggestCache->getCacheStatistics();
-  boost::posix_time::ptime suggest_time = boost::posix_time::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(suggestStats.getConstructionTime().time_since_epoch()).count());
-  ret.insert(std::make_pair("Geonames::suggest_cache", Fmi::Cache::CacheStats(suggestStats.getHits(), suggestStats.getMisses(), suggest_time)));
+  boost::posix_time::ptime suggest_time =
+      boost::posix_time::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(
+                                         suggestStats.getConstructionTime().time_since_epoch())
+                                         .count());
+  ret.insert(std::make_pair(
+      "Geonames::suggest_cache",
+      Fmi::Cache::CacheStats(suggestStats.getHits(), suggestStats.getMisses(), suggest_time)));
 
-  Fmi::TimedCache::CacheStatistics languageSuggestStats = itsLanguagesSuggestCache->getCacheStatistics();
-  boost::posix_time::ptime language_suggest_time = boost::posix_time::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(languageSuggestStats.getConstructionTime().time_since_epoch()).count());
-  ret.insert(std::make_pair("Geonames::language_suggest_cache", Fmi::Cache::CacheStats(languageSuggestStats.getHits(), languageSuggestStats.getMisses(), language_suggest_time)));
+  Fmi::TimedCache::CacheStatistics languageSuggestStats =
+      itsLanguagesSuggestCache->getCacheStatistics();
+  boost::posix_time::ptime language_suggest_time = boost::posix_time::from_time_t(
+      std::chrono::duration_cast<std::chrono::seconds>(
+          languageSuggestStats.getConstructionTime().time_since_epoch())
+          .count());
+  ret.insert(std::make_pair("Geonames::language_suggest_cache",
+                            Fmi::Cache::CacheStats(languageSuggestStats.getHits(),
+                                                   languageSuggestStats.getMisses(),
+                                                   language_suggest_time)));
 
   return ret;
 }

@@ -3,8 +3,8 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 21.9.28
-Release: 2%{?dist}.fmi
+Version: 21.12.7
+Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -13,16 +13,16 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: boost169-devel
 BuildRequires: fmt-devel >= 7.1.3
 BuildRequires: gcc-c++
-BuildRequires: gdal32-devel
+BuildRequires: gdal33-devel
 BuildRequires: libatomic
 BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 21.9.13
-BuildRequires: smartmet-library-locus-devel >= 21.8.11
-BuildRequires: smartmet-library-macgyver-devel >= 21.9.13
-BuildRequires: smartmet-library-spine-devel >= 21.9.13
+BuildRequires: smartmet-library-gis-devel >= 21.12.1
+BuildRequires: smartmet-library-locus-devel >= 21.12.2
+BuildRequires: smartmet-library-macgyver-devel >= 21.12.1
+BuildRequires: smartmet-library-spine-devel >= 21.12.2
 
 Requires: boost169-date-time
 Requires: boost169-filesystem
@@ -31,13 +31,13 @@ Requires: boost169-locale
 Requires: boost169-system
 Requires: boost169-thread
 Requires: fmt >= 7.1.3
-Requires: gdal32-libs
+Requires: gdal33-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 21.9.13
-Requires: smartmet-library-locus >= 21.8.11
-Requires: smartmet-library-macgyver >= 21.9.13
-Requires: smartmet-library-spine >= 21.9.13
+Requires: smartmet-library-gis >= 21.12.1
+Requires: smartmet-library-locus >= 21.12.2
+Requires: smartmet-library-macgyver >= 21.12.1
+Requires: smartmet-library-spine >= 21.12.2
 Requires: smartmet-server >= 21.9.7
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
@@ -50,8 +50,8 @@ Requires: libpqxx < 1:7.0
 BuildRequires: libpqxx-devel < 1:7.0
 %else
 %if %{defined el8}
-Requires: libpqxx >= 5.0.1
-BuildRequires: libpqxx-devel >= 5.0.1
+Requires: libpqxx >= 1:7.6.0, libpqxx < 1:7.7.0
+BuildRequires: libpqxx-devel >= 1:7.6.0, libpqxx-devel < 1:7.7.0
 %else
 Requires: libpqxx
 BuildRequires: libpqxx-devel
@@ -64,12 +64,12 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: bzip2-devel
 #TestRequires: make
 #TestRequires: gcc-c++
-#TestRequires: smartmet-library-spine-devel
+#TestRequires: smartmet-library-spine-devel >= 21.12.2
 #TestRequires: smartmet-library-regression
 #TestRequires: smartmet-test-data
 #TestRequires: smartmet-test-db
 #TestRequires: zlib-devel
-#TestRequires: gdal32-devel
+#TestRequires: gdal33-devel
 
 %description
 SmartMet geonames engine
@@ -79,8 +79,8 @@ SmartMet geonames engine
 Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
-Requires: %{SPECNAME}
-Requires: smartmet-library-locus-devel
+Requires: %{SPECNAME} = %{version}-%{release}
+Requires: smartmet-library-locus-devel >= 21.12.2
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.
@@ -108,6 +108,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Tue Dec  7 2021 Andris Pavēnis <andris.pavenis@fmi.fi> 21.12.7-1.fmi
+- Update to postgresql 13 and gdal 3.3
+
 * Tue Sep 28 2021 Mika Heiskanen <mika.heiskanen@fmi.fi> - 21.9.28-2.fmi
 - Fixed 's-Hertogenbosch autocompletion to work
 

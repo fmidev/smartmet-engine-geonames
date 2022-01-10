@@ -224,6 +224,19 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
         }
       }
 
+      // FIXME: should we have limits in configuration instead of hardcoded here?
+      query_worker_pool.reset(
+          new Fmi::WorkerPool<Locus::Query>(
+              [this]() -> std::shared_ptr<Locus::Query>
+	      {
+		return std::make_shared<Locus::Query>(itsHost,
+						      itsUser,
+						      itsPass,
+						      itsDatabase,
+						      itsPort);
+	      },
+	      30, 100, 5));
+
       setup_fallback_encodings();
     }
     catch (const libconfig::SettingException &e)
@@ -2688,8 +2701,8 @@ Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOpti
     if (options.GetResultLimit() > 0)
       options.SetResultLimit(std::max(theOptions.GetResultLimit(), 100U));
 
-    Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
-    Spine::LocationList ptrs = to_locationlist(lq.FetchByName(options, theName));
+    std::shared_ptr<Locus::Query> lq = query_worker_pool->reserve();
+    Spine::LocationList ptrs = to_locationlist(lq->FetchByName(options, theName));
 
     assign_priorities(ptrs);
     ptrs.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
@@ -2740,10 +2753,10 @@ Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOptions &theOp
     if (pos)
       return *pos;
 
-    Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
+    std::shared_ptr<Locus::Query> lq = query_worker_pool->reserve();
 
     Spine::LocationList ptrs =
-        to_locationlist(lq.FetchByLonLat(theOptions, theLongitude, theLatitude, theRadius));
+        to_locationlist(lq->FetchByLonLat(theOptions, theLongitude, theLatitude, theRadius));
 
     // Do not cache empty results
     if (ptrs.empty())
@@ -2779,9 +2792,9 @@ Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions &theOption
     if (pos)
       return *pos;
 
-    Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
+    std::shared_ptr<Locus::Query> lq = query_worker_pool->reserve();
 
-    Spine::LocationList ptrs = to_locationlist(lq.FetchById(theOptions, theId));
+    Spine::LocationList ptrs = to_locationlist(lq->FetchById(theOptions, theId));
 
     // Do not cache empty results
     if (ptrs.empty())
@@ -2823,9 +2836,9 @@ Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theO
     if (pos)
       return *pos;
 
-    Locus::Query lq(itsHost, itsUser, itsPass, itsDatabase, itsPort);
+    std::shared_ptr<Locus::Query> lq = query_worker_pool->reserve();
 
-    Spine::LocationList ptrs = to_locationlist(lq.FetchByKeyword(theOptions, theKeyword));
+    Spine::LocationList ptrs = to_locationlist(lq->FetchByKeyword(theOptions, theKeyword));
 
     // Do not cache empty results
     if (ptrs.empty())

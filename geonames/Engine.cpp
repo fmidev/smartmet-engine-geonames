@@ -12,6 +12,7 @@
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
 #include <locus/Query.h>
+#include <macgyver/DistanceParser.h>
 #include <macgyver/Exception.h>
 #include <macgyver/StringConversion.h>
 #include <macgyver/TimeZoneFactory.h>
@@ -36,7 +37,7 @@ namespace Geonames
 {
 // Default parameters for location option parsing
 static const std::string default_language = "fi";
-static const double default_maxdistance = 15.0;  // km
+static const char* default_maxdistance = "15km";  // km
 
 std::string parse_radius(const std::string& inputStr, double& radius)
 {
@@ -718,8 +719,8 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
 
     // Maximum distance for latlon searches
 
-    double maxdistance = default_maxdistance;
-    maxdistance = Spine::optional_double(theReq.getParameter("maxdistance"), maxdistance);
+	std::string maxdistance_str = Spine::optional_string(theReq.getParameter("maxdistance"), default_maxdistance);
+    double maxdistance = Fmi::DistanceParser::parse_kilometer(maxdistance_str);	
 
     // Scan all options for location references
 

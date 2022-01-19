@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 22.1.10
+Version: 22.1.18
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -21,7 +21,7 @@ BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-library-gis-devel >= 21.12.1
 BuildRequires: smartmet-library-locus-devel >= 21.12.2
-BuildRequires: smartmet-library-macgyver-devel >= 22.1.10
+BuildRequires: smartmet-library-macgyver-devel >= 22.1.18
 BuildRequires: smartmet-library-spine-devel >= 21.12.2
 
 Requires: boost169-date-time
@@ -36,7 +36,7 @@ Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 21.12.1
 Requires: smartmet-library-locus >= 21.12.2
-Requires: smartmet-library-macgyver >= 22.1.10
+Requires: smartmet-library-macgyver >= 22.1.18
 Requires: smartmet-library-spine >= 21.12.2
 Requires: smartmet-server >= 21.9.7
 %if 0%{rhel} >= 8
@@ -108,6 +108,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+
+* Tue Jan 18 2022 Anssi Reponen <anssi.reponen@fmi.fi> - 22.1.18-1.fmi
+- Use DistanceParser for maxdistance URL-parameter (BRAINSTORM-605)
+
 * Mon Jan 10 2022 Andris Pavēnis <andris.pavenis@fmi.fi> 22.1.10-1.fmi
 - Reuse Locus::Query objects
 

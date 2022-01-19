@@ -19,10 +19,10 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 21.12.1
-BuildRequires: smartmet-library-locus-devel >= 21.12.2
+BuildRequires: smartmet-library-gis-devel >= 21.12.7
+BuildRequires: smartmet-library-locus-devel >= 21.12.7
 BuildRequires: smartmet-library-macgyver-devel >= 22.1.18
-BuildRequires: smartmet-library-spine-devel >= 21.12.2
+BuildRequires: smartmet-library-spine-devel >= 21.12.5
 
 Requires: boost169-date-time
 Requires: boost169-filesystem
@@ -34,11 +34,11 @@ Requires: fmt >= 7.1.3
 Requires: gdal33-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 21.12.1
-Requires: smartmet-library-locus >= 21.12.2
+Requires: smartmet-library-gis >= 21.12.7
+Requires: smartmet-library-locus >= 21.12.7
 Requires: smartmet-library-macgyver >= 22.1.18
-Requires: smartmet-library-spine >= 21.12.2
-Requires: smartmet-server >= 21.9.7
+Requires: smartmet-library-spine >= 21.12.5
+Requires: smartmet-server >= 21.11.25
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -80,7 +80,7 @@ Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
-Requires: smartmet-library-locus-devel >= 21.12.2
+Requires: smartmet-library-locus-devel >= 21.12.7
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.

@@ -238,6 +238,9 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
 	      30, 100, 5));
 
       setup_fallback_encodings();
+
+      std::shared_ptr<Locus::Query> lq = query_worker_pool->reserve();
+      lq->load_iso639_table();
     }
     catch (const libconfig::SettingException &e)
     {

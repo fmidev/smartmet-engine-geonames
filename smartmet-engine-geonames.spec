@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 22.1.18
+Version: 22.1.31
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -13,17 +13,16 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: boost169-devel
 BuildRequires: fmt-devel >= 7.1.3
 BuildRequires: gcc-c++
-BuildRequires: gdal33-devel
+BuildRequires: gdal34-devel
 BuildRequires: libatomic
 BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 21.12.1
-BuildRequires: smartmet-library-locus-devel >= 21.12.2
-BuildRequires: smartmet-library-macgyver-devel >= 22.1.18
-BuildRequires: smartmet-library-spine-devel >= 21.12.2
-
+BuildRequires: smartmet-library-gis-devel >= 21.1.21
+BuildRequires: smartmet-library-locus-devel >= 22.1.31
+BuildRequires: smartmet-library-macgyver-devel >= 21.1.21
+BuildRequires: smartmet-library-spine-devel >= 21.1.21
 Requires: boost169-date-time
 Requires: boost169-filesystem
 Requires: boost169-iostreams
@@ -31,14 +30,14 @@ Requires: boost169-locale
 Requires: boost169-system
 Requires: boost169-thread
 Requires: fmt >= 7.1.3
-Requires: gdal33-libs
+Requires: gdal34-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 21.12.1
-Requires: smartmet-library-locus >= 21.12.2
-Requires: smartmet-library-macgyver >= 22.1.18
-Requires: smartmet-library-spine >= 21.12.2
-Requires: smartmet-server >= 21.9.7
+Requires: smartmet-library-gis >= 21.1.21
+Requires: smartmet-library-locus >= 22.1.31
+Requires: smartmet-library-macgyver >= 21.1.21
+Requires: smartmet-library-spine >= 21.1.21
+Requires: smartmet-server >= 21.11.25
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -64,12 +63,12 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: bzip2-devel
 #TestRequires: make
 #TestRequires: gcc-c++
-#TestRequires: smartmet-library-spine-devel >= 21.12.2
+#TestRequires: smartmet-library-spine-devel >= 21.1.21
 #TestRequires: smartmet-library-regression
 #TestRequires: smartmet-test-data
 #TestRequires: smartmet-test-db
 #TestRequires: zlib-devel
-#TestRequires: gdal33-devel
+#TestRequires: gdal34-devel
 
 %description
 SmartMet geonames engine
@@ -80,7 +79,7 @@ Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
-Requires: smartmet-library-locus-devel >= 21.12.2
+Requires: smartmet-library-locus-devel >= 22.1.31
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.
@@ -108,6 +107,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Jan 31 2022 Andris Pavēnis <andris.pavenis@fmi.fi> 22.1.31-1.fmi
+- Load ISO-639 language codes from geonames database
+
+* Fri Jan 21 2022 Andris Pavēnis <andris.pavenis@fmi.fi> 22.1.21-1.fmi
+- Repackage due to upgrade of packages from PGDG repo: gdal-3.4, geos-3.10, proj-8.2
 
 * Tue Jan 18 2022 Anssi Reponen <anssi.reponen@fmi.fi> - 22.1.18-1.fmi
 - Use DistanceParser for maxdistance URL-parameter (BRAINSTORM-605)

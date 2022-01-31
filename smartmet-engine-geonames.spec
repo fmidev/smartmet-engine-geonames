@@ -20,7 +20,7 @@ BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-library-gis-devel >= 21.1.21
-BuildRequires: smartmet-library-locus-devel >= 21.12.7
+BuildRequires: smartmet-library-locus-devel >= 22.1.31
 BuildRequires: smartmet-library-macgyver-devel >= 21.1.21
 BuildRequires: smartmet-library-spine-devel >= 21.1.21
 
@@ -35,7 +35,7 @@ Requires: gdal34-libs
 Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 21.1.21
-Requires: smartmet-library-locus >= 21.12.7
+Requires: smartmet-library-locus >= 22.1.31
 Requires: smartmet-library-macgyver >= 21.1.21
 Requires: smartmet-library-spine >= 21.1.21
 Requires: smartmet-server >= 21.11.25

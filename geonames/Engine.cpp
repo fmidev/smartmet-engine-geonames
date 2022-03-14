@@ -275,7 +275,7 @@ Spine::LocationPtr Engine::featureSearch(double theLongitude,
                                                 boost::numeric_cast<float>(theLongitude),
                                                 boost::numeric_cast<float>(theLatitude),
                                                 boost::numeric_cast<float>(theMaxDistance));
-
+      
       if (!result.empty())
       {
         // Keep original coordinates, dem and landcover for the named location we found
@@ -340,7 +340,10 @@ Spine::LocationPtr Engine::idSearch(long theGeoID, const std::string& theLang) c
     if (result.empty())
       throw Fmi::Exception(BCP, "Unknown location ID: " + Fmi::to_string(theGeoID));
 
-    return result.front();
+    Spine::LocationPtr newptr(new Spine::Location(*result.front()));
+    auto mycopy = impl.load();
+    mycopy->translate(newptr, theLang);
+    return newptr;
   }
   catch (...)
   {

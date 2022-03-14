@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 22.1.31
+Version: 22.3.14
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -107,6 +107,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Mar 14 2022 Anssi Reponen <anssi.reponen@fmi.fi> - 22.3.14-1.fmi
+- Fix region name translation when geoid used in query (BRAINSTORM-2271)
+
 * Mon Jan 31 2022 Andris Pavēnis <andris.pavenis@fmi.fi> 22.1.31-1.fmi
 - Load ISO-639 language codes from geonames database
 

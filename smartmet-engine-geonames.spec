@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 22.1.31
+Version: 22.3.14
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -23,7 +23,6 @@ BuildRequires: smartmet-library-gis-devel >= 21.1.21
 BuildRequires: smartmet-library-locus-devel >= 22.1.31
 BuildRequires: smartmet-library-macgyver-devel >= 21.1.21
 BuildRequires: smartmet-library-spine-devel >= 21.1.21
-
 Requires: boost169-date-time
 Requires: boost169-filesystem
 Requires: boost169-iostreams
@@ -108,12 +107,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Mar 14 2022 Anssi Reponen <anssi.reponen@fmi.fi> - 22.3.14-1.fmi
+- Fix region name translation when geoid used in query (BRAINSTORM-2271)
+
 * Mon Jan 31 2022 Andris Pavēnis <andris.pavenis@fmi.fi> 22.1.31-1.fmi
 - Load ISO-639 language codes from geonames database
 
 * Fri Jan 21 2022 Andris Pavēnis <andris.pavenis@fmi.fi> 22.1.21-1.fmi
 - Repackage due to upgrade of packages from PGDG repo: gdal-3.4, geos-3.10, proj-8.2
-
 
 * Tue Jan 18 2022 Anssi Reponen <anssi.reponen@fmi.fi> - 22.1.18-1.fmi
 - Use DistanceParser for maxdistance URL-parameter (BRAINSTORM-605)

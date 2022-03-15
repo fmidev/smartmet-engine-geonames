@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 22.3.14
+Version: 22.3.15
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -19,10 +19,10 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 21.1.21
+BuildRequires: smartmet-library-gis-devel >= 22.1.24
 BuildRequires: smartmet-library-locus-devel >= 22.1.31
-BuildRequires: smartmet-library-macgyver-devel >= 21.1.21
-BuildRequires: smartmet-library-spine-devel >= 21.1.21
+BuildRequires: smartmet-library-macgyver-devel >= 22.3.8
+BuildRequires: smartmet-library-spine-devel >= 22.3.8
 Requires: boost169-date-time
 Requires: boost169-filesystem
 Requires: boost169-iostreams
@@ -33,10 +33,10 @@ Requires: fmt >= 7.1.3
 Requires: gdal34-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 21.1.21
+Requires: smartmet-library-gis >= 22.1.24
 Requires: smartmet-library-locus >= 22.1.31
-Requires: smartmet-library-macgyver >= 21.1.21
-Requires: smartmet-library-spine >= 21.1.21
+Requires: smartmet-library-macgyver >= 22.3.8
+Requires: smartmet-library-spine >= 22.3.8
 Requires: smartmet-server >= 21.11.25
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
@@ -50,7 +50,7 @@ BuildRequires: libpqxx-devel < 1:7.0
 %else
 %if %{defined el8}
 Requires: libpqxx >= 1:7.6.0, libpqxx < 1:7.7.0
-BuildRequires: libpqxx-devel >= 1:7.6.0, libpqxx-devel < 1:7.7.0
+BuildRequires: libpqxx-devel >=1:7.6.0, libpqxx-devel < 1:7.7.0
 %else
 Requires: libpqxx
 BuildRequires: libpqxx-devel
@@ -63,7 +63,7 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: bzip2-devel
 #TestRequires: make
 #TestRequires: gcc-c++
-#TestRequires: smartmet-library-spine-devel >= 21.1.21
+#TestRequires: smartmet-library-spine-devel >= 22.3.8
 #TestRequires: smartmet-library-regression
 #TestRequires: smartmet-test-data
 #TestRequires: smartmet-test-db
@@ -107,7 +107,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
-* Mon Mar 14 2022 Anssi Reponen <anssi.reponen@fmi.fi> - 22.3.14-1.fmi
+* Tue Mar 15 2022 Anssi Reponen <anssi.reponen@fmi.fi> - 22.3.15-1.fmi
 - Fix region name translation when geoid used in query (BRAINSTORM-2271)
 
 * Mon Jan 31 2022 Andris Pavēnis <andris.pavenis@fmi.fi> 22.1.31-1.fmi

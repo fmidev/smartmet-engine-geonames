@@ -222,7 +222,7 @@ Spine::LocationPtr Engine::nameSearch(const std::string& theName, const std::str
     if (result.empty())
       throw Fmi::Exception(BCP, "Unknown location: " + theName);
 
-    return result.front();
+	return translateLocation(*result.front(), theLang);
   }
   catch (...)
   {
@@ -259,8 +259,8 @@ Spine::LocationPtr Engine::featureSearch(double theLongitude,
 {
   try
   {
-    // Search the location only if there is a search distance
 
+    // Search the location only if there is a search distance
     if (theMaxDistance > 0)
     {
       Locus::QueryOptions opts;
@@ -284,12 +284,12 @@ Spine::LocationPtr Engine::featureSearch(double theLongitude,
         newloc.latitude = theLatitude;
         newloc.dem = demheight(dem(), theLongitude, theLatitude, maxDemResolution());
         newloc.covertype = covertype(landCover(), theLongitude, theLatitude);
-        return Spine::LocationPtr(new Spine::Location(newloc));
+
+		return translateLocation(newloc, theLang);
       }
     }
 
     std::string name = Fmi::to_string(theLongitude) + "," + Fmi::to_string(theLatitude);
-
     std::string timezone = Fmi::TimeZoneFactory::instance().zone_name_from_coordinate(
         boost::numeric_cast<float>(theLongitude), boost::numeric_cast<float>(theLatitude));
 
@@ -340,10 +340,8 @@ Spine::LocationPtr Engine::idSearch(long theGeoID, const std::string& theLang) c
     if (result.empty())
       throw Fmi::Exception(BCP, "Unknown location ID: " + Fmi::to_string(theGeoID));
 
-    Spine::LocationPtr newptr(new Spine::Location(*result.front()));
-    auto mycopy = impl.load();
-    mycopy->translate(newptr, theLang);
-    return newptr;
+	return translateLocation(*result.front(), theLang);
+
   }
   catch (...)
   {
@@ -385,7 +383,6 @@ Spine::LocationList Engine::latlonSearch(const Locus::QueryOptions& theOptions,
 {
   try
   {
-    // ++itsLonLatSearchCount;
     return lonlatSearch(theOptions, theLongitude, theLatitude, theRadius);
   }
   catch (...)
@@ -1440,6 +1437,14 @@ Fmi::Cache::CacheStatistics Engine::getCacheStats() const
   auto mycopy = impl.load();
 
   return mycopy->getCacheStats();
+}
+
+Spine::LocationPtr Engine::translateLocation(const Spine::Location& theLocation, const std::string& theLang) const
+{
+  Spine::LocationPtr newptr(new Spine::Location(theLocation));
+  auto mycopy = impl.load();
+  mycopy->translate(newptr, theLang);
+  return newptr;
 }
 
 // ----------------------------------------------------------------------

@@ -214,7 +214,7 @@ class Engine : public Spine::SmartMetEngine
   unsigned int maxDemResolution() const;
   void cache_cleaner();
   Fmi::Cache::CacheStatistics getCacheStats() const override;
-
+  Spine::LocationPtr translateLocation(const Spine::Location& theLocation, const std::string& theLang) const;
 };  // class Geo
 
 }  // namespace Geonames

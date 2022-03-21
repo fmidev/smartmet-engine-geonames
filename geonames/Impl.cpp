@@ -661,7 +661,6 @@ void Engine::Impl::initSuggest(bool threaded)
     try
     {
       itsConfig.lookupValue("maxdemresolution", itsMaxDemResolution);
-      itsConfig.lookupValue("database.disable", itsDatabaseDisabled);
 
       if (itsDatabaseDisabled)
         std::cerr << "Warning: Geonames database is disabled" << std::endl;
@@ -922,6 +921,8 @@ void Engine::Impl::read_config()
       itsHost = lookup_database("host", name).c_str();
       itsPass = lookup_database("pass", name).c_str();
       itsDatabase = lookup_database("database", name).c_str();
+
+      itsConfig.lookupValue("database.disable", itsDatabaseDisabled);
 
       // port is optional
       int port = default_port;

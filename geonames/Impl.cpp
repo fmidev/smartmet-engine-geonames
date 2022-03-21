@@ -224,23 +224,23 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
         }
       }
 
-      // FIXME: should we have limits in configuration instead of hardcoded here?
-      query_worker_pool.reset(
-          new Fmi::WorkerPool<Locus::Query>(
-              [this]() -> std::shared_ptr<Locus::Query>
-	      {
-		return std::make_shared<Locus::Query>(itsHost,
-						      itsUser,
-						      itsPass,
-						      itsDatabase,
-						      itsPort);
-	      },
-	      30, 100, 5));
-
       setup_fallback_encodings();
 
-      std::shared_ptr<Locus::Query> lq = query_worker_pool->reserve();
-      lq->load_iso639_table();
+      // FIXME: should we have limits in configuration instead of hardcoded here?
+      if (!itsDatabaseDisabled)
+      {
+        query_worker_pool.reset(new Fmi::WorkerPool<Locus::Query>(
+            [this]() -> std::shared_ptr<Locus::Query> {
+              return std::make_shared<Locus::Query>(
+                  itsHost, itsUser, itsPass, itsDatabase, itsPort);
+            },
+            30,
+            100,
+            5));
+
+        std::shared_ptr<Locus::Query> lq = query_worker_pool->reserve();
+        lq->load_iso639_table();
+      }
     }
     catch (const libconfig::SettingException &e)
     {

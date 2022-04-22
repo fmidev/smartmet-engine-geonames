@@ -8,6 +8,7 @@
 #include "Engine.h"
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/asio/ip/host_name.hpp>
+#include <boost/bind.hpp>
 #include <boost/locale.hpp>
 #include <boost/thread.hpp>
 #include <gis/DEM.h>

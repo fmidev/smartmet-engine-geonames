@@ -3,8 +3,8 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 22.3.21
-Release: 2%{?dist}.fmi
+Version: 22.5.20
+Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -19,10 +19,11 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 22.1.24
-BuildRequires: smartmet-library-locus-devel >= 22.1.31
-BuildRequires: smartmet-library-macgyver-devel >= 22.3.8
-BuildRequires: smartmet-library-spine-devel >= 22.3.18
+BuildRequires: smartmet-library-gis-devel >= 22.5.4
+BuildRequires: smartmet-library-locus-devel >= 22.3.28
+BuildRequires: smartmet-library-macgyver-devel >= 22.3.28
+BuildRequires: smartmet-library-newbase-devel >= 22.5.20
+BuildRequires: smartmet-library-spine-devel >= 22.5.16
 Requires: boost169-date-time
 Requires: boost169-filesystem
 Requires: boost169-iostreams
@@ -33,11 +34,12 @@ Requires: fmt >= 7.1.3
 Requires: gdal34-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 22.1.24
-Requires: smartmet-library-locus >= 22.1.31
-Requires: smartmet-library-macgyver >= 22.3.8
-Requires: smartmet-library-spine >= 22.3.18
-Requires: smartmet-server >= 21.11.25
+Requires: smartmet-library-gis >= 22.5.4
+Requires: smartmet-library-locus >= 22.3.28
+Requires: smartmet-library-macgyver >= 22.3.28
+Requires: smartmet-library-newbase >= 22.5.20
+Requires: smartmet-library-spine >= 22.5.16
+Requires: smartmet-server >= 22.5.16
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -63,7 +65,8 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: bzip2-devel
 #TestRequires: make
 #TestRequires: gcc-c++
-#TestRequires: smartmet-library-spine-devel >= 22.3.18
+#TestRequires: smartmet-library-spine-devel >= 22.5.16
+#TestRequires: smartmet-library-newbase
 #TestRequires: smartmet-library-regression
 #TestRequires: smartmet-test-data
 #TestRequires: smartmet-test-db
@@ -79,7 +82,7 @@ Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
-Requires: smartmet-library-locus-devel >= 22.1.31
+Requires: smartmet-library-locus-devel >= 22.3.28
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.
@@ -107,6 +110,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Fri May 20 2022 Mika Heiskanen <mika.heiskanen@fmi.fi> - 22.5.20-1.fmi
+- Repackaged since newbase ABI changed
+
 * Mon Mar 21 2022 Mika Heiskanen <mika.heiskanen@fmi.fi> - 22.3.21-2.fmi
 - Fixed to obey the database.disabled setting
 

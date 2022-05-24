@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 22.5.20
+Version: 22.5.24
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -21,9 +21,9 @@ BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-library-gis-devel >= 22.5.4
 BuildRequires: smartmet-library-locus-devel >= 22.3.28
-BuildRequires: smartmet-library-macgyver-devel >= 22.3.28
-BuildRequires: smartmet-library-newbase-devel >= 22.5.20
-BuildRequires: smartmet-library-spine-devel >= 22.5.16
+BuildRequires: smartmet-library-macgyver-devel >= 22.5.24
+BuildRequires: smartmet-library-newbase-devel >= 22.5.24
+BuildRequires: smartmet-library-spine-devel >= 22.5.24
 Requires: boost169-date-time
 Requires: boost169-filesystem
 Requires: boost169-iostreams
@@ -36,9 +36,9 @@ Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 22.5.4
 Requires: smartmet-library-locus >= 22.3.28
-Requires: smartmet-library-macgyver >= 22.3.28
-Requires: smartmet-library-newbase >= 22.5.20
-Requires: smartmet-library-spine >= 22.5.16
+Requires: smartmet-library-macgyver >= 22.5.24
+Requires: smartmet-library-newbase >= 22.5.24
+Requires: smartmet-library-spine >= 22.5.24
 Requires: smartmet-server >= 22.5.16
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
@@ -65,7 +65,7 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: bzip2-devel
 #TestRequires: make
 #TestRequires: gcc-c++
-#TestRequires: smartmet-library-spine-devel >= 22.5.16
+#TestRequires: smartmet-library-spine-devel >= 22.5.24
 #TestRequires: smartmet-library-newbase
 #TestRequires: smartmet-library-regression
 #TestRequires: smartmet-test-data
@@ -110,6 +110,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Tue May 24 2022 Mika Heiskanen <mika.heiskanen@fmi.fi> - 22.5.24-1.fmi
+- Repackaged due to NFmiArea ABI changes
+
 * Fri May 20 2022 Mika Heiskanen <mika.heiskanen@fmi.fi> - 22.5.20-1.fmi
 - Repackaged since newbase ABI changed
 

@@ -10,8 +10,18 @@ Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
 Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: boost169-devel
-BuildRequires: fmt-devel >= 7.1.3
+
+%if 0%{?rhel} && 0%{rhel} < 9
+%define smartmet_boost boost169
+%else
+%define smartmet_boost boost
+%endif
+
+%define smartmet_fmt_min 8.1.1
+%define smartmet_fmt_max 8.2.0
+
+BuildRequires: %{smartmet_boost}-devel
+BuildRequires: fmt-devel >= %{smartmet_fmt_min}, fmt-devel < %{smartmet_fmt_max}
 BuildRequires: gcc-c++
 BuildRequires: gdal34-devel
 BuildRequires: libatomic
@@ -19,27 +29,27 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 22.5.4
-BuildRequires: smartmet-library-locus-devel >= 22.3.28
-BuildRequires: smartmet-library-macgyver-devel >= 22.5.24
-BuildRequires: smartmet-library-newbase-devel >= 22.5.24
-BuildRequires: smartmet-library-spine-devel >= 22.5.24
-Requires: boost169-date-time
-Requires: boost169-filesystem
-Requires: boost169-iostreams
-Requires: boost169-locale
-Requires: boost169-system
-Requires: boost169-thread
-Requires: fmt >= 7.1.3
+BuildRequires: smartmet-library-gis-devel >= 22.6.16
+BuildRequires: smartmet-library-locus-devel >= 22.6.16
+BuildRequires: smartmet-library-macgyver-devel >= 22.6.16
+BuildRequires: smartmet-library-newbase-devel >= 22.6.16
+BuildRequires: smartmet-library-spine-devel >= 22.6.16
+Requires: %{smartmet_boost}-date-time
+Requires: %{smartmet_boost}-filesystem
+Requires: %{smartmet_boost}-iostreams
+Requires: %{smartmet_boost}-locale
+Requires: %{smartmet_boost}-system
+Requires: %{smartmet_boost}-thread
+Requires: fmt >= %{smartmet_fmt_min}, fmt < %{smartmet_fmt_max}
 Requires: gdal34-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 22.5.4
-Requires: smartmet-library-locus >= 22.3.28
-Requires: smartmet-library-macgyver >= 22.5.24
-Requires: smartmet-library-newbase >= 22.5.24
-Requires: smartmet-library-spine >= 22.5.24
-Requires: smartmet-server >= 22.5.16
+Requires: smartmet-library-gis >= 22.6.16
+Requires: smartmet-library-locus >= 22.6.16
+Requires: smartmet-library-macgyver >= 22.6.16
+Requires: smartmet-library-newbase >= 22.6.16
+Requires: smartmet-library-spine >= 22.6.16
+Requires: smartmet-server >= 22.6.16
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -50,9 +60,10 @@ Requires: mariadb-libs
 Requires: libpqxx < 1:7.0
 BuildRequires: libpqxx-devel < 1:7.0
 %else
-%if %{defined el8}
-Requires: libpqxx >= 6.2.5 libpqxx < 1:7.7.0
-BuildRequires: libpqxx-devel >= 6.2.5 libpqxx-devel < 1:7.7.0
+%if 0%{?rhel} && 0%{rhel} >= 8
+Requires: libpqxx >= 1:7.7.0, libpqxx < 1:7.8.0
+BuildRequires: libpqxx-devel >= 1:7.7.0, libpqxx-devel < 1:7.8.0
+#TestRequires: libpqxx-devel >= 1:7.7.0, libpqxx-devel < 1:7.8.0
 %else
 Requires: libpqxx
 BuildRequires: libpqxx-devel
@@ -65,7 +76,7 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: bzip2-devel
 #TestRequires: make
 #TestRequires: gcc-c++
-#TestRequires: smartmet-library-spine-devel >= 22.5.24
+#TestRequires: smartmet-library-spine-devel >= 22.6.16
 #TestRequires: smartmet-library-newbase
 #TestRequires: smartmet-library-regression
 #TestRequires: smartmet-test-data
@@ -82,7 +93,7 @@ Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
-Requires: smartmet-library-locus-devel >= 22.3.28
+Requires: smartmet-library-locus-devel >= 22.6.16
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.

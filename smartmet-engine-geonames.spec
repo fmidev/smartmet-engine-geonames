@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 22.6.17
+Version: 22.7.20
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -31,9 +31,9 @@ BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-library-gis-devel >= 22.6.16
 BuildRequires: smartmet-library-locus-devel >= 22.6.16
-BuildRequires: smartmet-library-macgyver-devel >= 22.6.16
+BuildRequires: smartmet-library-macgyver-devel >= 22.7.20
 BuildRequires: smartmet-library-newbase-devel >= 22.6.16
-BuildRequires: smartmet-library-spine-devel >= 22.6.16
+BuildRequires: smartmet-library-spine-devel >= 22.7.20
 Requires: %{smartmet_boost}-date-time
 Requires: %{smartmet_boost}-filesystem
 Requires: %{smartmet_boost}-iostreams
@@ -46,10 +46,10 @@ Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 22.6.16
 Requires: smartmet-library-locus >= 22.6.16
-Requires: smartmet-library-macgyver >= 22.6.16
+Requires: smartmet-library-macgyver >= 22.7.20
 Requires: smartmet-library-newbase >= 22.6.16
-Requires: smartmet-library-spine >= 22.6.16
-Requires: smartmet-server >= 22.6.16
+Requires: smartmet-library-spine >= 22.7.20
+Requires: smartmet-server >= 22.7.20
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -76,7 +76,7 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: bzip2-devel
 #TestRequires: make
 #TestRequires: gcc-c++
-#TestRequires: smartmet-library-spine-devel >= 22.6.16
+#TestRequires: smartmet-library-spine-devel >= 22.7.20
 #TestRequires: smartmet-library-newbase
 #TestRequires: smartmet-library-regression
 #TestRequires: smartmet-test-data
@@ -121,6 +121,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Jul 20 2022 Andris Pavēnis <andris.pavenis@fmi.fi> 22.7.20-1.fmi
+- Repackage due to macgyver (AsynTaskGroup) ABI changes
+
 * Fri Jun 17 2022 Andris Pavēnis <andris.pavenis@fmi.fi> 22.6.17-1.fmi
 - Add support for RHEL9. Update libpqxx to 7.7.0 (rhel8+) and fmt to 8.1.1
 

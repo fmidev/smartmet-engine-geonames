@@ -282,7 +282,7 @@ class Engine::Impl : private boost::noncopyable
   Fmi::AsyncTaskGroup tg1;
   boost::shared_ptr<Fmi::AsyncTask> initSuggestTask;
 
-  std::unique_ptr<Fmi::WorkerPool<Locus::Query> > query_worker_pool;
+  std::unique_ptr<Fmi::WorkerPool<Locus::Query>> query_worker_pool;
 
   Impl();
 

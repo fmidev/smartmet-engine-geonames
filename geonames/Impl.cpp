@@ -2923,33 +2923,29 @@ bool Engine::Impl::isSuggestReady() const
   return itsSuggestReadyFlag;
 }
 
+// Convert TimedCache statistics to regular statistics
+template <typename T>
+Fmi::Cache::CacheStats convert_stats(const T &cache)
+{
+  auto stats = cache.getCacheStatistics();
+  auto time = boost::posix_time::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(
+                                                 stats.getConstructionTime().time_since_epoch())
+                                                 .count());
+  return {time,
+          cache.maxSize(),
+          cache.size(),
+          stats.getHits(),
+          stats.getMisses(),
+          stats.getInsertSuccesses()};
+}
+
 Fmi::Cache::CacheStatistics Engine::Impl::getCacheStats() const
 {
   Fmi::Cache::CacheStatistics ret;
 
-  // Name search cache
-  ret.insert(std::make_pair("Geonames::name_search_cache", itsNameSearchCache.statistics()));
-
-  // TimedCaches
-  Fmi::TimedCache::CacheStatistics suggestStats = itsSuggestCache->getCacheStatistics();
-  boost::posix_time::ptime suggest_time =
-      boost::posix_time::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(
-                                         suggestStats.getConstructionTime().time_since_epoch())
-                                         .count());
-  ret.insert(std::make_pair(
-      "Geonames::suggest_cache",
-      Fmi::Cache::CacheStats(suggestStats.getHits(), suggestStats.getMisses(), suggest_time)));
-
-  Fmi::TimedCache::CacheStatistics languageSuggestStats =
-      itsLanguagesSuggestCache->getCacheStatistics();
-  boost::posix_time::ptime language_suggest_time = boost::posix_time::from_time_t(
-      std::chrono::duration_cast<std::chrono::seconds>(
-          languageSuggestStats.getConstructionTime().time_since_epoch())
-          .count());
-  ret.insert(std::make_pair("Geonames::language_suggest_cache",
-                            Fmi::Cache::CacheStats(languageSuggestStats.getHits(),
-                                                   languageSuggestStats.getMisses(),
-                                                   language_suggest_time)));
+  ret["Geonames::name_search_cache"] = itsNameSearchCache.statistics();
+  ret["Geonames::suggest_cache"] = convert_stats(*itsSuggestCache);
+  ret["Geonames::language_suggest_cache"] = convert_stats(*itsLanguagesSuggestCache);
 
   return ret;
 }

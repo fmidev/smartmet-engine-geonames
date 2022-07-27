@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 22.7.20
+Version: 22.7.27
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -29,11 +29,11 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 22.6.16
+BuildRequires: smartmet-library-gis-devel >= 22.7.27
 BuildRequires: smartmet-library-locus-devel >= 22.6.16
-BuildRequires: smartmet-library-macgyver-devel >= 22.7.20
+BuildRequires: smartmet-library-macgyver-devel >= 22.7.27
 BuildRequires: smartmet-library-newbase-devel >= 22.6.16
-BuildRequires: smartmet-library-spine-devel >= 22.7.20
+BuildRequires: smartmet-library-spine-devel >= 22.7.27
 Requires: %{smartmet_boost}-date-time
 Requires: %{smartmet_boost}-filesystem
 Requires: %{smartmet_boost}-iostreams
@@ -44,11 +44,11 @@ Requires: fmt >= %{smartmet_fmt_min}, fmt < %{smartmet_fmt_max}
 Requires: gdal34-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 22.6.16
+Requires: smartmet-library-gis >= 22.7.27
 Requires: smartmet-library-locus >= 22.6.16
-Requires: smartmet-library-macgyver >= 22.7.20
+Requires: smartmet-library-macgyver >= 22.7.27
 Requires: smartmet-library-newbase >= 22.6.16
-Requires: smartmet-library-spine >= 22.7.20
+Requires: smartmet-library-spine >= 22.7.27
 Requires: smartmet-server >= 22.7.20
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
@@ -76,7 +76,7 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: bzip2-devel
 #TestRequires: make
 #TestRequires: gcc-c++
-#TestRequires: smartmet-library-spine-devel >= 22.7.20
+#TestRequires: smartmet-library-spine-devel
 #TestRequires: smartmet-library-newbase
 #TestRequires: smartmet-library-regression
 #TestRequires: smartmet-test-data
@@ -121,6 +121,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Jul 27 2022 Mika Heiskanen <mika.heiskanen@fmi.fi> - 22.7.27-1.fmi
+- Repackaged since macgyver CacheStats ABI changed
+
 * Wed Jul 20 2022 Andris Pavēnis <andris.pavenis@fmi.fi> 22.7.20-1.fmi
 - Repackage due to macgyver (AsynTaskGroup) ABI changes
 

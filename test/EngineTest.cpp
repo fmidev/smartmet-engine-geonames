@@ -1045,7 +1045,6 @@ int main(void)
   cout << endl << "Geonames tester" << endl << "================" << endl;
   Tests::tests t;
   int result = t.run();
-  delete names;
   delete reactor;
   return result;
 }

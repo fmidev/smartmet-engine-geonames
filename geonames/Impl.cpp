@@ -8,7 +8,7 @@
 #include "Engine.h"
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/asio/ip/host_name.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/locale.hpp>
 #include <boost/thread.hpp>
 #include <gis/DEM.h>
@@ -2341,7 +2341,9 @@ void Engine::Impl::sort(Spine::LocationList &theLocations) const
     theLocations.unique(closeEnough);  // needed because language specific trees
                                        // create duplicates
     // Sort based on priorities
-    theLocations.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
+    theLocations.sort(std::bind(&Impl::prioritySort, this,
+            std::placeholders::_1,
+            std::placeholders::_2));
   }
   catch (...)
   {
@@ -2483,7 +2485,9 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
 
     // Sort based on priorities
 
-    ret.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
+    ret.sort(std::bind(&Impl::prioritySort, this,
+            std::placeholders::_1,
+            std::placeholders::_2));
 
     // Keep the desired part. We do this after moving exact matches to the front,
     // otherwise for example "Spa, Belgium" is not very high on the list of
@@ -2591,7 +2595,9 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(const std::string &patter
     // translating the candidates. This is something that perhaps should be
     // improved later on.
 
-    candidates.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
+    candidates.sort(std::bind(&Impl::prioritySort, this,
+            std::placeholders::_1,
+            std::placeholders::_2));
 
     // Keep the desired part.
 
@@ -2710,7 +2716,9 @@ Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOpti
     Spine::LocationList ptrs = to_locationlist(lq->FetchByName(options, theName));
 
     assign_priorities(ptrs);
-    ptrs.sort(boost::bind(&Impl::prioritySort, this, _1, _2));
+    ptrs.sort(std::bind(&Impl::prioritySort, this,
+            std::placeholders::_1,
+            std::placeholders::_2));
 
     // And finally keep only the desired number of matches
     if (theOptions.GetResultLimit() > 0 && ptrs.size() > theOptions.GetResultLimit())

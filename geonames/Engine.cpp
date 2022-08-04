@@ -107,7 +107,8 @@ Engine::Engine(const std::string& theConfigFile)
       itsIdSearchCount(0),
       itsKeywordSearchCount(0),
       itsSuggestCount(0),
-      itsConfigFile(theConfigFile)
+      itsConfigFile(theConfigFile),
+      initFailed(false)
 {
 }
 
@@ -136,6 +137,7 @@ void Engine::init()
   }
   catch (...)
   {
+    initFailed = true;
     throw Fmi::Exception::Trace(BCP, "Init failed!");
   }
 }
@@ -166,11 +168,14 @@ void Engine::shutdown()
         return;
       }
 
-      // The is no Impl object available yet, so its initialization is probably still
-      // running. There should be a way to terminate this initialization, because
-      // now we have to wait its termination.
-
-      boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+      if (initFailed) {
+          break;
+      } else {
+          // The is no Impl object available yet, so its initialization is probably still
+          // running. There should be a way to terminate this initialization, because
+          // now we have to wait its termination.
+          boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+      }
     }
   }
   catch (...)

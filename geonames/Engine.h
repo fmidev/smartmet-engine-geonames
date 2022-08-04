@@ -84,6 +84,7 @@ class Engine : public Spine::SmartMetEngine
   mutable std::atomic<long> itsSuggestCount;
   std::string itsConfigFile;
   std::string itsErrorMessage;
+  std::atomic_bool initFailed;
 
  public:
   Engine(const std::string& theConfigFile);

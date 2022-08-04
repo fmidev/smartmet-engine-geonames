@@ -755,6 +755,9 @@ void Engine::Impl::initSuggest(bool threaded)
     itsReloadOK = true;
     itsSuggestReadyFlag = true;
   }
+  catch (const boost::thread_interrupted&) {
+      throw;
+  }
   catch (...)
   {
     Fmi::Exception exception(BCP, "Geonames autocomplete data initialization failed", nullptr);

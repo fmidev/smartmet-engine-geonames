@@ -1,95 +1,170 @@
+
+Table of Contents
+=================
+
+  * [SmartMet Server](#SmartMet Server)
+  * [Introduction](#introduction)
+  * [Configuration](#configuration)
+  * [Docker](#docker)
+
+
 # SmartMet Server
-SmartMet Server is a data and procut server for MetOcean data. It provides high capacity and high availability data and product server for MetOcean data. The server is written in C++. 
+[SmartMet Server](https://github.com/fmidev/smartmet-server) is a data
+and procut server for MetOcean data. It provides high capacity and
+high availability data and product server for MetOcean data. The
+server is written in C++.
 
-The server can read input data from various sources:
-* GRIB (1 and 2) 
-* NetCDF
-* SQL database
+#Introduction
 
-The server provides several output interfaces:
-* WMS 1.3.0
-* WFS 2.0
-* Several custom interface
-and several output formats:
-* JSON
-* XML
-* ASCII
-* HTML
-* SERIAL
-* GRIB1
-* GRIB2 
-* NetCDF
-* Raster images
+SmartMet engine geonames (geoengine) provides location services for
+other services. It resolves the location information for coordinates
+and vice versa.
 
-The server is INSPIRE compliant. It is used for FMI data services and product generation. It's been operative since 2008 and used for FMI Open Data Portal since 2013.
+Geoengine provides shared access to the location database in the
+SmartMet server. The location database is a PostGIS database and it is
+based on <a href="http://www.geonames.org">the Geonames</a>, a
+geographical database that covers all countries and contains over
+eleven million placenames that are available for download free of
+charge. The location database has to be synced with the 
+the Geonames database from  time to time.
 
-The server is especially good for extracting weather data and generating products based on gridded data (GRIB and NetCDF). The data is extracted and products generating always on-demand. 
+#Configuration
 
-## Server Structure
+The configuration file consists of the configuration of
+several parameters that are needed for specifying the location
+services. These parameter include the following:
 
-![](https://github.com/fmidev/smartmet-server/blob/master/SmartMet_Structure.png "Server structure")
+* Station names
 
-SmartMet Server consists of following components:
+This configuration states whether  the station names should be splittable into words or not. For example,
+<pre><code>
+remove_underscores = true;
+</code></pre>
 
-<table>
-<tr>
-<th>Component</th><th>Description</th><th>Source Code</th>
-</tr>
-<tr valign="top">
-<td>qdtools         </td><td>Helper programs to handle underling data          </td><td> https://github.com/fmidev/smartmet-qdtools </td></tr>
-<tr valign="top">
-<td> Libraries       </td><td>Libraries required to run programs and the server </td><td> https://github.com/fmidev/smartmet-library-spine<br>
-     		     				    		     	 		  https://github.com/fmidev/smartmet-library-newbase<br>
-											  https://github.com/fmidev/smartmet-library-macgyver<br>
-											  https://github.com/fmidev/smartmet-library-gis<br>
-											  https://github.com/fmidev/smartmet-library-giza<br>
-											  https://github.com/fmidev/smartmet-library-locus<br>
-											  https://github.com/fmidev/smartmet-library-regression<br>
-											  https://github.com/fmidev/smartmet-library-imagine</td>
-</tr
-<tr valign="top">
-<td>Server          </td><td>The server daemon itself                          </td><td> https://github.com/fmidev/smartmet-server  </td>
-</tr>
-<tr valign="top">
-<td>Engines         </td><td>Common modules with a state                       </td><td> https://github.com/fmidev/smartmet-engine-geonames<br>
-											 https://github.com/fmidev/smartmet-engine-sputnik<br>
-											 https://github.com/fmidev/smartmet-engine-querydata<br>
-											 https://github.com/fmidev/smartmet-engine-observation<br>
-											 https://github.com/fmidev/smartmet-engine-contour<br>
-											 https://github.com/fmidev/smartmet-engine-gis </td>
-</tr>
-<tr valign="top">
-<td>Plugins         </td><td>Plugins providing interfaces to clients           </td><td> https://github.com/fmidev/smartmet-plugin-timeseries<br>
-											  https://github.com/fmidev/smartmet-plugin-meta<br>
-											  https://github.com/fmidev/smartmet-plugin-frontend<br>
-											  https://github.com/fmidev/smartmet-plugin-wfs<br>
-											  https://github.com/fmidev/smartmet-plugin-wms<br>
-											  https://github.com/fmidev/smartmet-plugin-autocomplete<br>
-											  https://github.com/fmidev/smartmet-plugin-backend<br>
-											  https://github.com/fmidev/smartmet-plugin-download<br>
-											  https://github.com/fmidev/smartmet-plugin-admin </td>
-</tr>
-</table>
+* Locale
 
-## Licence
-The server is published with MIT-license.
+Locale defines the user's  format for the specification of language.  <a href="https://gcc.gnu.org/onlinedocs/libstdc++/manual/localization.html">This link</a> gives the GNU document on locale for C and C++. In the configuration file, we can specify for example the locale for  Finnish language   as 
+<pre><code>
+locale = "fi_FI.UTF-8";
+</code></pre>
+Using  en_US would mean the characters Ä and A would be considered equivalent. The language used affects the autocomplete feature.
 
-## How to contribute
-Found a bug? Want to implement a new feature? Your contribution is very welcome!
+* maxdemresolution for the data
 
-Small changes and bug fixes can be submitted via pull request. In larger contributions, premilinary plan is recommended (in GitHub wiki). 
+<pre><code>
+maxdemresolution = 0;
+</code></pre> 
+The setting of 0 meters allow highest possible resolution.  Do not use too high resolution data to avoid page faults
 
-CLA is required in order to contribute. Please contact us for more information!
+* LandCover data directory
+<pre><code>
+landcoverdir = "directory_name";
+</code></pre> 
 
-## Documentation
-Each module is documented in module [module wiki](../../wiki). 
+* Database settings
+ 
+Do NOT use the full name, use the alias only
+because different networks use different full host names but the same alias.
 
-## Communication and Resources
-You may contact us from following channels:
-* Email: beta@fmi.fi
-* Facebook: https://www.facebook.com/fmibeta/
-* GitHub: [issues](../../issues)
+<pre><code>
+database:
+{
+        host     = "localhost";
+        user     = "username";
+        database = "databasename";
+        pass     = "password";
 
-Other resources which may be useful:
-* Presentation about the server: http://www.slideshare.net/tervo/smartmet-server-providing-metocean-data
-* Our public web pages (in Finnish):  http://ilmatieteenlaitos.fi/avoin-lahdekoodi
+};
+
+</code></pre>
+
+* Cache Maximum size
+<pre><code>
+cache:
+{
+       max_size        = cache size in bytes;
+};
+
+</code></pre>
+
+* Priorities
+
+
+Priorities specify the priorities of countries, priorities of areas within a country, priorities of features and priorities of country specific features.
+
+
+Use some criteria to prioritize the countries. The priority index along with the country code from the  <a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2">ISO 3166-1 alpha-2 codes</a> is given in the configuration file.
+ 
+<pre><code>
+priorities: 
+{
+      FI = priority index;        // Finland
+      EE = priority index;       // Estonia
+      SE = priority index;       // Sweden
+      ...
+      default = 100000;
+   };
+</code></pre>
+
+* Feature priorities
+
+Feature priority for a particular region or country
+<pre><code>
+ {
+        default = "default_features";
+        FI      = "FI_features"; // specific features for Finland
+   };
+   default_features:
+   {
+	PPLC    = priority index;  // populated place
+        SKI     = priority index;  // skiing place
+	...
+
+   };
+</code></pre>
+
+* Country specific features
+
+<pre><code>
+FI_features:
+   {
+	PPLC    = priority index;  // populated place
+        SKI     = priority index;  // skiing place
+	...
+    };
+</code></pre>
+
+* Areas
+
+Priorities of areas within a country 
+<pre><code>
+   areas:
+   {
+        Area1 = 2;
+        Area2    = 1;
+	...
+
+        default  = 0;
+   };
+</code></pre>
+
+* Countries
+
+<pre><code>
+   countries:
+   {
+        FI = priority index;
+        SE = priority index;
+        NO = priority index;
+        ...
+
+	default = 0;
+   };
+</code></pre>
+
+# Docker
+
+SmartMet Server can be dockerized. This [tutorial](docs/docker.md)
+explains how to explains how to configure the GeoNames engine of the
+SmartMet Server when using Docker.
+

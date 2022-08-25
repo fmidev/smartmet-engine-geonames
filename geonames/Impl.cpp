@@ -17,6 +17,7 @@
 #include <macgyver/Exception.h>
 #include <macgyver/Hash.h>
 #include <macgyver/StringConversion.h>
+#include <spine/Exceptions.h>
 #include <spine/Location.h>
 #include <sys/types.h>
 #include <cassert>
@@ -243,12 +244,9 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
         lq->load_iso639_table();
       }
     }
-    catch (const libconfig::SettingException &e)
+    catch (...)
     {
-      throw Fmi::Exception(BCP, "Configuration file setting error!")
-          .addParameter("Path", e.getPath())
-          .addParameter("Configuration file", itsConfigFile)
-          .addParameter("Error description", e.what());
+      Spine::Exceptions::handle("GeoNames engine");
     }
   }
 
@@ -755,8 +753,9 @@ void Engine::Impl::initSuggest(bool threaded)
     itsReloadOK = true;
     itsSuggestReadyFlag = true;
   }
-  catch (const boost::thread_interrupted&) {
-      throw;
+  catch (const boost::thread_interrupted &)
+  {
+    throw;
   }
   catch (...)
   {
@@ -2344,9 +2343,8 @@ void Engine::Impl::sort(Spine::LocationList &theLocations) const
     theLocations.unique(closeEnough);  // needed because language specific trees
                                        // create duplicates
     // Sort based on priorities
-    theLocations.sort(std::bind(&Impl::prioritySort, this,
-            std::placeholders::_1,
-            std::placeholders::_2));
+    theLocations.sort(
+        std::bind(&Impl::prioritySort, this, std::placeholders::_1, std::placeholders::_2));
   }
   catch (...)
   {
@@ -2488,9 +2486,7 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
 
     // Sort based on priorities
 
-    ret.sort(std::bind(&Impl::prioritySort, this,
-            std::placeholders::_1,
-            std::placeholders::_2));
+    ret.sort(std::bind(&Impl::prioritySort, this, std::placeholders::_1, std::placeholders::_2));
 
     // Keep the desired part. We do this after moving exact matches to the front,
     // otherwise for example "Spa, Belgium" is not very high on the list of
@@ -2598,9 +2594,8 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(const std::string &patter
     // translating the candidates. This is something that perhaps should be
     // improved later on.
 
-    candidates.sort(std::bind(&Impl::prioritySort, this,
-            std::placeholders::_1,
-            std::placeholders::_2));
+    candidates.sort(
+        std::bind(&Impl::prioritySort, this, std::placeholders::_1, std::placeholders::_2));
 
     // Keep the desired part.
 
@@ -2719,9 +2714,7 @@ Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOpti
     Spine::LocationList ptrs = to_locationlist(lq->FetchByName(options, theName));
 
     assign_priorities(ptrs);
-    ptrs.sort(std::bind(&Impl::prioritySort, this,
-            std::placeholders::_1,
-            std::placeholders::_2));
+    ptrs.sort(std::bind(&Impl::prioritySort, this, std::placeholders::_1, std::placeholders::_2));
 
     // And finally keep only the desired number of matches
     if (theOptions.GetResultLimit() > 0 && ptrs.size() > theOptions.GetResultLimit())

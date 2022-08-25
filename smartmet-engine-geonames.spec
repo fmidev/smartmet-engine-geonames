@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 22.8.4
+Version: 22.8.25
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -30,10 +30,10 @@ BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-library-gis-devel >= 22.7.27
-BuildRequires: smartmet-library-locus-devel >= 22.6.16
-BuildRequires: smartmet-library-macgyver-devel >= 22.7.27
-BuildRequires: smartmet-library-newbase-devel >= 22.6.16
-BuildRequires: smartmet-library-spine-devel >= 22.7.27
+BuildRequires: smartmet-library-locus-devel >= 22.6.17
+BuildRequires: smartmet-library-macgyver-devel >= 22.8.23
+BuildRequires: smartmet-library-newbase-devel >= 22.8.24
+BuildRequires: smartmet-library-spine-devel >= 22.8.25
 Requires: %{smartmet_boost}-date-time
 Requires: %{smartmet_boost}-filesystem
 Requires: %{smartmet_boost}-iostreams
@@ -45,11 +45,11 @@ Requires: gdal34-libs
 Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 22.7.27
-Requires: smartmet-library-locus >= 22.6.16
-Requires: smartmet-library-macgyver >= 22.7.27
-Requires: smartmet-library-newbase >= 22.6.16
-Requires: smartmet-library-spine >= 22.7.27
-Requires: smartmet-server >= 22.7.20
+Requires: smartmet-library-locus >= 22.6.17
+Requires: smartmet-library-macgyver >= 22.8.23
+Requires: smartmet-library-newbase >= 22.8.24
+Requires: smartmet-library-spine >= 22.8.25
+Requires: smartmet-server >= 22.8.19
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -93,7 +93,7 @@ Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
-Requires: smartmet-library-locus-devel >= 22.6.16
+Requires: smartmet-library-locus-devel >= 22.6.17
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.
@@ -121,6 +121,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Thu Aug 25 2022 Mika Heiskanen <mika.heiskanen@fmi.fi> - 22.8.25-1.fmi
+- Use a generic exception handler for configuration file errors
+
 * Thu Aug  4 2022 Andris Pavēnis <andris.pavenis@fmi.fi> 22.8.4-1.fmi
 - Fix engine shutdown freeze in case of early init failure
 

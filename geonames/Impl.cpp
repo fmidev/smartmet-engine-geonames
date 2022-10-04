@@ -1187,7 +1187,7 @@ void Engine::Impl::read_alternate_countries(Fmi::Database::PostgreSQLConnection 
         "alt_gname,a.preferred,a.priority,length(a.name) "
         "as length FROM geonames g, alternate_geonames a WHERE "
         "g.features_code in "
-        "('PCLI','PCLF','PCLD') AND g.id=a.geonames_id ORDER BY "
+        "('PCLI','PCLF','PCLD','TERR') AND g.id=a.geonames_id ORDER BY "
         "geonames_id, a.priority ASC, "
         "a.preferred DESC, length ASC, alt_gname ASC");
 

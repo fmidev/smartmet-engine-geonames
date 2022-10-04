@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 22.8.25
+Version: 22.10.4
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -29,11 +29,11 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 22.7.27
+BuildRequires: smartmet-library-gis-devel >= 22.9.28
 BuildRequires: smartmet-library-locus-devel >= 22.6.17
 BuildRequires: smartmet-library-macgyver-devel >= 22.8.23
-BuildRequires: smartmet-library-newbase-devel >= 22.8.24
-BuildRequires: smartmet-library-spine-devel >= 22.8.25
+BuildRequires: smartmet-library-newbase-devel >= 22.8.29
+BuildRequires: smartmet-library-spine-devel >= 22.9.5
 Requires: %{smartmet_boost}-date-time
 Requires: %{smartmet_boost}-filesystem
 Requires: %{smartmet_boost}-iostreams
@@ -44,11 +44,11 @@ Requires: fmt >= %{smartmet_fmt_min}, fmt < %{smartmet_fmt_max}
 Requires: gdal34-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 22.7.27
+Requires: smartmet-library-gis >= 22.9.28
 Requires: smartmet-library-locus >= 22.6.17
 Requires: smartmet-library-macgyver >= 22.8.23
-Requires: smartmet-library-newbase >= 22.8.24
-Requires: smartmet-library-spine >= 22.8.25
+Requires: smartmet-library-newbase >= 22.8.29
+Requires: smartmet-library-spine >= 22.9.5
 Requires: smartmet-server >= 22.8.19
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
@@ -121,6 +121,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Tue Oct  4 2022 Mika Heiskanen <mika.heiskanen@fmi.fi> - 22.10.4-1.fmi
+- Read alternate country names for feature code TERR too
+
 * Thu Aug 25 2022 Mika Heiskanen <mika.heiskanen@fmi.fi> - 22.8.25-1.fmi
 - Use a generic exception handler for configuration file errors
 

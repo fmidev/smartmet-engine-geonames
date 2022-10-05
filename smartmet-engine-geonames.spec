@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 22.10.4
+Version: 22.10.5
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -49,7 +49,7 @@ Requires: smartmet-library-locus >= 22.6.17
 Requires: smartmet-library-macgyver >= 22.8.23
 Requires: smartmet-library-newbase >= 22.8.29
 Requires: smartmet-library-spine >= 22.9.5
-Requires: smartmet-server >= 22.8.19
+Requires: smartmet-server >= 22.10.5
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -121,6 +121,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Oct  5 2022 Mika Heiskanen <mika.heiskanen@fmi.fi> - 22.10.5-1.fmi
+- Do not use boost::noncopyable
+
 * Tue Oct  4 2022 Mika Heiskanen <mika.heiskanen@fmi.fi> - 22.10.4-1.fmi
 - Read alternate country names for feature code TERR too
 

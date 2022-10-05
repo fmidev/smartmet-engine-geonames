@@ -7,7 +7,6 @@
 #pragma once
 
 #include "Engine.h"
-
 #include <boost/atomic.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/locale.hpp>
@@ -24,7 +23,6 @@
 #include <macgyver/TernarySearchTree.h>
 #include <macgyver/TimedCache.h>
 #include <macgyver/WorkerPool.h>
-
 #include <cmath>
 #include <iconv.h>
 #include <libconfig.h++>
@@ -66,7 +64,7 @@ struct LocationPtrDistance
  */
 // ----------------------------------------------------------------------
 
-class Engine::Impl : private boost::noncopyable
+class Engine::Impl
 {
  public:
   using Municipalities = std::map<int, std::string>;
@@ -109,6 +107,9 @@ class Engine::Impl : private boost::noncopyable
       Fmi::TimedCache::Cache<std::size_t, std::vector<Spine::LocationList>>;
   boost::movelib::unique_ptr<LanguagesSuggestCache> itsLanguagesSuggestCache;
 
+  Impl() = delete;
+  Impl(const Impl& other) = delete;
+  Impl& operator=(const Impl& other) = delete;
   Impl(std::string configfile, bool reloading);
   ~Impl();
 
@@ -283,8 +284,6 @@ class Engine::Impl : private boost::noncopyable
   boost::shared_ptr<Fmi::AsyncTask> initSuggestTask;
 
   std::unique_ptr<Fmi::WorkerPool<Locus::Query>> query_worker_pool;
-
-  Impl();
 
   void read_config();
   void read_config_priorities();

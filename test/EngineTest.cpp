@@ -1,7 +1,6 @@
 #include "Engine.h"
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
 #include <locus/Query.h>
+#include <macgyver/StringConversion.h>
 #include <regression/tframe.h>
 #include <spine/Location.h>
 #include <spine/Options.h>
@@ -39,10 +38,10 @@ void print(const SmartMet::Spine::LocationPtr &ptr)
 
 void print(const SmartMet::Spine::LocationList &ptrs)
 {
-  BOOST_FOREACH (const SmartMet::Spine::LocationPtr &ptr, ptrs)
+  for (const SmartMet::Spine::LocationPtr &ptr : ptrs)
   {
     print(ptr);
-    cout << endl;
+    cout << '\n';
   }
 }
 
@@ -106,13 +105,13 @@ void nearestplaces()
 #if 0
 		// Kruununhaka, Katajanokka, Kluuvi, ...
 		int pos(0);
-		BOOST_FOREACH(SmartMet::Spine::LocationPtr & ptr, ptrs)
+		for(SmartMet::Spine::LocationPtr & ptr : ptrs)
 		  cout << ++pos << ": " << ptr->name << " -> " << ptr->longitude << ", " << ptr->latitude << ", " << ptr->feature << endl;
 #endif
 
   if (ptrs.size() < 91)
     TEST_FAILED("Should find at least 91 places (PPLX) within 50km of Helsinki, not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
 
   SmartMet::Spine::LocationList::iterator it = ptrs.begin();
 
@@ -166,8 +165,7 @@ void suggest()
   ptrs = names->suggest("he");
 
   if (ptrs.size() != 15)
-    TEST_FAILED("Should find 15 places starting with 'he', not " +
-                boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED("Should find 15 places starting with 'he', not " + Fmi::to_string(ptrs.size()));
 
   if (ptrs.front()->name != "Helsinki")
     TEST_FAILED("First match for 'he' should be Helsinki, not " + ptrs.front()->name);
@@ -184,8 +182,7 @@ void suggest()
 
   ptrs = names->suggest("hAm");
   if (ptrs.size() != 15)
-    TEST_FAILED("Should find 15 places starting with 'hAm', not " +
-                boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED("Should find 15 places starting with 'hAm', not " + Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Hamina")
     TEST_FAILED("First match for 'hAm' should be Hamina, not " + ptrs.front()->name);
 
@@ -194,14 +191,14 @@ void suggest()
   ptrs = names->suggest("Äänekoski");
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 places starting with 'Äänekoski', not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Äänekoski")
     TEST_FAILED("First match for 'Äänekoski' should be Äänekoski, not " + ptrs.front()->name);
 
   ptrs = names->suggest("Ääne");
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 places starting with 'Ääne', not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Äänekoski")
     TEST_FAILED("First match for 'Ääne' should be Äänekoski, not " + ptrs.front()->name);
 
@@ -211,7 +208,7 @@ void suggest()
 
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 places starting with 'helsinki', not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
 
   // Match Åbo in Swedish
 
@@ -219,7 +216,7 @@ void suggest()
 
   if (ptrs.size() < 7)
     TEST_FAILED("Should find at least 7 places starting with 'Åbo', not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
 
   if (ptrs.front()->name != "Åbo")
     TEST_FAILED("Should find Åbo with lang=sv for 'Åbo'");
@@ -230,7 +227,7 @@ void suggest()
 
   if (ptrs.size() != 15)
     TEST_FAILED("Should find 15 place starting with 'helsi' in lang=sv, not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
 
   if (ptrs.front()->name != "Helsingfors")
     TEST_FAILED("Should find Helsingfors with lang=sv for 'helsi");
@@ -240,21 +237,21 @@ void suggest()
   ptrs = names->suggest("h", "fi", "ajax_fi_all", 0, 5);
   if (ptrs.size() != 5)
     TEST_FAILED("Should find 5 places starting with 'h' in first page, not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Helsinki")
     TEST_FAILED("Should find Helsinki in page 1 at pos 1");
 
   ptrs = names->suggest("h", "fi", "ajax_fi_all", 1, 5);
   if (ptrs.size() != 5)
     TEST_FAILED("Should find 5 places starting with 'h' in 2nd page, not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name[0] != 'H')
     TEST_FAILED("Should find H... in page 2 at pos 1");
 
   ptrs = names->suggest("h", "fi", "ajax_fi_all", 2, 5);
   if (ptrs.size() != 5)
     TEST_FAILED("Should find 5 places starting with 'h' in 3rd page, not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name[0] != 'H')
     TEST_FAILED("Should find H... in page 3 at pos 1, not " + ptrs.front()->name);
 
@@ -435,8 +432,7 @@ void suggest_duplicates()
   ptrs = names->suggestDuplicates("he");
 
   if (ptrs.size() != 15)
-    TEST_FAILED("Should find 15 places starting with 'he', not " +
-                boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED("Should find 15 places starting with 'he', not " + Fmi::to_string(ptrs.size()));
 
   if (ptrs.front()->name != "Helsinki")
     TEST_FAILED("First match for 'he' should be Helsinki PPLC, not " + ptrs.front()->name);
@@ -453,8 +449,7 @@ void suggest_duplicates()
 
   ptrs = names->suggestDuplicates("hAm");
   if (ptrs.size() != 15)
-    TEST_FAILED("Should find 15 places starting with 'hAm', not " +
-                boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED("Should find 15 places starting with 'hAm', not " + Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Hamina")
     TEST_FAILED("First match for 'hAm' should be Hamina, not " + ptrs.front()->name);
 
@@ -463,14 +458,14 @@ void suggest_duplicates()
   ptrs = names->suggestDuplicates("Äänekoski");
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 places starting with 'Äänekoski', not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Äänekoski")
     TEST_FAILED("First match for 'Äänekoski' should be Äänekoski, not " + ptrs.front()->name);
 
   ptrs = names->suggestDuplicates("Ääne");
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 places starting with 'Ääne', not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Äänekoski")
     TEST_FAILED("First match for 'Ääne' should be Äänekoski, not " + ptrs.front()->name);
 
@@ -480,7 +475,7 @@ void suggest_duplicates()
 
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 places starting with 'helsinki', not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
 
   // Match Åbo in Swedish
 
@@ -488,7 +483,7 @@ void suggest_duplicates()
 
   if (ptrs.size() < 7)
     TEST_FAILED("Should find at least 7 places starting with 'Åbo', not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
 
   if (ptrs.front()->name != "Åbo")
     TEST_FAILED("Should find Åbo with lang=sv for 'Åbo'");
@@ -499,7 +494,7 @@ void suggest_duplicates()
 
   if (ptrs.size() != 15)
     TEST_FAILED("Should find 15 place starting with 'helsi' in lang=sv, not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
 
   if (ptrs.front()->name != "Helsingfors")
     TEST_FAILED("Should find Helsingfors with lang=sv for 'helsi");
@@ -561,8 +556,7 @@ void suggest_languages()
     TEST_FAILED("Should find 3 translation lists with 'he'");
 
   if (ptrs[0].size() != 15)
-    TEST_FAILED("Should find 15 places starting with 'he', not " +
-                boost::lexical_cast<string>(ptrs[0].size()));
+    TEST_FAILED("Should find 15 places starting with 'he', not " + Fmi::to_string(ptrs[0].size()));
 
   if (ptrs[0].front()->name != "Helsinki")
     TEST_FAILED("First match for 'he' should be Helsinki, not " + ptrs[0].front()->name);
@@ -594,7 +588,7 @@ void suggest_languages()
 
   if (ptrs[0].size() < 7)
     TEST_FAILED("Should find at least 7 places starting with 'Åbo', not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
 
   if (ptrs[0].front()->name != "Turku")
     TEST_FAILED("Should find Turku with lang=fi for 'Åbo'");
@@ -697,7 +691,7 @@ void nameSearch()
 
   if (ptrs.size() < 1)
     TEST_FAILED("Should find at least 1 place when searching for Helsinki, not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Helsinki")
     TEST_FAILED("Did not find Helsinki but " + ptrs.front()->name);
 
@@ -706,7 +700,7 @@ void nameSearch()
   ptrs = names->nameSearch(opts, "Rome");
 
   if (ptrs.size() != 1)
-    TEST_FAILED("Should find 1 Rome, found " + boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED("Should find 1 Rome, found " + Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Rooma")
     TEST_FAILED("First match for Rome should be Rooma, not " + ptrs.front()->name);
 
@@ -718,7 +712,7 @@ void nameSearch()
     TEST_FAILED(
         "Should find at least 8 places when searching for Kumpula, "
         "found only " +
-        boost::lexical_cast<string>(ptrs.size()));
+        Fmi::to_string(ptrs.size()));
   if (ptrs.front()->area != "Helsinki")
     TEST_FAILED("First match for Kumpula should be in Helsinki, not " + ptrs.front()->area);
 
@@ -740,7 +734,7 @@ void nameSearch()
     TEST_FAILED(
         "Should find at least 8 places when searching for Kumpula in "
         "English, found only " +
-        boost::lexical_cast<string>(ptrs.size()));
+        Fmi::to_string(ptrs.size()));
 
   ptrs = names->nameSearch(opts, "Kumpula,Helsinki");
 
@@ -748,7 +742,7 @@ void nameSearch()
     TEST_FAILED(
         "Should find 1 places when searching for Kumpula,Helsinki in "
         "English, found " +
-        boost::lexical_cast<string>(ptrs.size()));
+        Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Kumpula")
     TEST_FAILED(
         "First match for Kumpula,Helsinki in English should be in "
@@ -772,7 +766,7 @@ void nameSearch()
     TEST_FAILED(
         "Should find 1 places when searching for Sepänkylä,Espoo in "
         "English, found " +
-        boost::lexical_cast<string>(ptrs.size()));
+        Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Sepänkylä")
     TEST_FAILED("First match for Sepänkylä,Espoo in English should be in Espoo, not " +
                 ptrs.front()->area);
@@ -784,7 +778,7 @@ void nameSearch()
     TEST_FAILED(
         "Should find 1 places when searching for Sepänkylä,Espoo in "
         "English, found " +
-        boost::lexical_cast<string>(ptrs.size()));
+        Fmi::to_string(ptrs.size()));
   if (loc.get()->area != "Espoo")
     TEST_FAILED("First match for Sepänkylä,Espoo in English should be in Espoo, not " +
                 ptrs.front()->area);
@@ -858,7 +852,7 @@ void idSearch()
 
   if (ptrs.size() != 1)
     TEST_FAILED("Should find 1 place when searching for Helsinki, not " +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Helsinki")
     TEST_FAILED("Did not find Helsinki but " + ptrs.front()->name);
 
@@ -867,8 +861,7 @@ void idSearch()
   ptrs = names->idSearch(opts, 3169070);
 
   if (ptrs.size() != 1)
-    TEST_FAILED("Should find 1 place when searching for Rooma, not " +
-                boost::lexical_cast<string>(ptrs.size()));
+    TEST_FAILED("Should find 1 place when searching for Rooma, not " + Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Rooma")
     TEST_FAILED("Did not find Rooma but " + ptrs.front()->name);
 
@@ -946,7 +939,7 @@ void keywordSearch()
 
   if (ptrs.size() < 14)
     TEST_FAILED(string("mareografit keyword should have at least 14 locations: found ") +
-                boost::lexical_cast<string>(ptrs.size()));
+                Fmi::to_string(ptrs.size()));
 
   TEST_PASSED();
 }

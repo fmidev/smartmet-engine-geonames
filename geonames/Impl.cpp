@@ -667,7 +667,7 @@ void Engine::Impl::initSuggest(bool threaded)
       {
         Fmi::Database::PostgreSQLConnectionOptions opt;
         opt.host = itsHost;
-        opt.port = boost::lexical_cast<unsigned int>(itsPort);
+        opt.port = Fmi::stoul(itsPort);
         opt.database = itsDatabase;
         opt.username = itsUser;
         opt.password = itsPass;

@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 22.12.15
+Version: 22.12.16
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -30,8 +30,8 @@ BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-library-gis-devel >= 22.12.14
-BuildRequires: smartmet-library-locus-devel >= 22.6.17
-BuildRequires: smartmet-library-macgyver-devel >= 22.10.20
+BuildRequires: smartmet-library-locus-devel >= 22.12.16
+BuildRequires: smartmet-library-macgyver-devel >= 22.12.16
 BuildRequires: smartmet-library-newbase-devel >= 22.11.14
 BuildRequires: smartmet-library-spine-devel >= 22.12.2
 Requires: %{smartmet_boost}-date-time
@@ -45,8 +45,8 @@ Requires: gdal34-libs
 Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 22.12.14
-Requires: smartmet-library-locus >= 22.6.17
-Requires: smartmet-library-macgyver >= 22.10.20
+Requires: smartmet-library-locus >= 22.12.16
+Requires: smartmet-library-macgyver >= 22.12.16
 Requires: smartmet-library-newbase >= 22.11.14
 Requires: smartmet-library-spine >= 22.12.2
 Requires: smartmet-server >= 22.12.5
@@ -93,7 +93,7 @@ Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
-Requires: smartmet-library-locus-devel >= 22.6.17
+Requires: smartmet-library-locus-devel >= 22.12.16
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.
@@ -121,6 +121,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Fri Dec 16 2022 Mika Heiskanen <mika.heiskanen@fmi.fi> - 22.12.16-1.fmi
+- Repackaged since PostgreSQLConnection ABI changed
+
 * Thu Dec 15 2022 Mika Heiskanen <mika.heiskanen@fmi.fi> - 22.12.15-1.fmi
 - Fixed helgrind warnings
 

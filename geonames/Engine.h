@@ -68,8 +68,6 @@ using StatusReturnType = std::pair<boost::shared_ptr<Spine::Table>, Spine::Table
 class Engine : public Spine::SmartMetEngine
 {
  private:
-  Engine();  // must give config file
-
   class Impl;
   boost::atomic_shared_ptr<Impl> impl;
   boost::shared_ptr<Impl> tmpImpl;
@@ -87,8 +85,14 @@ class Engine : public Spine::SmartMetEngine
   std::atomic_bool initFailed;
 
  public:
-  Engine(const std::string& theConfigFile);
+  explicit Engine(std::string theConfigFile);
   ~Engine() override;
+
+  Engine() = delete;
+  Engine(const Engine& other) = delete;
+  Engine& operator=(const Engine& other) = delete;
+  Engine(Engine&& other) = delete;
+  Engine& operator=(Engine&& other) = delete;
 
   std::size_t hash_value() const;
 
@@ -208,14 +212,15 @@ class Engine : public Spine::SmartMetEngine
   bool isSuggestReady() const;
 
  protected:
-  virtual void init() override;
+  void init() override;
   void shutdown() override;
 
  private:
   unsigned int maxDemResolution() const;
   void cache_cleaner();
   Fmi::Cache::CacheStatistics getCacheStats() const override;
-  Spine::LocationPtr translateLocation(const Spine::Location& theLocation, const std::string& theLang) const;
+  Spine::LocationPtr translateLocation(const Spine::Location& theLocation,
+                                       const std::string& theLang) const;
 };  // class Geo
 
 }  // namespace Geonames

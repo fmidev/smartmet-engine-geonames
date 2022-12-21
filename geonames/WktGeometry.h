@@ -34,8 +34,14 @@ class Engine;
 class WktGeometry
 {
  public:
-  WktGeometry(const Spine::LocationPtr loc, const std::string& language, const Engine& geoengine);
   ~WktGeometry();
+  WktGeometry(const Spine::LocationPtr& loc, const std::string& language, const Engine& geoengine);
+
+  WktGeometry() = delete;
+  WktGeometry(const WktGeometry& other) = delete;
+  WktGeometry& operator=(const WktGeometry& other) = delete;
+  WktGeometry(WktGeometry&& other) = delete;
+  WktGeometry& operator=(WktGeometry&& other) = delete;
 
   const OGRGeometry* getGeometry() const;
   Spine::LocationPtr getLocation() const;
@@ -45,16 +51,16 @@ class WktGeometry
   const std::string& getName() const;
 
  private:
-  void init(const Spine::LocationPtr loc,
+  void init(const Spine::LocationPtr& loc,
             const std::string& language,
             const SmartMet::Engine::Geonames::Engine& geoengine);
   void geometryFromWkt(const std::string& wktString, double radius);
   void svgPathsFromGeometry();
-  void locationsFromGeometry(const Spine::LocationPtr loc,
+  void locationsFromGeometry(const Spine::LocationPtr& loc,
                              const std::string& language,
                              const SmartMet::Engine::Geonames::Engine& geoengine);
   Spine::LocationPtr locationFromGeometry(const OGRGeometry* geom,
-                                          const Spine::LocationPtr loc,
+                                          const Spine::LocationPtr& loc,
                                           const std::string& language,
                                           const SmartMet::Engine::Geonames::Engine& geoengine);
 
@@ -71,7 +77,7 @@ using WktGeometryPtr = std::shared_ptr<const WktGeometry>;
 class WktGeometries
 {
  public:
-  void addWktGeometry(const std::string& id, WktGeometryPtr wktGeometry);
+  void addWktGeometry(const std::string& id, const WktGeometryPtr& wktGeometry);
   Spine::LocationPtr getLocation(const std::string& id) const;
   Spine::LocationList getLocations(const std::string& id) const;
   NFmiSvgPath getSvgPath(const std::string& id) const;

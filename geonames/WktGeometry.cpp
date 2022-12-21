@@ -36,7 +36,7 @@ std::string get_name_base(const std::string& theName)
   }
 }
 
-std::unique_ptr<OGRGeometry> get_ogr_geometry(const std::string wktString, double radius /*= 0.0*/)
+std::unique_ptr<OGRGeometry> get_ogr_geometry(const std::string& wktString, double radius /*= 0.0*/)
 {
   std::unique_ptr<OGRGeometry> ret;
 
@@ -155,7 +155,7 @@ bool is_multi_geometry(const OGRGeometry& geom)
  */
 // ----------------------------------------------------------------------
 
-void WktGeometry::init(const Spine::LocationPtr loc,
+void WktGeometry::init(const Spine::LocationPtr& loc,
                        const std::string& language,
                        const SmartMet::Engine::Geonames::Engine& geoengine)
 {
@@ -223,7 +223,7 @@ void WktGeometry::svgPathsFromGeometry()
  */
 // ----------------------------------------------------------------------
 
-void WktGeometry::locationsFromGeometry(const Spine::LocationPtr loc,
+void WktGeometry::locationsFromGeometry(const Spine::LocationPtr& loc,
                                         const std::string& language,
                                         const SmartMet::Engine::Geonames::Engine& geoengine)
 {
@@ -245,7 +245,7 @@ void WktGeometry::locationsFromGeometry(const Spine::LocationPtr loc,
 
 Spine::LocationPtr WktGeometry::locationFromGeometry(
     const OGRGeometry* geom,
-    const Spine::LocationPtr loc,
+    const Spine::LocationPtr& loc,
     const std::string& language,
     const SmartMet::Engine::Geonames::Engine& geoengine)
 {
@@ -313,7 +313,7 @@ Spine::LocationPtr WktGeometry::locationFromGeometry(
  */
 // ----------------------------------------------------------------------
 
-WktGeometry::WktGeometry(const Spine::LocationPtr loc,
+WktGeometry::WktGeometry(const Spine::LocationPtr& loc,
                          const std::string& language,
                          const SmartMet::Engine::Geonames::Engine& geoengine)
 {
@@ -417,7 +417,7 @@ const std::string& WktGeometry::getName() const
  */
 // ----------------------------------------------------------------------
 
-void WktGeometries::addWktGeometry(const std::string& id, WktGeometryPtr wktGeometry)
+void WktGeometries::addWktGeometry(const std::string& id, const WktGeometryPtr& wktGeometry)
 {
   itsWktGeometries.insert(std::make_pair(id, wktGeometry));
 }
@@ -446,7 +446,7 @@ Spine::LocationList WktGeometries::getLocations(const std::string& id) const
   if (itsWktGeometries.find(id) != itsWktGeometries.end())
     return itsWktGeometries.at(id)->getLocations();
 
-  return Spine::LocationList();
+  return {};
 }
 
 // ----------------------------------------------------------------------
@@ -460,7 +460,7 @@ NFmiSvgPath WktGeometries::getSvgPath(const std::string& id) const
   if (itsWktGeometries.find(id) != itsWktGeometries.end())
     return itsWktGeometries.at(id)->getSvgPath();
 
-  return NFmiSvgPath();
+  return {};
 }
 
 // ----------------------------------------------------------------------
@@ -474,7 +474,7 @@ std::list<NFmiSvgPath> WktGeometries::getSvgPaths(const std::string& id) const
   if (itsWktGeometries.find(id) != itsWktGeometries.end())
     return itsWktGeometries.at(id)->getSvgPaths();
 
-  return std::list<NFmiSvgPath>();
+  return {};
 }
 
 // ----------------------------------------------------------------------
@@ -505,7 +505,7 @@ std::string WktGeometries::getName(const std::string& id) const
   if (itsWktGeometries.find(id) != itsWktGeometries.end())
     return itsWktGeometries.at(id)->getName();
 
-  return std::string();
+  return {};
 }
 
 }  // namespace Geonames

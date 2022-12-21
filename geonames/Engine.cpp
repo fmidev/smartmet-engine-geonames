@@ -99,7 +99,7 @@ Fmi::LandCover::Type covertype(const boost::shared_ptr<Fmi::LandCover>& theLandC
  */
 // ----------------------------------------------------------------------
 
-Engine::Engine(const std::string& theConfigFile)
+Engine::Engine(std::string theConfigFile)
     : itsStartTime(boost::posix_time::second_clock::local_time()),
       itsReloading(false),
       itsNameSearchCount(0),
@@ -107,7 +107,7 @@ Engine::Engine(const std::string& theConfigFile)
       itsIdSearchCount(0),
       itsKeywordSearchCount(0),
       itsSuggestCount(0),
-      itsConfigFile(theConfigFile),
+      itsConfigFile(std::move(theConfigFile)),
       initFailed(false)
 {
 }
@@ -168,14 +168,13 @@ void Engine::shutdown()
         return;
       }
 
-      if (initFailed) {
-          break;
-      } else {
-          // The is no Impl object available yet, so its initialization is probably still
-          // running. There should be a way to terminate this initialization, because
-          // now we have to wait its termination.
-          boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-      }
+      if (initFailed)
+        break;
+
+      // The is no Impl object available yet, so its initialization is probably still
+      // running. There should be a way to terminate this initialization, because
+      // now we have to wait its termination.
+      boost::this_thread::sleep(boost::posix_time::milliseconds(100));
     }
   }
   catch (...)
@@ -227,7 +226,7 @@ Spine::LocationPtr Engine::nameSearch(const std::string& theName, const std::str
     if (result.empty())
       throw Fmi::Exception(BCP, "Unknown location: " + theName);
 
-	return translateLocation(*result.front(), theLang);
+    return translateLocation(*result.front(), theLang);
   }
   catch (...)
   {
@@ -246,7 +245,7 @@ Spine::LocationPtr Engine::lonlatSearch(double theLongitude,
                                         const std::string& theLang,
                                         double theMaxDistance) const
 {
-  std::string features = "";  // use defaults
+  std::string features;  // use defaults
   return featureSearch(theLongitude, theLatitude, theLang, features, theMaxDistance);
 }
 
@@ -264,7 +263,6 @@ Spine::LocationPtr Engine::featureSearch(double theLongitude,
 {
   try
   {
-
     // Search the location only if there is a search distance
     if (theMaxDistance > 0)
     {
@@ -280,7 +278,7 @@ Spine::LocationPtr Engine::featureSearch(double theLongitude,
                                                 boost::numeric_cast<float>(theLongitude),
                                                 boost::numeric_cast<float>(theLatitude),
                                                 boost::numeric_cast<float>(theMaxDistance));
-      
+
       if (!result.empty())
       {
         // Keep original coordinates, dem and landcover for the named location we found
@@ -290,7 +288,7 @@ Spine::LocationPtr Engine::featureSearch(double theLongitude,
         newloc.dem = demheight(dem(), theLongitude, theLatitude, maxDemResolution());
         newloc.covertype = covertype(landCover(), theLongitude, theLatitude);
 
-		return translateLocation(newloc, theLang);
+        return translateLocation(newloc, theLang);
       }
     }
 
@@ -345,8 +343,7 @@ Spine::LocationPtr Engine::idSearch(long theGeoID, const std::string& theLang) c
     if (result.empty())
       throw Fmi::Exception(BCP, "Unknown location ID: " + Fmi::to_string(theGeoID));
 
-	return translateLocation(*result.front(), theLang);
-
+    return translateLocation(*result.front(), theLang);
   }
   catch (...)
   {
@@ -634,7 +631,7 @@ Spine::LocationPtr Engine::keywordSearch(double theLongitude,
 
     const auto it = mycopy->itsGeoTrees.find(theKeyword);
     if (it == mycopy->itsGeoTrees.end())
-      return Spine::LocationPtr();
+      return {};
 
     // this is unfortunate - we must allocate new Location just to
     // get NearTree comparisons working
@@ -645,7 +642,7 @@ Spine::LocationPtr Engine::keywordSearch(double theLongitude,
 
     boost::optional<Spine::LocationPtr> ptr = it->second->nearest(dummy, theRadius);
     if (!ptr)
-      return Spine::LocationPtr();
+      return {};
 
     Spine::LocationPtr newptr(new Spine::Location(**ptr));
     mycopy->translate(newptr, theLang);
@@ -678,21 +675,21 @@ LocationOptions Engine::parseLocations(const std::vector<int>& fmisids,
     for (const auto& id : fmisids)
     {
       Spine::LocationList ll = nameSearch(opts, Fmi::to_string(id));
-      if (ll.size() > 0)
+      if (!ll.empty())
         options.add(Fmi::to_string(id), ll.front());
     }
     opts.SetNameType("lpnn");
     for (const auto& id : lpnns)
     {
       Spine::LocationList ll = nameSearch(opts, Fmi::to_string(id));
-      if (ll.size() > 0)
+      if (!ll.empty())
         options.add(Fmi::to_string(id), ll.front());
     }
     opts.SetNameType("wmo");
     for (const auto& id : wmos)
     {
       Spine::LocationList ll = nameSearch(opts, Fmi::to_string(id));
-      if (ll.size() > 0)
+      if (!ll.empty())
         options.add(Fmi::to_string(id), ll.front());
     }
 
@@ -724,8 +721,9 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
 
     // Maximum distance for latlon searches
 
-	std::string maxdistance_str = Spine::optional_string(theReq.getParameter("maxdistance"), default_maxdistance);
-    double maxdistance = Fmi::DistanceParser::parse_kilometer(maxdistance_str);	
+    std::string maxdistance_str =
+        Spine::optional_string(theReq.getParameter("maxdistance"), default_maxdistance);
+    double maxdistance = Fmi::DistanceParser::parse_kilometer(maxdistance_str);
 
     // Scan all options for location references
 
@@ -806,9 +804,9 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     }
 
     searchName = theReq.getParameterList("path");
-    unsigned int path_counter(1);  // numer is added to the end of pathname
     if (!searchName.empty())
     {
+      unsigned int path_counter = 1;  // number is added to the end of pathname
       for (const std::string& path : searchName)
       {
         if (path.find(' ') != std::string::npos)
@@ -827,9 +825,9 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     }
 
     searchName = theReq.getParameterList("paths");
-    unsigned int paths_counter(1);  // numer is added to the end of pathname
     if (!searchName.empty())
     {
+      unsigned int paths_counter = 1;  // number is added to the end of pathname
       for (const std::string& paths : searchName)
       {
         std::list<std::string> path_list;
@@ -1444,7 +1442,8 @@ Fmi::Cache::CacheStatistics Engine::getCacheStats() const
   return mycopy->getCacheStats();
 }
 
-Spine::LocationPtr Engine::translateLocation(const Spine::Location& theLocation, const std::string& theLang) const
+Spine::LocationPtr Engine::translateLocation(const Spine::Location& theLocation,
+                                             const std::string& theLang) const
 {
   Spine::LocationPtr newptr(new Spine::Location(theLocation));
   auto mycopy = impl.load();

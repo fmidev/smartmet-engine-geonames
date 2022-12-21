@@ -130,6 +130,17 @@ std::size_t cache_key(const std::string &pattern,
   return hash;
 }
 
+// ----------------------------------------------------------------------
+/*!
+ * \brief Transform language id to normal form
+ */
+// ----------------------------------------------------------------------
+
+std::string to_language(const std::string &lang)
+{
+  return Fmi::ascii_tolower_copy(lang);
+}
+
 }  // namespace
 
 namespace SmartMet
@@ -158,7 +169,7 @@ std::string Engine::Impl::iconvName(const std::string &name) const
  */
 // ----------------------------------------------------------------------
 
-Engine::Impl::~Impl() {}
+Engine::Impl::~Impl() = default;
 
 // ----------------------------------------------------------------------
 /*!
@@ -483,8 +494,8 @@ std::string Engine::Impl::to_treeword(const std::string &name) const
     std::string tmp;
     std::remove_copy_if(
         name.begin(), name.end(), std::back_inserter(tmp), [](char c) { return std::isspace(c); });
-    if (tmp == "")
-      return "";
+    if (tmp.empty())
+      return {};
     tmp = itsCollator->transform(boost::locale::collator_base::primary, tmp);
 
     // The standard library std::string provided in RHEL6 cannot handle
@@ -521,17 +532,6 @@ std::string Engine::Impl::to_treeword(const std::string &name, const std::string
   {
     throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
-}
-
-// ----------------------------------------------------------------------
-/*!
- * \brief Transform language id to normal form
- */
-// ----------------------------------------------------------------------
-
-std::string Engine::Impl::to_language(const std::string &lang) const
-{
-  return Fmi::ascii_tolower_copy(lang);
 }
 
 // ----------------------------------------------------------------------
@@ -595,34 +595,23 @@ void Engine::Impl::setup_fallback_encodings()
       const libconfig::Setting &s_enc = itsConfig.lookup(s_name);
       if (s_enc.isArray())
       {
-        for (auto it = s_enc.begin(); it != s_enc.end(); ++it)
+        for (const auto &enc : s_enc)
         {
-          if (it->getType() == libconfig::Setting::TypeString)
-          {
-            encodings.push_back(it->c_str());
-          }
+          if (enc.getType() == libconfig::Setting::TypeString)
+            encodings.emplace_back(enc.c_str());
           else
-          {
-            std::ostringstream tmp;
-            tmp << "Invalid value in fallback encoding array (string expected)";
-            throw Fmi::Exception(BCP, tmp.str());
-          }
+            throw Fmi::Exception(BCP, "Invalid value in fallback encoding array (string expected)");
         }
       }
       else if (s_enc.getType() == libconfig::Setting::TypeString)
-      {
-        encodings.push_back(s_enc.c_str());
-      }
+        encodings.emplace_back(s_enc.c_str());
       else
-      {
-        std::ostringstream tmp;
-        tmp << "Invalid config setting fallback_encoding (string or string array expected)";
-        throw Fmi::Exception(BCP, tmp.str());
-      }
+        throw Fmi::Exception(
+            BCP, "Invalid config setting fallback_encoding (string or string array expected)");
     }
     else
     {
-      encodings.push_back("latin1");
+      encodings.emplace_back("latin1");
     }
   }
   catch (const libconfig::ConfigException &ex)
@@ -1445,13 +1434,13 @@ void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &
 
     // We assume sort order is geoid,language for the ifs to work
     Spine::GeoId last_handled_geoid = 0;
-    std::string last_lang = "";
+    std::string last_lang;
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
       Spine::GeoId geoid = Fmi::stoi(row["geonames_id"].as<std::string>());
-      std::string name = row["name"].as<std::string>();
-      std::string lang = row["language"].as<std::string>();
+      auto name = row["name"].as<std::string>();
+      auto lang = row["language"].as<std::string>();
 
       Fmi::ascii_tolower(lang);
 
@@ -1522,8 +1511,8 @@ void Engine::Impl::read_alternate_municipalities(Fmi::Database::PostgreSQLConnec
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
       int munip = row["id"].as<int>();
-      std::string name = row["name"].as<std::string>();
-      std::string lang = row["language"].as<std::string>();
+      auto name = row["name"].as<std::string>();
+      auto lang = row["language"].as<std::string>();
 
       auto it = itsAlternateMunicipalities.find(munip);
       if (it == itsAlternateMunicipalities.end())
@@ -1719,7 +1708,7 @@ void Engine::Impl::read_keywords(Fmi::Database::PostgreSQLConnection &conn)
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      std::string key = row["keyword"].as<std::string>();
+      auto key = row["keyword"].as<std::string>();
       Spine::GeoId geoid = Fmi::stoi(row["id"].as<std::string>());
 
       auto it = itsGeoIdMap.find(geoid);
@@ -2417,10 +2406,7 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
           if (tit != lt->second->end())
           {
             std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
-            for (const Spine::LocationPtr &ptr : tmpx)
-            {
-              result.push_back(ptr);
-            }
+            std::copy(tmpx.begin(), tmpx.end(), std::back_inserter(result));
           }
         }
       };
@@ -2575,8 +2561,7 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(const std::string &patter
         if (tit != lt->second->end())
         {
           std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
-          for (const Spine::LocationPtr &ptr : tmpx)
-            candidates.push_back(ptr);
+          std::copy(tmpx.begin(), tmpx.end(), std::back_inserter(candidates));
         }
       }
     }
@@ -2640,7 +2625,7 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(const std::string &patter
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_type &theList)
+Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_type &theList) const
 {
   try
   {
@@ -2871,16 +2856,14 @@ Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theO
 // ----------------------------------------------------------------------
 
 void Engine::Impl::name_cache_status(const boost::shared_ptr<Spine::Table> &tablePtr,
-                                     Spine::TableFormatter::Names &theNames)
+                                     Spine::TableFormatter::Names &theNames) const
 {
   try
   {
     auto contentList = itsNameSearchCache.getContent();
 
     if (contentList.empty())
-    {
       return;
-    }
 
     theNames.push_back("Position");
     theNames.push_back("Hits");

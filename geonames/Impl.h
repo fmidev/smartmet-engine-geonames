@@ -50,7 +50,7 @@ namespace Geonames
 
 struct LocationPtrDistance
 {
-  double operator()(Spine::LocationPtr loc1, Spine::LocationPtr loc2) const
+  double operator()(const Spine::LocationPtr& loc1, const Spine::LocationPtr& loc2) const
   {
     return Fmi::Geometry::GeoDistance(
                loc1->longitude, loc1->latitude, loc2->longitude, loc2->latitude) /
@@ -107,11 +107,14 @@ class Engine::Impl
       Fmi::TimedCache::Cache<std::size_t, std::vector<Spine::LocationList>>;
   boost::movelib::unique_ptr<LanguagesSuggestCache> itsLanguagesSuggestCache;
 
+  ~Impl();
+  Impl(std::string configfile, bool reloading);
+
   Impl() = delete;
   Impl(const Impl& other) = delete;
   Impl& operator=(const Impl& other) = delete;
-  Impl(std::string configfile, bool reloading);
-  ~Impl();
+  Impl(Impl&& other) = delete;
+  Impl& operator=(Impl&& other) = delete;
 
   void init(bool first_construction);
 
@@ -165,10 +168,10 @@ class Engine::Impl
   bool prioritySortPtr(Spine::LocationPtr* a, Spine::LocationPtr* b) const;
   bool prioritySort(const Spine::LocationPtr& a, const Spine::LocationPtr& b) const;
 
-  Spine::LocationList to_locationlist(const Locus::Query::return_type& theList);
+  Spine::LocationList to_locationlist(const Locus::Query::return_type& theList) const;
 
   void name_cache_status(const boost::shared_ptr<Spine::Table>& tablePtr,
-                         Spine::TableFormatter::Names& theNames);
+                         Spine::TableFormatter::Names& theNames) const;
 
   void shutdown();
 
@@ -196,7 +199,6 @@ class Engine::Impl
   // Convert an autocomplete name to all possible unaccented matches
   std::string to_treeword(const std::string& name) const;
   std::string to_treeword(const std::string& name, const std::string& area) const;
-  std::string to_language(const std::string& lang) const;
 
   void translate_name(Spine::Location& loc, const std::string& lang) const;
   void translate_area(Spine::Location& loc, const std::string& lang) const;

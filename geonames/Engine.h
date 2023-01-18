@@ -221,6 +221,54 @@ class Engine : public Spine::SmartMetEngine
   Fmi::Cache::CacheStatistics getCacheStats() const override;
   Spine::LocationPtr translateLocation(const Spine::Location& theLocation,
                                        const std::string& theLang) const;
+
+  void parse_area(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const;
+  void parse_areas(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const;
+  void parse_path(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const;
+  void parse_paths(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const;
+  void parse_bbox(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const;
+  void parse_bboxes(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const;
+  void parse_place(LocationOptions& theOptions,
+                   const Spine::HTTP::Request& theRequest,
+                   const std::string& theLanguage) const;
+  void parse_places(LocationOptions& theOptions,
+                    const Spine::HTTP::Request& theRequest,
+                    const std::string& theLanguage) const;
+  void parse_lonlat(LocationOptions& theOptions,
+                    const Spine::HTTP::Request& theRequest,
+                    const std::string& theLanguage,
+                    const std::string& theFeatures,
+                    double theMaxDistance) const;
+  void parse_lonlats(LocationOptions& theOptions,
+                     const Spine::HTTP::Request& theRequest,
+                     const std::string& theLanguage,
+                     const std::string& theFeatures,
+                     double theMaxDistance) const;
+  void parse_latlon(LocationOptions& theOptions,
+                    const Spine::HTTP::Request& theRequest,
+                    const std::string& theLanguage,
+                    const std::string& theFeatures,
+                    double theMaxDistance) const;
+  void parse_latlons(LocationOptions& theOptions,
+                     const Spine::HTTP::Request& theRequest,
+                     const std::string& theLanguage,
+                     const std::string& theFeatures,
+                     double theMaxDistance) const;
+  void parse_geoid(LocationOptions& theOptions,
+                   const Spine::HTTP::Request& theRequest,
+                   const std::string& theLanguage) const;
+  void parse_geoids(LocationOptions& theOptions,
+                    const Spine::HTTP::Request& theRequest,
+                    const std::string& theLanguage) const;
+  void parse_keyword(LocationOptions& theOptions,
+                     const Spine::HTTP::Request& theRequest,
+                     const std::string& theLanguage) const;
+  void parse_wkt(LocationOptions& theOptions,
+                 const Spine::HTTP::Request& theRequest,
+                 const std::string& theLanguage,
+                 const std::string& theFeatures,
+                 double theMaxDistance) const;
+
 };  // class Geo
 
 }  // namespace Geonames

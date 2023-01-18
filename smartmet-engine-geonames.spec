@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 22.12.21
+Version: 23.1.18
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -29,11 +29,11 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 22.12.14
+BuildRequires: smartmet-library-gis-devel >= 23.1.5
 BuildRequires: smartmet-library-locus-devel >= 22.12.16
 BuildRequires: smartmet-library-macgyver-devel >= 22.12.16
 BuildRequires: smartmet-library-newbase-devel >= 22.11.14
-BuildRequires: smartmet-library-spine-devel >= 22.12.2
+BuildRequires: smartmet-library-spine-devel >= 23.1.16
 Requires: %{smartmet_boost}-date-time
 Requires: %{smartmet_boost}-filesystem
 Requires: %{smartmet_boost}-iostreams
@@ -44,12 +44,12 @@ Requires: fmt >= %{smartmet_fmt_min}, fmt < %{smartmet_fmt_max}
 Requires: gdal34-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 22.12.14
+Requires: smartmet-library-gis >= 23.1.5
 Requires: smartmet-library-locus >= 22.12.16
 Requires: smartmet-library-macgyver >= 22.12.16
 Requires: smartmet-library-newbase >= 22.11.14
-Requires: smartmet-library-spine >= 22.12.2
-Requires: smartmet-server >= 22.12.5
+Requires: smartmet-library-spine >= 23.1.16
+Requires: smartmet-server >= 23.1.10
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -121,6 +121,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Jan 18 2023 Mika Heiskanen <mika.heiskanen@fmi.fi> - 23.1.18-1.fmi
+- Refactored code for readability
+- Prefer lambdas over bind
+
 * Wed Dec 21 2022 Mika Heiskanen <mika.heiskanen@fmi.fi> - 22.12.21-1.fmi
 - Fixed several CodeChecker warnings
 

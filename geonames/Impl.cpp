@@ -141,6 +141,33 @@ std::string to_language(const std::string &lang)
   return Fmi::ascii_tolower_copy(lang);
 }
 
+// ----------------------------------------------------------------------
+/*!
+ * \brief Keep only the desired page of suggest results
+ */
+// ----------------------------------------------------------------------
+
+void keep_wanted_page(SmartMet::Spine::LocationList &locs,
+                      unsigned int maxresults,
+                      unsigned int page)
+{
+  if (maxresults == 0)
+    return;
+
+  // Erase the pages before the desired one
+  unsigned int first = page * maxresults;
+  auto pos1 = locs.begin();
+  auto pos2 = pos1;
+  std::advance(pos2, first);
+  locs.erase(pos1, pos2);
+
+  // Erase the remaining elements after the size of 'maxelements'.
+  pos1 = locs.begin();
+  auto npos2 = std::min(locs.size(), static_cast<std::size_t>(maxresults));
+  std::advance(pos1, npos2);
+  locs.erase(pos1, locs.end());
+}
+
 }  // namespace
 
 namespace SmartMet
@@ -1267,6 +1294,66 @@ void Engine::Impl::read_municipalities(Fmi::Database::PostgreSQLConnection &conn
  */
 // ----------------------------------------------------------------------
 
+Spine::LocationPtr Engine::Impl::extract_geoname(pqxx::result::const_iterator row) const
+{
+  Spine::GeoId geoid = Fmi::stoi(row["id"].as<std::string>());
+  auto name = row["name"].as<std::string>();
+
+  auto iso2 = (row["iso2"].is_null() ? "" : row["iso2"].as<std::string>());
+  auto feature = (row["feature"].is_null() ? "" : row["feature"].as<std::string>());
+  auto munip = row["munip"].as<int>();
+  auto lon = row["lon"].as<double>();
+  auto lat = row["lat"].as<double>();
+  auto tz = row["timezone"].as<std::string>();
+  auto pop = (!row["population"].is_null() ? row["population"].as<int>() : 0);
+  auto ele = (!row["elevation"].is_null() ? row["elevation"].as<double>()
+                                          : std::numeric_limits<float>::quiet_NaN());
+  double dem = (!row["dem"].is_null() ? row["dem"].as<int>() : elevation(lon, lat));
+  auto admin = (!row["admin1"].is_null() ? row["admin1"].as<std::string>() : "");
+  auto covertype = Fmi::LandCover::Type(
+      (!row["landcover"].is_null() ? row["landcover"].as<int>() : coverType(lon, lat)));
+
+  std::string area;
+  if (munip != 0)
+  {
+    auto it = itsMunicipalities.find(munip);
+    if (it != itsMunicipalities.end())
+      area = it->second;
+  }
+
+  if (area.empty())
+  {
+    auto it = itsCountries.find(iso2);
+    auto us = itsCountries.find("US");
+    if (it != itsCountries.end())
+      area = it->second;
+    if (it == us)
+      area = admin.append(", ").append(area);
+#if 0
+          else
+            std::cerr << "Failed to find country " << key << " for geoid " << geoid << std::endl;
+#endif
+  }
+
+  std::string country;  // country will be filled in upon request
+  Spine::LocationPtr loc = boost::make_shared<Spine::Location>(geoid,
+                                                               name,
+                                                               iso2,
+                                                               munip,
+                                                               area,
+                                                               feature,
+                                                               country,
+                                                               lon,
+                                                               lat,
+                                                               tz,
+                                                               pop,
+                                                               boost::numeric_cast<float>(ele),
+                                                               boost::numeric_cast<float>(dem),
+                                                               covertype);
+
+  return loc;
+}
+
 void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
@@ -1301,68 +1388,15 @@ void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      Spine::GeoId geoid = Fmi::stoi(row["id"].as<std::string>());
-      auto name = row["name"].as<std::string>();
-
       if (row["timezone"].is_null())
       {
-        std::cerr << "Warning: " << geoid << " '" << name
-                  << "' timezone is null, discarding the location" << std::endl;
+        std::cerr << "Warning: " << Fmi::stoi(row["id"].as<std::string>()) << " '"
+                  << row["name"].as<std::string>() << "' timezone is null, discarding the location"
+                  << std::endl;
       }
       else
       {
-        auto iso2 = (row["iso2"].is_null() ? "" : row["iso2"].as<std::string>());
-        auto feature = (row["feature"].is_null() ? "" : row["feature"].as<std::string>());
-        auto munip = row["munip"].as<int>();
-        auto lon = row["lon"].as<double>();
-        auto lat = row["lat"].as<double>();
-        auto tz = row["timezone"].as<std::string>();
-        auto pop = (!row["population"].is_null() ? row["population"].as<int>() : 0);
-        auto ele = (!row["elevation"].is_null() ? row["elevation"].as<double>()
-                                                : std::numeric_limits<float>::quiet_NaN());
-        double dem = (!row["dem"].is_null() ? row["dem"].as<int>() : elevation(lon, lat));
-        auto admin = (!row["admin1"].is_null() ? row["admin1"].as<std::string>() : "");
-        auto covertype = Fmi::LandCover::Type(
-            (!row["landcover"].is_null() ? row["landcover"].as<int>() : coverType(lon, lat)));
-
-        std::string area;
-        if (munip != 0)
-        {
-          auto it = itsMunicipalities.find(munip);
-          if (it != itsMunicipalities.end())
-            area = it->second;
-        }
-
-        if (area.empty())
-        {
-          auto it = itsCountries.find(iso2);
-          auto us = itsCountries.find("US");
-          if (it != itsCountries.end())
-            area = it->second;
-          if (it == us)
-            area = admin.append(", ").append(area);
-#if 0
-          else
-            std::cerr << "Failed to find country " << key << " for geoid " << geoid << std::endl;
-#endif
-        }
-
-        std::string country;  // country will be filled in upon request
-        Spine::LocationPtr loc =
-            boost::make_shared<Spine::Location>(geoid,
-                                                name,
-                                                iso2,
-                                                munip,
-                                                area,
-                                                feature,
-                                                country,
-                                                lon,
-                                                lat,
-                                                tz,
-                                                pop,
-                                                boost::numeric_cast<float>(ele),
-                                                boost::numeric_cast<float>(dem),
-                                                covertype);
+        auto loc = extract_geoname(row);
         itsLocations.push_back(loc);
       }
     }
@@ -1985,13 +2019,11 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
       {
         int geoid = loc->geoid;
 
-        // safety check against missing geoid
         auto git = itsGeoIdMap.find(geoid);
-        if (git == itsGeoIdMap.end())
-          continue;
-
         auto ait = itsAlternateNames.find(geoid);
-        if (ait == itsAlternateNames.end())
+
+        // safety check against missing settings
+        if (git == itsGeoIdMap.end() || ait == itsAlternateNames.end())
           continue;
 
         // Process all the different language translations
@@ -2329,11 +2361,11 @@ void Engine::Impl::sort(Spine::LocationList &theLocations) const
   {
     assign_priorities(theLocations);
     theLocations.sort(basicSort);
-    theLocations.unique(closeEnough);  // needed because language specific trees
-                                       // create duplicates
+    theLocations.unique(closeEnough);  // needed because language specific trees create duplicates
+
     // Sort based on priorities
-    theLocations.sort(
-        std::bind(&Impl::prioritySort, this, std::placeholders::_1, std::placeholders::_2));
+    theLocations.sort([this](const Spine::LocationPtr &a, const Spine::LocationPtr &b)
+                      { return prioritySort(a, b); });
   }
   catch (...)
   {
@@ -2384,6 +2416,8 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
     for (const auto &key : keywords)
     {
       auto it = itsTernaryTrees.find(key);
+      if (it == itsTernaryTrees.end())
+        continue;
 
       Spine::LocationList result;
 
@@ -2438,6 +2472,9 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
         }
       }
 
+      // Give an extra bonus for exact matches
+      add_exact_match_bonus(result, name, itsNameMatchPriority * priority_scale);
+
       // Append to result for all keywords (speed optimized for first keyword)
       if (ret.empty())
         std::swap(ret, result);
@@ -2449,19 +2486,6 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
 
     translate(ret, lang);
 
-    // Give an extra bonus for exact matches
-
-    for (auto &loc : ret)
-    {
-      std::string tmpname = to_treeword(loc->name);
-      if (tmpname == name)
-      {
-        std::unique_ptr<Spine::Location> newloc(new Spine::Location(*loc));
-        newloc->priority += itsNameMatchPriority * priority_scale;
-        loc.reset(newloc.release());
-      }
-    }
-
     // Remove duplicates
 
     ret.sort(basicSort);
@@ -2472,28 +2496,15 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
 
     // Sort based on priorities
 
-    ret.sort(std::bind(&Impl::prioritySort, this, std::placeholders::_1, std::placeholders::_2));
+    ret.sort([this](const Spine::LocationPtr &a, const Spine::LocationPtr &b)
+             { return prioritySort(a, b); });
 
     // Keep the desired part. We do this after moving exact matches to the front,
     // otherwise for example "Spa, Belgium" is not very high on the list of
     // matches for "Spa". Translating everything first is expensive, but the
     // results are cached.
 
-    if (maxresults > 0)
-    {
-      // Erase the pages before the desired one
-      unsigned int first = page * maxresults;
-      auto pos1 = ret.begin();
-      auto pos2 = pos1;
-      std::advance(pos2, first);
-      ret.erase(pos1, pos2);
-
-      // Erase the remaining elements after the size of 'maxelements'.
-      pos1 = ret.begin();
-      auto npos2 = std::min(ret.size(), static_cast<std::size_t>(maxresults));
-      std::advance(pos1, npos2);
-      ret.erase(pos1, ret.end());
-    }
+    keep_wanted_page(ret, maxresults, page);
 
     itsSuggestCache->insert(cachekey, ret);
 
@@ -2502,6 +2513,28 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
   catch (...)
   {
     throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Add bonus points for exact suggest matches
+ */
+// ----------------------------------------------------------------------
+
+void Engine::Impl::add_exact_match_bonus(Spine::LocationList &locs,
+                                         const std::string &name,
+                                         int bonus) const
+{
+  for (auto &loc : locs)
+  {
+    std::string tmpname = to_treeword(loc->name);
+    if (tmpname == name)
+    {
+      std::unique_ptr<Spine::Location> newloc(new Spine::Location(*loc));
+      newloc->priority += bonus;
+      loc.reset(newloc.release());
+    }
   }
 }
 
@@ -2579,8 +2612,8 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(const std::string &patter
     // translating the candidates. This is something that perhaps should be
     // improved later on.
 
-    candidates.sort(
-        std::bind(&Impl::prioritySort, this, std::placeholders::_1, std::placeholders::_2));
+    candidates.sort([this](const Spine::LocationPtr &a, const Spine::LocationPtr &b)
+                    { return prioritySort(a, b); });
 
     // Keep the desired part.
 
@@ -2699,7 +2732,8 @@ Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOpti
     Spine::LocationList ptrs = to_locationlist(lq->FetchByName(options, theName));
 
     assign_priorities(ptrs);
-    ptrs.sort(std::bind(&Impl::prioritySort, this, std::placeholders::_1, std::placeholders::_2));
+    ptrs.sort([this](const Spine::LocationPtr &a, const Spine::LocationPtr &b)
+              { return prioritySort(a, b); });
 
     // And finally keep only the desired number of matches
     if (theOptions.GetResultLimit() > 0 && ptrs.size() > theOptions.GetResultLimit())

@@ -315,6 +315,11 @@ class Engine::Impl
   void build_lang_ternarytrees_all();
   void build_lang_ternarytrees_keywords();
 
+  Spine::LocationPtr extract_geoname(pqxx::result::const_iterator row) const;
+  void add_exact_match_bonus(SmartMet::Spine::LocationList& locs,
+                             const std::string& name,
+                             int bonus) const;
+
 };  // Impl
 
 }  // namespace Geonames

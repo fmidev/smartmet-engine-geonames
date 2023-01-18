@@ -47,10 +47,6 @@ class LocationOptions
   Spine::TaggedLocationList::size_type size() const { return itsLocations.size(); }
   void setLocations(const Spine::TaggedLocationList& locations) { itsLocations = locations; }
 
- private:
-  friend class Engine;
-  Spine::TaggedLocationList itsLocations;
-
   void add(const std::string& theTag, Spine::LocationPtr theLoc)
   {
     itsLocations.push_back(Spine::TaggedLocation(theTag, theLoc));
@@ -60,6 +56,9 @@ class LocationOptions
   {
     add(theTag, Spine::LocationPtr(theLoc.release()));
   }
+
+ private:
+  Spine::TaggedLocationList itsLocations;
 
 };  // class LocationOptions
 
@@ -222,12 +221,6 @@ class Engine : public Spine::SmartMetEngine
   Spine::LocationPtr translateLocation(const Spine::Location& theLocation,
                                        const std::string& theLang) const;
 
-  void parse_area(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const;
-  void parse_areas(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const;
-  void parse_path(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const;
-  void parse_paths(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const;
-  void parse_bbox(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const;
-  void parse_bboxes(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const;
   void parse_place(LocationOptions& theOptions,
                    const Spine::HTTP::Request& theRequest,
                    const std::string& theLanguage) const;

@@ -314,8 +314,16 @@ class Engine::Impl
   void build_lang_ternarytrees();
   void build_lang_ternarytrees_all();
   void build_lang_ternarytrees_keywords();
+  void build_lang_ternarytrees_one_keyword(const std::string& keyword,
+                                           const Spine::LocationList& locs);
 
-  Spine::LocationPtr extract_geoname(pqxx::result::const_iterator row) const;
+  Spine::LocationPtr extract_geoname(const pqxx::result::const_iterator& row) const;
+
+  Spine::LocationList suggest_one_keyword(const std::string& pattern,
+                                          const std::string& lang,
+                                          const std::string& keyword,
+                                          const TernaryTreePtr& tree) const;
+
   void add_exact_match_bonus(SmartMet::Spine::LocationList& locs,
                              const std::string& name,
                              int bonus) const;

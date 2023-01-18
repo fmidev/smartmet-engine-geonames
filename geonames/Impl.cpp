@@ -1294,7 +1294,7 @@ void Engine::Impl::read_municipalities(Fmi::Database::PostgreSQLConnection &conn
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationPtr Engine::Impl::extract_geoname(pqxx::result::const_iterator row) const
+Spine::LocationPtr Engine::Impl::extract_geoname(const pqxx::result::const_iterator &row) const
 {
   Spine::GeoId geoid = Fmi::stoi(row["id"].as<std::string>());
   auto name = row["name"].as<std::string>();
@@ -2011,77 +2011,83 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
 
     for (auto &kloc : itsKeywords)
     {
-      const std::string &keyword = kloc.first;
+      const auto &keyword = kloc.first;
+      const auto &locs = kloc.second;
 
-      int ntranslations = 0;
-
-      for (Spine::LocationPtr &loc : kloc.second)
-      {
-        int geoid = loc->geoid;
-
-        auto git = itsGeoIdMap.find(geoid);
-        auto ait = itsAlternateNames.find(geoid);
-
-        // safety check against missing settings
-        if (git == itsGeoIdMap.end() || ait == itsAlternateNames.end())
-          continue;
-
-        // Process all the different language translations
-
-        Spine::LocationPtr &ptr = *git->second;
-
-        for (const auto &tt : ait->second)
-        {
-          const std::string &lang = tt.first;
-          const std::string &translation = tt.second;
-
-          // Find the language specific tree
-
-          auto it = itsLangTernaryTreeMap.find(lang);
-
-          // If there isn't one, create it now
-
-          if (it == itsLangTernaryTreeMap.end())
-            it = itsLangTernaryTreeMap
-                     .insert(std::make_pair(lang, boost::make_shared<TernaryTreeMap>()))
-                     .first;
-
-          // Then find keyword specific map
-
-          auto &tmap = *it->second;
-          auto tit = tmap.find(keyword);
-
-          if (tit == tmap.end())
-            tit =
-                tmap.insert(TernaryTreeMap::value_type(keyword, boost::make_shared<TernaryTree>()))
-                    .first;
-
-          // Insert the word "name, area" to the tree
-
-          ++ntranslations;
-
-          TernaryTree &tree = *tit->second;
-
-          // TODO(mheiskan): translate area
-
-          std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
-          auto simple_name = preprocess_name(translation);
-
-          auto names = to_treewords(simple_name, specifier);
-          for (const auto &name : names)
-            tree.insert(name, loc);
-        }
-      }
-
-      if (itsVerbose)
-        std::cout << "build_lang_ternarytrees_keywords: " << keyword << " with " << ntranslations
-                  << " translations" << std::endl;
+      build_lang_ternarytrees_one_keyword(keyword, locs);
     }
   }
   catch (...)
   {
     throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
+}
+
+void Engine::Impl::build_lang_ternarytrees_one_keyword(const std::string &keyword,
+                                                       const Spine::LocationList &locs)
+{
+  int ntranslations = 0;
+
+  for (const Spine::LocationPtr &loc : locs)
+  {
+    int geoid = loc->geoid;
+
+    auto git = itsGeoIdMap.find(geoid);
+    auto ait = itsAlternateNames.find(geoid);
+
+    // safety check against missing settings
+    if (git == itsGeoIdMap.end() || ait == itsAlternateNames.end())
+      continue;
+
+    // Process all the different language translations
+
+    Spine::LocationPtr &ptr = *git->second;
+
+    for (const auto &tt : ait->second)
+    {
+      const std::string &lang = tt.first;
+      const std::string &translation = tt.second;
+
+      // Find the language specific tree
+
+      auto it = itsLangTernaryTreeMap.find(lang);
+
+      // If there isn't one, create it now
+
+      if (it == itsLangTernaryTreeMap.end())
+        it =
+            itsLangTernaryTreeMap.insert(std::make_pair(lang, boost::make_shared<TernaryTreeMap>()))
+                .first;
+
+      // Then find keyword specific map
+
+      auto &tmap = *it->second;
+      auto tit = tmap.find(keyword);
+
+      if (tit == tmap.end())
+        tit = tmap.insert(TernaryTreeMap::value_type(keyword, boost::make_shared<TernaryTree>()))
+                  .first;
+
+      // Insert the word "name, area" to the tree
+
+      ++ntranslations;
+
+      TernaryTree &tree = *tit->second;
+
+      // TODO(mheiskan): translate area
+
+      std::string specifier = ptr->area + "," + Fmi::to_string(ptr->geoid);
+      auto simple_name = preprocess_name(translation);
+
+      auto names = to_treewords(simple_name, specifier);
+      for (const auto &name : names)
+        tree.insert(name, loc);
+    }
+  }
+
+  if (itsVerbose)
+    std::cout << "build_lang_ternarytrees_keywords: " << keyword << " with " << ntranslations
+              << " translations" << std::endl;
 }
 
 // ----------------------------------------------------------------------
@@ -2379,6 +2385,72 @@ void Engine::Impl::sort(Spine::LocationList &theLocations) const
  */
 // ----------------------------------------------------------------------
 
+Spine::LocationList Engine::Impl::suggest_one_keyword(const std::string &pattern,
+                                                      const std::string &lang,
+                                                      const std::string &keyword,
+                                                      const TernaryTreePtr &tree) const
+{
+  Spine::LocationList result;
+
+  std::string name;
+
+  const auto try_pattern =
+      [this, &result, &name, &lang, &keyword, tree](const std::string &pattern) -> void
+  {
+    // find it
+    name = to_treeword(pattern);
+
+    result = tree->findprefix(name);
+
+    // check if there are language specific translations
+
+    std::string lg = to_language(lang);
+
+    auto lt = itsLangTernaryTreeMap.find(lg);
+    if (lt != itsLangTernaryTreeMap.end())
+    {
+      auto tit = lt->second->find(keyword);
+      if (tit != lt->second->end())
+      {
+        std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
+        std::copy(tmpx.begin(), tmpx.end(), std::back_inserter(result));
+      }
+    }
+  };
+
+  if (Fmi::is_utf8(pattern))
+  {
+    try_pattern(pattern);
+  }
+  else
+  {
+    for (const auto &converter : fallback_converters)
+    {
+      std::string tmp;
+
+      try
+      {
+        tmp = converter->convert(pattern);
+      }
+      catch (const Fmi::Exception &e)
+      {
+        // Not interested in errors, just try the next converter.
+        continue;
+      }
+
+      try_pattern(tmp);
+
+      if (!result.empty())
+        break;  // done if the encoding produced matches
+    }
+  }
+
+  // Give an extra bonus for exact matches
+  add_exact_match_bonus(result, name, itsNameMatchPriority * priority_scale);
+
+  return result;
+}
+
 Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
                                           const std::string &lang,
                                           const std::string &keyword,
@@ -2408,9 +2480,6 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
       if (itsTernaryTrees.find(key) == itsTernaryTrees.end())
         return ret;
 
-    // collated form of the search key
-    std::string name;
-
     // Process all keywords
 
     for (const auto &key : keywords)
@@ -2419,61 +2488,7 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
       if (it == itsTernaryTrees.end())
         continue;
 
-      Spine::LocationList result;
-
-      const auto try_pattern =
-          [this, &result, &name, &lang, &key, it](const std::string &pattern) -> void
-      {
-        // find it
-        name = to_treeword(pattern);
-
-        result = it->second->findprefix(name);
-
-        // check if there are language specific translations
-
-        std::string lg = to_language(lang);
-
-        auto lt = itsLangTernaryTreeMap.find(lg);
-        if (lt != itsLangTernaryTreeMap.end())
-        {
-          auto tit = lt->second->find(key);
-          if (tit != lt->second->end())
-          {
-            std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
-            std::copy(tmpx.begin(), tmpx.end(), std::back_inserter(result));
-          }
-        }
-      };
-
-      if (Fmi::is_utf8(pattern))
-      {
-        try_pattern(pattern);
-      }
-      else
-      {
-        for (const auto &converter : fallback_converters)
-        {
-          std::string tmp;
-
-          try
-          {
-            tmp = converter->convert(pattern);
-          }
-          catch (const Fmi::Exception &e)
-          {
-            // Not interested in errors, just try the next converter.
-            continue;
-          }
-
-          try_pattern(tmp);
-
-          if (!result.empty())
-            break;  // done if the encoding produced matches
-        }
-      }
-
-      // Give an extra bonus for exact matches
-      add_exact_match_bonus(result, name, itsNameMatchPriority * priority_scale);
+      auto result = suggest_one_keyword(pattern, lang, key, it->second);
 
       // Append to result for all keywords (speed optimized for first keyword)
       if (ret.empty())

@@ -94,6 +94,154 @@ Fmi::LandCover::Type covertype(const boost::shared_ptr<Fmi::LandCover>& theLandC
   return theLandCover->coverType(theLongitude, theLatitude);
 }
 
+void parse_area(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest)
+{
+  auto searchName = theRequest.getParameterList("area");
+  if (searchName.empty())
+    return;
+
+  for (const std::string& area : searchName)
+  {
+    double radius = 0.0;
+    std::string area_string = parse_radius(area, radius);
+    std::unique_ptr<Spine::Location> loc(new Spine::Location(area_string, radius));
+    loc->radius = radius;
+    loc->type = Spine::Location::Area;
+    theOptions.add(area, loc);
+  }
+}
+
+void parse_areas(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest)
+{
+  auto searchName = theRequest.getParameterList("areas");
+  if (searchName.empty())
+    return;
+
+  for (const std::string& areas : searchName)
+  {
+    std::list<std::string> area_list;
+    boost::algorithm::split(area_list, areas, boost::algorithm::is_any_of(","));
+
+    for (const std::string& area : area_list)
+    {
+      double radius = 0.0;
+      std::string area_string = parse_radius(area, radius);
+      std::unique_ptr<Spine::Location> loc(new Spine::Location(area_string, radius));
+      loc->radius = radius;
+      loc->type = Spine::Location::Area;
+      theOptions.add(area, loc);
+    }
+  }
+}
+
+void parse_path(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest)
+{
+  auto searchName = theRequest.getParameterList("path");
+  if (searchName.empty())
+    return;
+
+  unsigned int path_counter = 1;  // number is added to the end of pathname
+  for (const std::string& path : searchName)
+  {
+    if (path.find(' ') != std::string::npos)
+      throw Fmi::Exception(BCP, "Invalid path parameter " + path + ", no spaces allowed!");
+
+    std::string tag = "path" + Fmi::to_string(path_counter++);
+
+    // radius handling added if we want to extend path to area
+    double radius = 0.0;
+    std::string path_name = parse_radius(path, radius);
+
+    std::unique_ptr<Spine::Location> loc(new Spine::Location(path_name, radius));
+    loc->type = Spine::Location::Path;
+    theOptions.add(tag, loc);
+  }
+}
+
+void parse_paths(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest)
+{
+  auto searchName = theRequest.getParameterList("paths");
+  if (searchName.empty())
+    return;
+
+  unsigned int paths_counter = 1;  // number is added to the end of pathname
+  for (const std::string& paths : searchName)
+  {
+    std::list<std::string> path_list;
+    boost::algorithm::split(path_list, paths, boost::algorithm::is_any_of(" "));
+
+    for (const std::string& path : path_list)
+    {
+      if (path.find(':') != std::string::npos)
+        throw Fmi::Exception(BCP, "Invalid path parameter " + path + ", no radius allowed!");
+
+      std::string tag = "paths" + Fmi::to_string(paths_counter++);
+      std::unique_ptr<Spine::Location> loc(new Spine::Location(path, 0.0));
+      loc->type = Spine::Location::Path;
+      theOptions.add(tag, loc);
+    }
+  }
+}
+
+void parse_bbox(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest)
+{
+  // format bbox=lon,lat,lon,lat[:radius]
+  auto searchName = theRequest.getParameterList("bbox");
+  if (searchName.empty())
+    return;
+
+  for (const std::string& bbox : searchName)
+  {
+    std::list<std::string> parts;
+    boost::algorithm::split(parts, bbox, boost::algorithm::is_any_of(","));
+    if (parts.size() != 4)
+      throw Fmi::Exception(
+          BCP,
+          "Invalid bbox parameter " + bbox + ", should be in format 'lon,lat,lon,lat[:radius]'!");
+
+    double radius = 0.0;
+    std::string bbox_string = parse_radius(bbox, radius);
+
+    std::unique_ptr<Spine::Location> loc(new Spine::Location(bbox_string, radius));
+    loc->type = Spine::Location::BoundingBox;
+    theOptions.add(bbox, loc);
+  }
+}
+
+void parse_bboxes(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest)
+{
+  // format bboxes=lon,lat,lon,lat[:radius],lon,lat,lon,lat[:radius],...
+  auto searchName = theRequest.getParameterList("bboxes");
+  if (searchName.empty())
+    return;
+
+  for (const std::string& bboxes : searchName)
+  {
+    std::vector<std::string> coordinates;
+    boost::algorithm::split(coordinates, bboxes, boost::algorithm::is_any_of(","));
+    if (coordinates.size() % 4 != 0)
+      throw Fmi::Exception(BCP,
+                           "Invalid bboxes parameter " + bboxes +
+                               ", should be in format "
+                               "'lon,lat,lon,lat[:radius],lon,lat,lon,lat[:radius],...'!");
+
+    for (unsigned int i = 0; i < coordinates.size(); i += 4)
+    {
+      std::string bbox_name = fmt::sprintf("{},{},{},{}",
+                                           coordinates[i],
+                                           coordinates[i + 1],
+                                           coordinates[i + 2],
+                                           coordinates[i + 3]);
+      double radius = 0.0;
+      parse_radius(coordinates[i + 3], radius);
+      std::unique_ptr<Spine::Location> loc(new Spine::Location(bbox_name, radius));
+      loc->type = Spine::Location::BoundingBox;
+      theOptions.add(bbox_name, loc);
+    }
+  }
+}
+
+// ----------------------------------------------------------------------
 /*!
  * \brief Constructor
  */
@@ -464,7 +612,7 @@ Spine::LocationList Engine::keywordSearch(const Locus::QueryOptions& theOptions,
 // ----------------------------------------------------------------------
 
 Spine::LocationPtr Engine::wktSearch(const std::string& theWktString,
-                                     const std::string& theLangauge,
+                                     const std::string& theLanguage,
                                      double theRadius /* = 0.0*/) const
 {
   std::unique_ptr<OGRGeometry> geom;
@@ -489,7 +637,7 @@ Spine::LocationPtr Engine::wktSearch(const std::string& theWktString,
   double lon = (right + left) / 2.0;
   double lat = (top + bottom) / 2.0;
 
-  return lonlatSearch(lon, lat, theLangauge);
+  return lonlatSearch(lon, lat, theLanguage);
 }
 
 // ----------------------------------------------------------------------
@@ -752,153 +900,6 @@ void Engine::parse_places(LocationOptions& theOptions,
       loc2->radius = radius;
       loc2->type = Spine::Location::Place;
       theOptions.add(city_string, loc2);
-    }
-  }
-}
-
-void Engine::parse_area(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const
-{
-  auto searchName = theRequest.getParameterList("area");
-  if (searchName.empty())
-    return;
-
-  for (const std::string& area : searchName)
-  {
-    double radius = 0.0;
-    std::string area_string = parse_radius(area, radius);
-    std::unique_ptr<Spine::Location> loc(new Spine::Location(area_string, radius));
-    loc->radius = radius;
-    loc->type = Spine::Location::Area;
-    theOptions.add(area, loc);
-  }
-}
-
-void Engine::parse_areas(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const
-{
-  auto searchName = theRequest.getParameterList("areas");
-  if (searchName.empty())
-    return;
-
-  for (const std::string& areas : searchName)
-  {
-    std::list<std::string> area_list;
-    boost::algorithm::split(area_list, areas, boost::algorithm::is_any_of(","));
-
-    for (const std::string& area : area_list)
-    {
-      double radius = 0.0;
-      std::string area_string = parse_radius(area, radius);
-      std::unique_ptr<Spine::Location> loc(new Spine::Location(area_string, radius));
-      loc->radius = radius;
-      loc->type = Spine::Location::Area;
-      theOptions.add(area, loc);
-    }
-  }
-}
-
-void Engine::parse_path(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const
-{
-  auto searchName = theRequest.getParameterList("path");
-  if (searchName.empty())
-    return;
-
-  unsigned int path_counter = 1;  // number is added to the end of pathname
-  for (const std::string& path : searchName)
-  {
-    if (path.find(' ') != std::string::npos)
-      throw Fmi::Exception(BCP, "Invalid path parameter " + path + ", no spaces allowed!");
-
-    std::string tag = "path" + Fmi::to_string(path_counter++);
-
-    // radius handling added if we want to extend path to area
-    double radius = 0.0;
-    std::string path_name = parse_radius(path, radius);
-
-    std::unique_ptr<Spine::Location> loc(new Spine::Location(path_name, radius));
-    loc->type = Spine::Location::Path;
-    theOptions.add(tag, loc);
-  }
-}
-
-void Engine::parse_paths(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const
-{
-  auto searchName = theRequest.getParameterList("paths");
-  if (searchName.empty())
-    return;
-
-  unsigned int paths_counter = 1;  // number is added to the end of pathname
-  for (const std::string& paths : searchName)
-  {
-    std::list<std::string> path_list;
-    boost::algorithm::split(path_list, paths, boost::algorithm::is_any_of(" "));
-
-    for (const std::string& path : path_list)
-    {
-      if (path.find(':') != std::string::npos)
-        throw Fmi::Exception(BCP, "Invalid path parameter " + path + ", no radius allowed!");
-
-      std::string tag = "paths" + Fmi::to_string(paths_counter++);
-      std::unique_ptr<Spine::Location> loc(new Spine::Location(path, 0.0));
-      loc->type = Spine::Location::Path;
-      theOptions.add(tag, loc);
-    }
-  }
-}
-
-void Engine::parse_bbox(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const
-{
-  // format bbox=lon,lat,lon,lat[:radius]
-  auto searchName = theRequest.getParameterList("bbox");
-  if (searchName.empty())
-    return;
-
-  for (const std::string& bbox : searchName)
-  {
-    std::list<std::string> parts;
-    boost::algorithm::split(parts, bbox, boost::algorithm::is_any_of(","));
-    if (parts.size() != 4)
-      throw Fmi::Exception(
-          BCP,
-          "Invalid bbox parameter " + bbox + ", should be in format 'lon,lat,lon,lat[:radius]'!");
-
-    double radius = 0.0;
-    std::string bbox_string = parse_radius(bbox, radius);
-
-    std::unique_ptr<Spine::Location> loc(new Spine::Location(bbox_string, radius));
-    loc->type = Spine::Location::BoundingBox;
-    theOptions.add(bbox, loc);
-  }
-}
-
-void Engine::parse_bboxes(LocationOptions& theOptions, const Spine::HTTP::Request& theRequest) const
-{
-  // format bboxes=lon,lat,lon,lat[:radius],lon,lat,lon,lat[:radius],...
-  auto searchName = theRequest.getParameterList("bboxes");
-  if (searchName.empty())
-    return;
-
-  for (const std::string& bboxes : searchName)
-  {
-    std::vector<std::string> coordinates;
-    boost::algorithm::split(coordinates, bboxes, boost::algorithm::is_any_of(","));
-    if (coordinates.size() % 4 != 0)
-      throw Fmi::Exception(BCP,
-                           "Invalid bboxes parameter " + bboxes +
-                               ", should be in format "
-                               "'lon,lat,lon,lat[:radius],lon,lat,lon,lat[:radius],...'!");
-
-    for (unsigned int i = 0; i < coordinates.size(); i += 4)
-    {
-      std::string bbox_name = fmt::sprintf("{},{},{},{}",
-                                           coordinates[i],
-                                           coordinates[i + 1],
-                                           coordinates[i + 2],
-                                           coordinates[i + 3]);
-      double radius = 0.0;
-      parse_radius(coordinates[i + 3], radius);
-      std::unique_ptr<Spine::Location> loc(new Spine::Location(bbox_name, radius));
-      loc->type = Spine::Location::BoundingBox;
-      theOptions.add(bbox_name, loc);
     }
   }
 }

@@ -4,7 +4,7 @@
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
 Version: 23.1.18
-Release: 1%{?dist}.fmi
+Release: 2%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -121,6 +121,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Jan 18 2023 Mika Heiskanen <mika.heiskanen@fmi.fi> - 23.1.18-2.fmi
+- Silenced warnings
+- More refactored code
+
 * Wed Jan 18 2023 Mika Heiskanen <mika.heiskanen@fmi.fi> - 23.1.18-1.fmi
 - Refactored code for readability
 - Prefer lambdas over bind

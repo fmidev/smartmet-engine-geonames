@@ -3,8 +3,8 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 23.1.18
-Release: 2%{?dist}.fmi
+Version: 23.2.27
+Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -121,6 +121,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Feb 27 2023 Andris Pavēnis <andris.pavenis@fmi.fi> 23.2.27-1.fmi
+- Cancel all database operations and reconnection attempts to the database when shutting down engine
+
 * Wed Jan 18 2023 Mika Heiskanen <mika.heiskanen@fmi.fi> - 23.1.18-2.fmi
 - Silenced warnings
 - More refactored code

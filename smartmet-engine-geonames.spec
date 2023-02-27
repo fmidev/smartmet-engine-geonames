@@ -30,8 +30,8 @@ BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-library-gis-devel >= 23.1.5
-BuildRequires: smartmet-library-locus-devel >= 22.12.16
-BuildRequires: smartmet-library-macgyver-devel >= 22.12.16
+BuildRequires: smartmet-library-locus-devel >= 23.2.27
+BuildRequires: smartmet-library-macgyver-devel >= 23.2.27
 BuildRequires: smartmet-library-newbase-devel >= 22.11.14
 BuildRequires: smartmet-library-spine-devel >= 23.1.16
 Requires: %{smartmet_boost}-date-time
@@ -45,8 +45,8 @@ Requires: gdal34-libs
 Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 23.1.5
-Requires: smartmet-library-locus >= 22.12.16
-Requires: smartmet-library-macgyver >= 22.12.16
+Requires: smartmet-library-locus >= 23.2.27
+Requires: smartmet-library-macgyver >= 23.2.27
 Requires: smartmet-library-newbase >= 22.11.14
 Requires: smartmet-library-spine >= 23.1.16
 Requires: smartmet-server >= 23.1.10
@@ -93,7 +93,7 @@ Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
-Requires: smartmet-library-locus-devel >= 22.12.16
+Requires: smartmet-library-locus-devel >= 23.2.27
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.

@@ -863,6 +863,9 @@ void Engine::Impl::shutdown()
   try
   {
     std::cout << "  -- Shutdown requested (Impl)\n";
+    if (query_worker_pool) {
+        query_worker_pool->cancel();
+    }
     tg1.stop();
     tg1.wait();
   }

@@ -863,8 +863,9 @@ void Engine::Impl::shutdown()
   try
   {
     std::cout << "  -- Shutdown requested (Impl)\n";
-    if (query_worker_pool) {
-        query_worker_pool->cancel();
+    if (query_worker_pool)
+    {
+      query_worker_pool->cancel();
     }
     tg1.stop();
     tg1.wait();
@@ -2757,11 +2758,7 @@ Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOpti
     if (theOptions.GetResultLimit() > 0 && ptrs.size() > theOptions.GetResultLimit())
       ptrs.resize(theOptions.GetResultLimit());
 
-    // Do not cache empty results
-    if (ptrs.empty())
-      return ptrs;
-
-    // Update the cache
+    // Update the cache, even with empty results since searching is slow
 
     itsNameSearchCache.insert(key, ptrs);
 

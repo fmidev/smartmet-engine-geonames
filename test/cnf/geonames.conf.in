@@ -78,6 +78,21 @@ cache:
 	suggest_max_size = 10000;
 };
 
+security:
+{
+	disable = false;
+
+	names:
+	{
+		# Unconditional denial
+		deny:
+		[
+			"^.*\.(gif|png|webp|svg|ico|css|js|php)$",
+			"^.*\.woff$"
+		]
+	}
+}
+
 
 # Priorities
 

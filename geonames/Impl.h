@@ -12,6 +12,7 @@
 #include <boost/locale.hpp>
 #include <boost/locale/collator.hpp>
 #include <boost/move/unique_ptr.hpp>
+#include <boost/regex.hpp>
 #include <boost/thread.hpp>
 #include <gis/LandCover.h>
 #include <macgyver/AsyncTaskGroup.h>
@@ -242,6 +243,9 @@ class Engine::Impl
 
   boost::atomic<bool> itsSuggestReadyFlag{false};
 
+  // security
+  std::vector<boost::regex> itsForbiddenNamePatterns;
+
   // caches
 
  public:
@@ -291,6 +295,8 @@ class Engine::Impl
   void read_config_priorities();
   void read_config_prioritymap(const std::string& partname, Priorities& priomap);
   void setup_fallback_encodings();
+
+  void read_config_security();
 
   void read_database_hash_value(Fmi::Database::PostgreSQLConnection& conn);
 

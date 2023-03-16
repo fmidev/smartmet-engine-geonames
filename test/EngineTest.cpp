@@ -991,6 +991,37 @@ void featureSearch()
 
 // ----------------------------------------------------------------------
 
+void security()
+{
+  Locus::QueryOptions opts;
+  opts.SetCountries("all");
+  opts.SetSearchVariants(true);
+  opts.SetLanguage("fi");
+
+  // Helsinki
+
+  std::vector<std::string> tests{
+      "Helsinki.png", "style.css", "Persepolis.png", "admin.js", "Helsinki"};
+
+  for (const auto &name : tests)
+  {
+    try
+    {
+      auto ptrs = names->nameSearch(opts, name);
+      if (name != "Helsinki")
+        TEST_FAILED("Search should throw for " + name);
+    }
+    catch (Fmi::Exception &e)
+    {
+      // std::cerr << "\t" << name << " " << e.what() << std::endl;
+    }
+  }
+
+  TEST_PASSED();
+}
+
+// ----------------------------------------------------------------------
+
 // The actual test driver
 class tests : public tframe::tests
 {
@@ -1013,6 +1044,9 @@ class tests : public tframe::tests
     TEST(suggest);
     TEST(suggest_duplicates);
     TEST(suggest_languages);
+
+    TEST(security);
+
     // TEST(reload);
   }
 

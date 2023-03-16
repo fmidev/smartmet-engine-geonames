@@ -168,6 +168,24 @@ void keep_wanted_page(SmartMet::Spine::LocationList &locs,
   locs.erase(pos1, locs.end());
 }
 
+// ----------------------------------------------------------------------
+/*!
+ * \brief Throw for disallowed name searches
+ */
+// ----------------------------------------------------------------------
+
+void check_forbidden_name_search(const std::string &name,
+                                 const std::vector<boost::regex> forbidden_rules)
+{
+  for (const auto &rule : forbidden_rules)
+  {
+    if (boost::regex_match(name, rule))
+      throw Fmi::Exception(BCP, "Forbidden name search")
+          .addParameter("Name", name)
+          .disableStackTrace();
+  }
+}
+
 }  // namespace
 
 namespace SmartMet
@@ -938,6 +956,8 @@ void Engine::Impl::read_config()
       itsConfig.lookupValue("remove_underscores", itsRemoveUnderscores);
 
       read_config_priorities();
+
+      read_config_security();
 
       const std::string &name = boost::asio::ip::host_name();
       itsUser = lookup_database("user", name).c_str();
@@ -2741,6 +2761,8 @@ Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOpti
     if (pos)
       return *pos;
 
+    check_forbidden_name_search(theName, itsForbiddenNamePatterns);
+
     // Locus priority sort messes up GeoEngine priority sort, so we temporarily
     // increase the limit to at least 100 names.
     auto options = theOptions;
@@ -2984,6 +3006,60 @@ Fmi::Cache::CacheStatistics Engine::Impl::getCacheStats() const
   ret["Geonames::language_suggest_cache"] = convert_stats(*itsLanguagesSuggestCache);
 
   return ret;
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Read security settings
+ */
+// ----------------------------------------------------------------------
+
+void Engine::Impl::read_config_security()
+{
+  try
+  {
+    if (!itsConfig.exists("security"))
+      return;
+
+    bool disabled = true;
+    itsConfig.lookupValue("security.disable", disabled);
+    if (disabled)
+    {
+      if (itsVerbose)
+        std::cout << "Geonames security settings disabled" << std::endl;
+      return;
+    }
+
+    if (itsConfig.exists("security.names.deny"))
+    {
+      const std::string name = "security.names.deny";
+      const auto &deny = itsConfig.lookup(name);
+      if (!deny.isArray())
+        throw Fmi::Exception(BCP, "Configured value of '" + name + "' must be an array");
+      for (int i = 0; i < deny.getLength(); ++i)
+      {
+        for (const auto &rule : deny)
+        {
+          if (rule.getType() != libconfig::Setting::TypeString)
+            throw Fmi::Exception(
+                BCP, "Configured value of '" + name + "' must be an array of pattern strings");
+          itsForbiddenNamePatterns.emplace_back(boost::regex(rule.c_str()));
+        }
+      }
+    }
+  }
+  catch (const libconfig::SettingException &e)
+  {
+    Fmi::Exception exception(BCP, "Configuration file security setting error!");
+    exception.addParameter("Path", e.getPath());
+    exception.addParameter("Configuration file", itsConfigFile);
+    exception.addParameter("Error description", e.what());
+    throw exception;
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Reading config security settings failed!");
+  }
 }
 
 }  // namespace Geonames

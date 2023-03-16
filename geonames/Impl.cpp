@@ -182,7 +182,7 @@ void check_forbidden_name_search(const std::string &name,
     if (boost::regex_match(name, rule))
       throw Fmi::Exception(BCP, "Forbidden name search")
           .addParameter("Name", name)
-          .disableStackTrace();
+          .disableLogging();
   }
 }
 

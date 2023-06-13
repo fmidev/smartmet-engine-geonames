@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 23.4.27
+Version: 23.6.13
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -29,11 +29,11 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 23.1.5
-BuildRequires: smartmet-library-locus-devel >= 23.2.27
-BuildRequires: smartmet-library-macgyver-devel >= 23.2.27
-BuildRequires: smartmet-library-newbase-devel >= 22.11.14
-BuildRequires: smartmet-library-spine-devel >= 23.1.16
+BuildRequires: smartmet-library-gis-devel >= 23.6.7
+BuildRequires: smartmet-library-locus-devel >= 23.3.7
+BuildRequires: smartmet-library-macgyver-devel >= 23.6.6
+BuildRequires: smartmet-library-newbase-devel >= 23.2.9
+BuildRequires: smartmet-library-spine-devel >= 23.6.13
 Requires: %{smartmet_boost}-date-time
 Requires: %{smartmet_boost}-filesystem
 Requires: %{smartmet_boost}-iostreams
@@ -44,12 +44,12 @@ Requires: fmt >= %{smartmet_fmt_min}, fmt < %{smartmet_fmt_max}
 Requires: gdal34-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 23.1.5
-Requires: smartmet-library-locus >= 23.2.27
-Requires: smartmet-library-macgyver >= 23.2.27
-Requires: smartmet-library-newbase >= 22.11.14
-Requires: smartmet-library-spine >= 23.1.16
-Requires: smartmet-server >= 23.1.10
+Requires: smartmet-library-gis >= 23.6.7
+Requires: smartmet-library-locus >= 23.3.7
+Requires: smartmet-library-macgyver >= 23.6.6
+Requires: smartmet-library-newbase >= 23.2.9
+Requires: smartmet-library-spine >= 23.6.13
+Requires: smartmet-server >= 23.5.19
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -93,7 +93,7 @@ Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
-Requires: smartmet-library-locus-devel >= 23.2.27
+Requires: smartmet-library-locus-devel >= 23.3.7
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.
@@ -121,6 +121,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Tue Jun 13 2023 Mika Heiskanen <mika.heiskanen@fmi.fi> - 23.6.13-1.fmi
+- Support internal and environment variables in configuration files
+
 * Thu Apr 27 2023 Andris Pavēnis <andris.pavenis@fmi.fi> 23.4.27-1.fmi
 - Repackage due to macgyver ABI changes (AsyncTask, AsyncTaskGroup)
 

@@ -17,6 +17,7 @@
 #include <macgyver/Exception.h>
 #include <macgyver/Hash.h>
 #include <macgyver/StringConversion.h>
+#include <spine/ConfigTools.h>
 #include <spine/Exceptions.h>
 #include <spine/Location.h>
 #include <sys/types.h>
@@ -929,6 +930,7 @@ void Engine::Impl::read_config()
       itsConfig.setIncludeDir(p.c_str());
 
       itsConfig.readFile(itsConfigFile.c_str());
+      Spine::expandVariables(itsConfig);
 
       if (!itsConfig.exists("database"))
       {

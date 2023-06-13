@@ -825,6 +825,11 @@ void nameSearch()
   if (ptrs.front()->area != "Helsinki")
     TEST_FAILED("First match for Kallio should be in Helsinki, not in " + ptrs.front()->area);
 
+  opts.SetLanguage("sv");
+  ptrs = names->nameSearch(opts, "Åbo,Åbo");
+  if (ptrs.empty())
+    TEST_FAILED("Failed to find Åbo,Åbo");
+
   TEST_PASSED();
 }
 

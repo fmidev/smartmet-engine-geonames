@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 23.6.13
+Version: 23.7.10
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -31,9 +31,9 @@ BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-library-gis-devel >= 23.6.7
 BuildRequires: smartmet-library-locus-devel >= 23.3.7
-BuildRequires: smartmet-library-macgyver-devel >= 23.6.6
-BuildRequires: smartmet-library-newbase-devel >= 23.2.9
-BuildRequires: smartmet-library-spine-devel >= 23.6.13
+BuildRequires: smartmet-library-macgyver-devel >= 23.6.15
+BuildRequires: smartmet-library-newbase-devel >= 23.6.15
+BuildRequires: smartmet-library-spine-devel >= 23.6.21
 Requires: %{smartmet_boost}-date-time
 Requires: %{smartmet_boost}-filesystem
 Requires: %{smartmet_boost}-iostreams
@@ -46,9 +46,9 @@ Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 23.6.7
 Requires: smartmet-library-locus >= 23.3.7
-Requires: smartmet-library-macgyver >= 23.6.6
-Requires: smartmet-library-newbase >= 23.2.9
-Requires: smartmet-library-spine >= 23.6.13
+Requires: smartmet-library-macgyver >= 23.6.15
+Requires: smartmet-library-newbase >= 23.6.15
+Requires: smartmet-library-spine >= 23.6.21
 Requires: smartmet-server >= 23.5.19
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
@@ -121,6 +121,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Jul 10 2023 Mika Heiskanen <mika.heiskanen@fmi.fi> - 23.7.10-1.fmi
+- Silenced compiler warnings
+
 * Tue Jun 13 2023 Mika Heiskanen <mika.heiskanen@fmi.fi> - 23.6.13-1.fmi
 - Support internal and environment variables in configuration files
 

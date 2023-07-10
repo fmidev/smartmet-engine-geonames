@@ -176,7 +176,7 @@ void keep_wanted_page(SmartMet::Spine::LocationList &locs,
 // ----------------------------------------------------------------------
 
 void check_forbidden_name_search(const std::string &name,
-                                 const std::vector<boost::regex> forbidden_rules)
+                                 const std::vector<boost::regex> &forbidden_rules)
 {
   for (const auto &rule : forbidden_rules)
   {

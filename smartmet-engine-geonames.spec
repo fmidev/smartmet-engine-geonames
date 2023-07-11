@@ -23,17 +23,18 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: %{smartmet_boost}-devel
 BuildRequires: fmt-devel >= %{smartmet_fmt_min}, fmt-devel < %{smartmet_fmt_max}
 BuildRequires: gcc-c++
-BuildRequires: gdal34-devel
+BuildRequires: gdal35-devel
 BuildRequires: libatomic
 BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-library-gis-devel >= 23.6.7
-BuildRequires: smartmet-library-locus-devel >= 23.3.7
+BuildRequires: smartmet-utils-devel >= 23.7.11
+BuildRequires: smartmet-library-gis-devel >= 23.7.10
+BuildRequires: smartmet-library-locus-devel >= 23.7.10
 BuildRequires: smartmet-library-macgyver-devel >= 23.6.6
-BuildRequires: smartmet-library-newbase-devel >= 23.2.9
-BuildRequires: smartmet-library-spine-devel >= 23.6.13
+BuildRequires: smartmet-library-newbase-devel >= 23.7.10
+BuildRequires: smartmet-library-spine-devel >= 23.7.10
 Requires: %{smartmet_boost}-date-time
 Requires: %{smartmet_boost}-filesystem
 Requires: %{smartmet_boost}-iostreams
@@ -41,14 +42,14 @@ Requires: %{smartmet_boost}-locale
 Requires: %{smartmet_boost}-system
 Requires: %{smartmet_boost}-thread
 Requires: fmt >= %{smartmet_fmt_min}, fmt < %{smartmet_fmt_max}
-Requires: gdal34-libs
+Requires: gdal35-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 23.6.7
-Requires: smartmet-library-locus >= 23.3.7
+Requires: smartmet-library-gis >= 23.7.10
+Requires: smartmet-library-locus >= 23.7.10
 Requires: smartmet-library-macgyver >= 23.6.6
-Requires: smartmet-library-newbase >= 23.2.9
-Requires: smartmet-library-spine >= 23.6.13
+Requires: smartmet-library-newbase >= 23.7.10
+Requires: smartmet-library-spine >= 23.7.10
 Requires: smartmet-server >= 23.5.19
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
@@ -82,7 +83,7 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: smartmet-test-data
 #TestRequires: smartmet-test-db
 #TestRequires: zlib-devel
-#TestRequires: gdal34-devel
+#TestRequires: gdal35-devel
 
 %description
 SmartMet geonames engine

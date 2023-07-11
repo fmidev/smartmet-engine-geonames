@@ -1154,7 +1154,8 @@ void Engine::Impl::read_database_hash_value(Fmi::Database::PostgreSQLConnection 
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      itsHashValue = row["max"].as<std::size_t>();
+      const double tmp = row["max"].as<double>();
+      itsHashValue = std::size_t(std::floor(tmp + 0.5));
     }
   }
   catch (...)

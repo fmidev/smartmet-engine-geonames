@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 23.6.13
+Version: 23.7.10
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -32,7 +32,7 @@ BuildRequires: rpm-build
 BuildRequires: smartmet-utils-devel >= 23.7.11
 BuildRequires: smartmet-library-gis-devel >= 23.7.10
 BuildRequires: smartmet-library-locus-devel >= 23.7.10
-BuildRequires: smartmet-library-macgyver-devel >= 23.6.6
+BuildRequires: smartmet-library-macgyver-devel >= 23.6.15
 BuildRequires: smartmet-library-newbase-devel >= 23.7.10
 BuildRequires: smartmet-library-spine-devel >= 23.7.10
 Requires: %{smartmet_boost}-date-time
@@ -47,7 +47,7 @@ Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 23.7.10
 Requires: smartmet-library-locus >= 23.7.10
-Requires: smartmet-library-macgyver >= 23.6.6
+Requires: smartmet-library-macgyver >= 23.6.15
 Requires: smartmet-library-newbase >= 23.7.10
 Requires: smartmet-library-spine >= 23.7.10
 Requires: smartmet-server >= 23.5.19
@@ -103,7 +103,7 @@ Smartmet %{SPECNAME} development headers.
 rm -rf $RPM_BUILD_ROOT
 
 %setup -q -n %{SPECNAME}
- 
+
 %build -q -n %{SPECNAME}
 make %{_smp_mflags}
 
@@ -122,6 +122,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Jul 10 2023 Mika Heiskanen <mika.heiskanen@fmi.fi> - 23.7.10-1.fmi
+- Silenced compiler warnings
+
 * Tue Jun 13 2023 Mika Heiskanen <mika.heiskanen@fmi.fi> - 23.6.13-1.fmi
 - Support internal and environment variables in configuration files
 

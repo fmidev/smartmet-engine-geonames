@@ -50,7 +50,7 @@ std::string parse_radius(const std::string& inputStr, double& radius)
     if (pos != std::string::npos)
     {
       radius_string = output_string.substr(pos + 1);
-      output_string = output_string.substr(0, pos);
+      output_string.resize(pos);
     }
 
     radius = Fmi::stod(radius_string);

@@ -241,6 +241,16 @@ void parse_bboxes(LocationOptions& theOptions, const Spine::HTTP::Request& theRe
   }
 }
 
+void LocationOptions::add(const std::string& theTag, const Spine::LocationPtr& theLoc)
+{
+  itsLocations.push_back(Spine::TaggedLocation(theTag, theLoc));
+}
+
+void LocationOptions::add(const std::string& theTag, std::unique_ptr<Spine::Location>& theLoc)
+{
+  add(theTag, Spine::LocationPtr(theLoc.release()));
+}
+
 // ----------------------------------------------------------------------
 /*!
  * \brief Constructor

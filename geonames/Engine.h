@@ -47,15 +47,8 @@ class LocationOptions
   Spine::TaggedLocationList::size_type size() const { return itsLocations.size(); }
   void setLocations(const Spine::TaggedLocationList& locations) { itsLocations = locations; }
 
-  void add(const std::string& theTag, Spine::LocationPtr theLoc)
-  {
-    itsLocations.push_back(Spine::TaggedLocation(theTag, theLoc));
-  }
-
-  void add(const std::string& theTag, std::unique_ptr<Spine::Location>& theLoc)
-  {
-    add(theTag, Spine::LocationPtr(theLoc.release()));
-  }
+  void add(const std::string& theTag, const Spine::LocationPtr& theLoc);
+  void add(const std::string& theTag, std::unique_ptr<Spine::Location>& theLoc);
 
  private:
   Spine::TaggedLocationList itsLocations;

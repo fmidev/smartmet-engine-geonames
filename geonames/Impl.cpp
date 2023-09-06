@@ -3046,7 +3046,8 @@ void Engine::Impl::read_config_security()
           if (rule.getType() != libconfig::Setting::TypeString)
             throw Fmi::Exception(
                 BCP, "Configured value of '" + name + "' must be an array of pattern strings");
-          itsForbiddenNamePatterns.emplace_back(boost::regex(rule.c_str()));
+          itsForbiddenNamePatterns.emplace_back(rule.c_str());
+          ;
         }
       }
     }

@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 23.7.28
+Version: 23.9.6
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -29,12 +29,12 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-utils-devel >= 23.7.11
-BuildRequires: smartmet-library-gis-devel >= 23.7.10
-BuildRequires: smartmet-library-locus-devel >= 23.7.10
-BuildRequires: smartmet-library-macgyver-devel >= 23.7.28
-BuildRequires: smartmet-library-newbase-devel >= 23.7.28
-BuildRequires: smartmet-library-spine-devel >= 23.7.28
+BuildRequires: smartmet-utils-devel >= 23.9.6
+BuildRequires: smartmet-library-gis-devel >= 23.8.30
+BuildRequires: smartmet-library-locus-devel >= 23.7.28
+BuildRequires: smartmet-library-macgyver-devel >= 23.8.31
+BuildRequires: smartmet-library-newbase-devel >= 23.8.30
+BuildRequires: smartmet-library-spine-devel >= 23.8.31
 Requires: %{smartmet_boost}-date-time
 Requires: %{smartmet_boost}-filesystem
 Requires: %{smartmet_boost}-iostreams
@@ -45,12 +45,12 @@ Requires: fmt >= %{smartmet_fmt_min}, fmt < %{smartmet_fmt_max}
 Requires: gdal35-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 23.7.10
-Requires: smartmet-library-locus >= 23.7.10
-Requires: smartmet-library-macgyver >= 23.7.28
-Requires: smartmet-library-newbase >= 23.7.28
-Requires: smartmet-library-spine >= 23.7.28
-Requires: smartmet-server >= 23.5.19
+Requires: smartmet-library-gis >= 23.8.30
+Requires: smartmet-library-locus >= 23.7.28
+Requires: smartmet-library-macgyver >= 23.8.31
+Requires: smartmet-library-newbase >= 23.8.30
+Requires: smartmet-library-spine >= 23.8.31
+Requires: smartmet-server >= 23.8.30
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -94,7 +94,7 @@ Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
-Requires: smartmet-library-locus-devel >= 23.3.7
+Requires: smartmet-library-locus-devel >= 23.7.28
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.
@@ -122,6 +122,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Sep  6 2023 Mika Heiskanen <mika.heiskanen@fmi.fi> - 23.9.6-1.fmi
+- Silenced compiler warnings
+
 * Fri Jul 28 2023 Andris Pavēnis <andris.pavenis@fmi.fi> 23.7.28-1.fmi
 - Repackage due to bulk ABI changes in macgyver/newbase/spine
 

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "WktGeometry.h"
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <macgyver/DateTime.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
 #include <boost/utility.hpp>
@@ -64,8 +64,8 @@ class Engine : public Spine::SmartMetEngine
   boost::atomic_shared_ptr<Impl> impl;
   boost::shared_ptr<Impl> tmpImpl;
   Fmi::TimeZones itsTimeZones;
-  boost::posix_time::ptime itsStartTime;
-  boost::posix_time::ptime itsLastReload;
+  Fmi::DateTime itsStartTime;
+  Fmi::DateTime itsLastReload;
   bool itsReloading;
   mutable std::atomic<long> itsNameSearchCount;  // TODO: These should be made into std::atomics
   mutable std::atomic<long> itsLonLatSearchCount;

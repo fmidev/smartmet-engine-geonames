@@ -258,7 +258,7 @@ void LocationOptions::add(const std::string& theTag, std::unique_ptr<Spine::Loca
 // ----------------------------------------------------------------------
 
 Engine::Engine(std::string theConfigFile)
-    : itsStartTime(boost::posix_time::second_clock::local_time()),
+    : itsStartTime(Fmi::SecondClock::local_time()),
       itsReloading(false),
       itsNameSearchCount(0),
       itsLonLatSearchCount(0),
@@ -1346,7 +1346,7 @@ bool Engine::reload()
 
     itsReloading = true;
 
-    std::cerr << boost::posix_time::second_clock::local_time() << " Geonames reloading initiated"
+    std::cerr << Fmi::SecondClock::local_time() << " Geonames reloading initiated"
               << std::endl;
 
     auto p = boost::make_shared<Impl>(itsConfigFile, true);  // reload=true
@@ -1356,7 +1356,7 @@ bool Engine::reload()
     if (!p->itsReloadOK)
     {
       itsErrorMessage = p->itsReloadError;
-      std::cerr << boost::posix_time::second_clock::local_time()
+      std::cerr << Fmi::SecondClock::local_time()
                 << " Geonames reloading failed: " << p->itsReloadError << std::endl;
       itsReloading = false;
       return false;
@@ -1364,7 +1364,7 @@ bool Engine::reload()
 
     impl.store(p);
 
-    itsLastReload = boost::posix_time::second_clock::local_time();
+    itsLastReload = Fmi::SecondClock::local_time();
     itsErrorMessage = "";
     itsReloading = false;
 
@@ -1420,7 +1420,7 @@ StatusReturnType Engine::metadataStatus() const
     boost::shared_ptr<Spine::Table> cacheTable(new Spine::Table());
     Spine::TableFormatter::Names cacheHeaders;
 
-    boost::posix_time::ptime now = boost::posix_time::second_clock::local_time();
+    Fmi::DateTime now = Fmi::SecondClock::local_time();
     auto duration = now - itsStartTime;
     long secs = duration.total_seconds();
 

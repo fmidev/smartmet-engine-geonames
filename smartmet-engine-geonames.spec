@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 23.9.6
+Version: 24.1.30
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -122,6 +122,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Tue Jan 30 2024 Mika Heiskanen <mika.heiskanen@fmi.fi> 24.1.30-1.fmi
+- Repackaged due to newbase ABI changes
+
 * Wed Sep  6 2023 Mika Heiskanen <mika.heiskanen@fmi.fi> - 23.9.6-1.fmi
 - Silenced compiler warnings
 

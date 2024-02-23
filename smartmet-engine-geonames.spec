@@ -33,8 +33,8 @@ BuildRequires: smartmet-utils-devel >= 23.9.6
 BuildRequires: smartmet-library-gis-devel >= 24.1.3
 BuildRequires: smartmet-library-locus-devel >= 23.7.28
 BuildRequires: smartmet-library-macgyver-devel >= 24.1.17
-BuildRequires: smartmet-library-newbase-devel >= 24.1.30
-BuildRequires: smartmet-library-spine-devel >= 24.1.30
+BuildRequires: smartmet-library-newbase-devel >= 24.2.23
+BuildRequires: smartmet-library-spine-devel >= 24.2.8
 Requires: %{smartmet_boost}-date-time
 Requires: %{smartmet_boost}-filesystem
 Requires: %{smartmet_boost}-iostreams
@@ -48,9 +48,9 @@ Requires: libicu
 Requires: smartmet-library-gis >= 24.1.3
 Requires: smartmet-library-locus >= 23.7.28
 Requires: smartmet-library-macgyver >= 24.1.17
-Requires: smartmet-library-newbase >= 24.1.30
-Requires: smartmet-library-spine >= 24.1.30
-Requires: smartmet-server >= 24.1.29
+Requires: smartmet-library-newbase >= 24.2.23
+Requires: smartmet-library-spine >= 24.2.8
+Requires: smartmet-server >= 24.2.22
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else

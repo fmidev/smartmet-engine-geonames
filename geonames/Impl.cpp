@@ -2989,7 +2989,7 @@ template <typename T>
 Fmi::Cache::CacheStats convert_stats(const T &cache)
 {
   auto stats = cache.getCacheStatistics();
-  auto time = boost::posix_time::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(
+  const Fmi::DateTime time = Fmi::date_time::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(
                                                  stats.getConstructionTime().time_since_epoch())
                                                  .count());
   return {time,

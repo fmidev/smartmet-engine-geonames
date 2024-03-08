@@ -6,6 +6,7 @@
 #include <spine/Options.h>
 #include <spine/Reactor.h>
 #include <iterator>
+#include <boost/lexical_cast.hpp>
 #include <libconfig.h++>
 #include <unistd.h>
 

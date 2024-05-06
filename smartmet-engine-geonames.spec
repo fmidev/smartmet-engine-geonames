@@ -47,10 +47,10 @@ Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 24.1.3
 Requires: smartmet-library-locus >= 23.7.28
-Requires: smartmet-library-macgyver >= 24.1.17
-Requires: smartmet-library-newbase >= 24.2.23
-Requires: smartmet-library-spine >= 24.2.8
-Requires: smartmet-server >= 24.2.22
+Requires: smartmet-library-macgyver >= 24.5.6
+Requires: smartmet-library-newbase >= 24.5.6
+Requires: smartmet-library-spine >= 24.5.6
+Requires: smartmet-server >= 24.5.6
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else

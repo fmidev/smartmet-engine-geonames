@@ -35,7 +35,6 @@ BuildRequires: smartmet-library-locus-devel >= 23.7.28
 BuildRequires: smartmet-library-macgyver-devel >= 24.1.17
 BuildRequires: smartmet-library-newbase-devel >= 24.2.23
 BuildRequires: smartmet-library-spine-devel >= 24.2.8
-Requires: %{smartmet_boost}-date-time
 Requires: %{smartmet_boost}-filesystem
 Requires: %{smartmet_boost}-iostreams
 Requires: %{smartmet_boost}-locale

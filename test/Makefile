@@ -24,6 +24,7 @@ LIBS += \
 	-lboost_filesystem \
 	-lboost_regex \
 	-lboost_iostreams \
+	-lboost_chrono \
 	-lboost_system \
 	-lbz2 -lz -lpthread
 

@@ -156,7 +156,7 @@ void suggest()
 
   while (!names->isSuggestReady())
   {
-    boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
   }
 
   SmartMet::Spine::LocationList ptrs;
@@ -423,7 +423,7 @@ void suggest_duplicates()
 
   while (!names->isSuggestReady())
   {
-    boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
   }
 
   SmartMet::Spine::LocationList ptrs;
@@ -544,7 +544,7 @@ void suggest_languages()
 
   while (!names->isSuggestReady())
   {
-    boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
   }
 
   std::vector<std::string> languages{"fi", "sv", "en"};

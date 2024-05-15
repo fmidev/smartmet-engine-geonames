@@ -15,6 +15,7 @@ LIBS += -L$(libdir) \
 	-lsmartmet-spine \
 	-lboost_locale \
 	-lboost_thread \
+	-lboost_chrono \
 	-lboost_system \
 	-lfmt \
 	$(ICU_I18N_LIBS) \

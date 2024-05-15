@@ -332,7 +332,7 @@ void Engine::shutdown()
       // The is no Impl object available yet, so its initialization is probably still
       // running. There should be a way to terminate this initialization, because
       // now we have to wait its termination.
-      boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
     }
   }
   catch (...)
@@ -782,7 +782,7 @@ Spine::LocationPtr Engine::keywordSearch(double theLongitude,
 
     while (!mycopy->isSuggestReady())
     {
-      boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+      boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
     }
 
     // return null if keyword is wrong

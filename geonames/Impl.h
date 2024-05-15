@@ -8,7 +8,6 @@
 
 #include "Engine.h"
 #include <boost/atomic.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/locale.hpp>
 #include <boost/locale/collator.hpp>
 #include <boost/move/unique_ptr.hpp>

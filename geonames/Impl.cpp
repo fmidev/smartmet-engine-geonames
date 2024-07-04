@@ -254,9 +254,9 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
       // Suggest cache settings
       unsigned int suggestCacheSize = 10000;
       itsConfig.lookupValue("cache.suggest_max_size", suggestCacheSize);
-      itsSuggestCache = boost::movelib::make_unique<SuggestCache>(suggestCacheSize);
+      itsSuggestCache = std::make_unique<SuggestCache>(suggestCacheSize);
       itsLanguagesSuggestCache =
-          boost::movelib::make_unique<LanguagesSuggestCache>(suggestCacheSize);
+          std::make_unique<LanguagesSuggestCache>(suggestCacheSize);
 
       // Establish collator
 
@@ -319,7 +319,7 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
  */
 // ----------------------------------------------------------------------
 
-boost::shared_ptr<Fmi::DEM> Engine::Impl::dem() const
+std::shared_ptr<Fmi::DEM> Engine::Impl::dem() const
 {
   return itsDEM;
 }
@@ -372,7 +372,7 @@ double Engine::Impl::elevation(double lon, double lat, unsigned int maxdemresolu
  */
 // ----------------------------------------------------------------------
 
-boost::shared_ptr<Fmi::LandCover> Engine::Impl::landCover() const
+std::shared_ptr<Fmi::LandCover> Engine::Impl::landCover() const
 {
   return itsLandCover;
 }
@@ -816,7 +816,7 @@ void Engine::Impl::initDEM()
   std::string demdir;
   itsConfig.lookupValue("demdir", demdir);
   if (!demdir.empty())
-    itsDEM = boost::make_shared<Fmi::DEM>(demdir);
+    itsDEM = std::make_shared<Fmi::DEM>(demdir);
 }
 
 // ----------------------------------------------------------------------
@@ -830,7 +830,7 @@ void Engine::Impl::initLandCover()
   std::string landcoverdir;
   itsConfig.lookupValue("landcoverdir", landcoverdir);
   if (!landcoverdir.empty())
-    itsLandCover = boost::make_shared<Fmi::LandCover>(landcoverdir);
+    itsLandCover = std::make_shared<Fmi::LandCover>(landcoverdir);
 }
 
 // ----------------------------------------------------------------------
@@ -1363,7 +1363,7 @@ Spine::LocationPtr Engine::Impl::extract_geoname(const pqxx::result::const_itera
   }
 
   std::string country;  // country will be filled in upon request
-  Spine::LocationPtr loc = boost::make_shared<Spine::Location>(geoid,
+  Spine::LocationPtr loc = std::make_shared<Spine::Location>(geoid,
                                                                name,
                                                                iso2,
                                                                munip,
@@ -1821,7 +1821,7 @@ void Engine::Impl::build_geotrees()
 
       auto it = itsGeoTrees.find(keyword);
       if (it == itsGeoTrees.end())
-        it = itsGeoTrees.insert(make_pair(keyword, boost::movelib::make_unique<GeoTree>())).first;
+        it = itsGeoTrees.insert(make_pair(keyword, std::make_unique<GeoTree>())).first;
 
       for (const auto &ptr : locs)
         it->second->insert(ptr);
@@ -1835,7 +1835,7 @@ void Engine::Impl::build_geotrees()
 
     auto it = itsGeoTrees
                   .insert(std::make_pair(FMINAMES_DEFAULT_KEYWORD,
-                                         boost::movelib::make_unique<GeoTree>()))
+                                         std::make_unique<GeoTree>()))
                   .first;
     for (const auto &ptr : itsLocations)
       it->second->insert(ptr);
@@ -1870,7 +1870,7 @@ void Engine::Impl::build_ternarytrees()
       auto it = itsTernaryTrees.find(keyword);
       if (it == itsTernaryTrees.end())
       {
-        auto newtree = boost::make_shared<TernaryTree>();
+        auto newtree = std::make_shared<TernaryTree>();
         it = itsTernaryTrees.insert(make_pair(keyword, newtree)).first;
       }
 
@@ -1891,7 +1891,7 @@ void Engine::Impl::build_ternarytrees()
       std::cout << "build_ternarytrees: keyword '" << FMINAMES_DEFAULT_KEYWORD << "' of size "
                 << itsLocations.size() << std::endl;
 
-    auto newtree = boost::make_shared<TernaryTree>();
+    auto newtree = std::make_shared<TernaryTree>();
     auto it = itsTernaryTrees.insert(std::make_pair(FMINAMES_DEFAULT_KEYWORD, newtree)).first;
 
     for (Spine::LocationPtr &ptr : itsLocations)
@@ -1986,7 +1986,7 @@ void Engine::Impl::build_lang_ternarytrees_all()
 
         if (it == itsLangTernaryTreeMap.end())
           it = itsLangTernaryTreeMap
-                   .insert(std::make_pair(lang, boost::make_shared<TernaryTreeMap>()))
+                   .insert(std::make_pair(lang, std::make_shared<TernaryTreeMap>()))
                    .first;
         // Then find keyword specific map, keyword being "all"
 
@@ -1994,7 +1994,7 @@ void Engine::Impl::build_lang_ternarytrees_all()
         auto tit = tmap.find("all");
 
         if (tit == tmap.end())
-          tit = tmap.insert(TernaryTreeMap::value_type("all", boost::make_shared<TernaryTree>()))
+          tit = tmap.insert(TernaryTreeMap::value_type("all", std::make_shared<TernaryTree>()))
                     .first;
 
         // Insert the word "name, area" to the tree
@@ -2083,7 +2083,7 @@ void Engine::Impl::build_lang_ternarytrees_one_keyword(const std::string &keywor
 
       if (it == itsLangTernaryTreeMap.end())
         it =
-            itsLangTernaryTreeMap.insert(std::make_pair(lang, boost::make_shared<TernaryTreeMap>()))
+            itsLangTernaryTreeMap.insert(std::make_pair(lang, std::make_shared<TernaryTreeMap>()))
                 .first;
 
       // Then find keyword specific map
@@ -2092,7 +2092,7 @@ void Engine::Impl::build_lang_ternarytrees_one_keyword(const std::string &keywor
       auto tit = tmap.find(keyword);
 
       if (tit == tmap.end())
-        tit = tmap.insert(TernaryTreeMap::value_type(keyword, boost::make_shared<TernaryTree>()))
+        tit = tmap.insert(TernaryTreeMap::value_type(keyword, std::make_shared<TernaryTree>()))
                   .first;
 
       // Insert the word "name, area" to the tree
@@ -2929,7 +2929,7 @@ Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theO
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::name_cache_status(const boost::shared_ptr<Spine::Table> &tablePtr,
+void Engine::Impl::name_cache_status(const std::shared_ptr<Spine::Table> &tablePtr,
                                      Spine::TableFormatter::Names &theNames) const
 {
   try

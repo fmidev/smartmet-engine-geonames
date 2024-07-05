@@ -20,7 +20,6 @@ LIBS += \
 	$(CONFIGPP_LIBS) \
 	-lpqxx \
 	-lboost_thread \
-	-lboost_filesystem \
 	-lboost_regex \
 	-lboost_iostreams \
 	-lboost_chrono \

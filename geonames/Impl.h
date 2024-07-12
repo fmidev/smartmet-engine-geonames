@@ -10,7 +10,6 @@
 #include <boost/atomic.hpp>
 #include <boost/locale.hpp>
 #include <boost/locale/collator.hpp>
-#include <boost/move/unique_ptr.hpp>
 #include <boost/regex.hpp>
 #include <boost/thread.hpp>
 #include <gis/LandCover.h>
@@ -84,16 +83,16 @@ class Engine::Impl
                                                                   // keywords
 
   using GeoTree = Fmi::NearTree<Spine::LocationPtr, LocationPtrDistance>;
-  using GeoTreePtr = boost::movelib::unique_ptr<GeoTree>;
+  using GeoTreePtr = std::unique_ptr<GeoTree>;
   using GeoTreeMap = std::map<std::string, GeoTreePtr>;  // nearest point searches
 
   // default name search trees per keyword
   using TernaryTree = Fmi::TernarySearchTree<const Spine::Location>;
-  using TernaryTreePtr = boost::shared_ptr<TernaryTree>;
+  using TernaryTreePtr = std::shared_ptr<TernaryTree>;
   using TernaryTreeMap = std::map<std::string, TernaryTreePtr>;
 
   // alternate language search trees per language per keyword
-  using TernaryTreeMapPtr = boost::shared_ptr<TernaryTreeMap>;
+  using TernaryTreeMapPtr = std::shared_ptr<TernaryTreeMap>;
   using LangTernaryTreeMap = std::map<std::string, TernaryTreeMapPtr>;
 
   // From search hash key to result
@@ -101,11 +100,11 @@ class Engine::Impl
 
   // Suggest cache
   using SuggestCache = Fmi::TimedCache::Cache<std::size_t, Spine::LocationList>;
-  boost::movelib::unique_ptr<SuggestCache> itsSuggestCache;
+  std::unique_ptr<SuggestCache> itsSuggestCache;
 
   using LanguagesSuggestCache =
       Fmi::TimedCache::Cache<std::size_t, std::vector<Spine::LocationList>>;
-  boost::movelib::unique_ptr<LanguagesSuggestCache> itsLanguagesSuggestCache;
+  std::unique_ptr<LanguagesSuggestCache> itsLanguagesSuggestCache;
 
   ~Impl();
   Impl(std::string configfile, bool reloading);
@@ -121,8 +120,8 @@ class Engine::Impl
   std::size_t hash_value() const;
 
   // DEM elevation for a coordinate
-  boost::shared_ptr<Fmi::DEM> dem() const;
-  boost::shared_ptr<Fmi::LandCover> landCover() const;
+  std::shared_ptr<Fmi::DEM> dem() const;
+  std::shared_ptr<Fmi::LandCover> landCover() const;
 
   double elevation(double lon, double lat) const;
   double elevation(double lon, double lat, unsigned int maxdemresolution) const;
@@ -170,7 +169,7 @@ class Engine::Impl
 
   Spine::LocationList to_locationlist(const Locus::Query::return_type& theList) const;
 
-  void name_cache_status(const boost::shared_ptr<Spine::Table>& tablePtr,
+  void name_cache_status(const std::shared_ptr<Spine::Table>& tablePtr,
                          Spine::TableFormatter::Names& theNames) const;
 
   void shutdown();
@@ -267,11 +266,11 @@ class Engine::Impl
   std::vector<std::shared_ptr<Fmi::CharsetConverter>> fallback_converters;
 
   // DEM data
-  boost::shared_ptr<Fmi::DEM> itsDEM;
+  std::shared_ptr<Fmi::DEM> itsDEM;
   unsigned int itsMaxDemResolution = 0;  // allow highest possible resolution
 
   // LandCover data
-  boost::shared_ptr<Fmi::LandCover> itsLandCover;
+  std::shared_ptr<Fmi::LandCover> itsLandCover;
 
   // Hash value
   std::size_t itsHashValue = 0;
@@ -286,7 +285,7 @@ class Engine::Impl
   std::string itsPort;
 
   Fmi::AsyncTaskGroup tg1;
-  boost::shared_ptr<Fmi::AsyncTask> initSuggestTask;
+  std::shared_ptr<Fmi::AsyncTask> initSuggestTask;
 
   std::unique_ptr<Fmi::WorkerPool<Locus::Query>> query_worker_pool;
 

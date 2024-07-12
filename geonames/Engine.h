@@ -8,11 +8,12 @@
 
 #include "WktGeometry.h"
 #include <macgyver/DateTime.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/smart_ptr/atomic_shared_ptr.hpp>
+#include <atomic>
+#include <memory>
 #include <boost/utility.hpp>
 #include <gis/OGR.h>
 #include <locus/Query.h>
+#include <macgyver/AtomicSharedPtr.h>
 #include <macgyver/CacheStats.h>
 #include <macgyver/TimeZones.h>
 #include <spine/HTTP.h>
@@ -55,14 +56,14 @@ class LocationOptions
 
 };  // class LocationOptions
 
-using StatusReturnType = std::pair<boost::shared_ptr<Spine::Table>, Spine::TableFormatter::Names>;
+using StatusReturnType = std::pair<std::shared_ptr<Spine::Table>, Spine::TableFormatter::Names>;
 
 class Engine : public Spine::SmartMetEngine
 {
  private:
   class Impl;
-  boost::atomic_shared_ptr<Impl> impl;
-  boost::shared_ptr<Impl> tmpImpl;
+  Fmi::AtomicSharedPtr<Impl> impl;
+  std::shared_ptr<Impl> tmpImpl;
   Fmi::TimeZones itsTimeZones;
   Fmi::DateTime itsStartTime;
   Fmi::DateTime itsLastReload;
@@ -189,10 +190,10 @@ class Engine : public Spine::SmartMetEngine
   void sort(Spine::LocationList& theLocations) const;
 
   // DEM elevation for a coordinate
-  boost::shared_ptr<Fmi::DEM> dem() const;
+  std::shared_ptr<Fmi::DEM> dem() const;
 
   // LandCover data
-  boost::shared_ptr<Fmi::LandCover> landCover() const;
+  std::shared_ptr<Fmi::LandCover> landCover() const;
 
   // DEM height
   double demHeight(double theLongitude, double theLatitude) const;

@@ -2,14 +2,14 @@ SUBNAME = geonames
 SPEC = smartmet-engine-$(SUBNAME)
 INCDIR = smartmet/engines/$(SUBNAME)
 
-REQUIRES = gdal icu-i18n configpp
+REQUIRES = fmt gdal icu-i18n configpp libpqxx
 include $(shell echo $${PREFIX-/usr})/share/smartmet/devel/makefile.inc
 
 DEFINES = -DUNIX -D_REENTRANT
 
-LIBS += -L$(libdir) \
+LIBS += $(PREFIX_LDFLAGS) \
+	$(REQUIRED_LIBS) \
 	-lsmartmet-locus \
-	-lpqxx \
 	-lsmartmet-macgyver \
 	-lsmartmet-gis \
 	-lsmartmet-spine \
@@ -17,8 +17,6 @@ LIBS += -L$(libdir) \
 	-lboost_thread \
 	-lboost_chrono \
 	-lboost_system \
-	-lfmt \
-	$(ICU_I18N_LIBS) \
 	-latomic
 
 # What to install

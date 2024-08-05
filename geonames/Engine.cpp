@@ -68,7 +68,7 @@ std::string parse_radius(const std::string& inputStr, double& radius)
  */
 // ----------------------------------------------------------------------
 
-double demheight(const boost::shared_ptr<Fmi::DEM>& theDem,
+double demheight(const std::shared_ptr<Fmi::DEM>& theDem,
                  double theLongitude,
                  double theLatitude,
                  double theMaxResolution)
@@ -84,7 +84,7 @@ double demheight(const boost::shared_ptr<Fmi::DEM>& theDem,
  */
 // ----------------------------------------------------------------------
 
-Fmi::LandCover::Type covertype(const boost::shared_ptr<Fmi::LandCover>& theLandCover,
+Fmi::LandCover::Type covertype(const std::shared_ptr<Fmi::LandCover>& theLandCover,
                                double theLongitude,
                                double theLatitude)
 {
@@ -287,7 +287,7 @@ void Engine::init()
 {
   try
   {
-    tmpImpl = boost::make_shared<Impl>(itsConfigFile, false);
+    tmpImpl = std::make_shared<Impl>(itsConfigFile, false);
     bool first_construction = true;
     tmpImpl->init(first_construction);
     impl.store(tmpImpl);
@@ -797,7 +797,7 @@ Spine::LocationPtr Engine::keywordSearch(double theLongitude,
 
     // result will be here, if there is one
 
-    boost::optional<Spine::LocationPtr> ptr = it->second->nearest(dummy, theRadius);
+    std::optional<Spine::LocationPtr> ptr = it->second->nearest(dummy, theRadius);
     if (!ptr)
       return {};
 
@@ -1238,7 +1238,7 @@ std::string Engine::countryName(const std::string& theIso2, const std::string& t
  */
 // ----------------------------------------------------------------------
 
-boost::shared_ptr<Fmi::DEM> Engine::dem() const
+std::shared_ptr<Fmi::DEM> Engine::dem() const
 {
   try
   {
@@ -1276,7 +1276,7 @@ unsigned int Engine::maxDemResolution() const
  */
 // ----------------------------------------------------------------------
 
-boost::shared_ptr<Fmi::LandCover> Engine::landCover() const
+std::shared_ptr<Fmi::LandCover> Engine::landCover() const
 {
   try
   {
@@ -1348,7 +1348,7 @@ bool Engine::reload()
     std::cerr << Fmi::SecondClock::local_time() << " Geonames reloading initiated"
               << std::endl;
 
-    auto p = boost::make_shared<Impl>(itsConfigFile, true);  // reload=true
+    auto p = std::make_shared<Impl>(itsConfigFile, true);  // reload=true
     bool first_construction = false;
     p->init(first_construction);
 
@@ -1416,7 +1416,7 @@ StatusReturnType Engine::metadataStatus() const
 {
   try
   {
-    boost::shared_ptr<Spine::Table> cacheTable(new Spine::Table());
+    std::shared_ptr<Spine::Table> cacheTable(new Spine::Table());
     Spine::TableFormatter::Names cacheHeaders;
 
     Fmi::DateTime now = Fmi::SecondClock::local_time();
@@ -1505,7 +1505,7 @@ StatusReturnType Engine::cacheStatus() const
 {
   try
   {
-    boost::shared_ptr<Spine::Table> cacheTable(new Spine::Table());
+    std::shared_ptr<Spine::Table> cacheTable(new Spine::Table());
     Spine::TableFormatter::Names cacheHeaders;
 
     auto mycopy = impl.load();

@@ -29,12 +29,12 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-utils-devel >= 23.9.6
-BuildRequires: smartmet-library-gis-devel >= 24.7.12
-BuildRequires: smartmet-library-locus-devel >= 24.7.12
-BuildRequires: smartmet-library-macgyver-devel >= 24.7.12
-BuildRequires: smartmet-library-newbase-devel >= 24.7.12
-BuildRequires: smartmet-library-spine-devel >= 24.7.12
+BuildRequires: smartmet-utils-devel >= 24.8.7
+BuildRequires: smartmet-library-gis-devel >= 24.8.7
+BuildRequires: smartmet-library-locus-devel >= 24.8.7
+BuildRequires: smartmet-library-macgyver-devel >= 24.8.7
+BuildRequires: smartmet-library-newbase-devel >= 24.8.7
+BuildRequires: smartmet-library-spine-devel >= 24.8.7
 Requires: %{smartmet_boost}-iostreams
 Requires: %{smartmet_boost}-locale
 Requires: %{smartmet_boost}-system
@@ -43,12 +43,12 @@ Requires: fmt-libs >= %{smartmet_fmt_min}, fmt-libs < %{smartmet_fmt_max}
 Requires: gdal38-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 24.7.12
-Requires: smartmet-library-locus >= 24.7.12
-Requires: smartmet-library-macgyver >= 24.7.12
-Requires: smartmet-library-newbase >= 24.7.12
-Requires: smartmet-library-spine >= 24.7.12
-Requires: smartmet-server >= 24.7.12
+Requires: smartmet-library-gis >= 24.8.7
+Requires: smartmet-library-locus >= 24.8.7
+Requires: smartmet-library-macgyver >= 24.8.7
+Requires: smartmet-library-newbase >= 24.8.7
+Requires: smartmet-library-spine >= 24.8.7
+Requires: smartmet-server >= 24.8.7
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -92,7 +92,7 @@ Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
-Requires: smartmet-library-locus-devel >= 24.7.12
+Requires: smartmet-library-locus-devel >= 24.8.7
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.

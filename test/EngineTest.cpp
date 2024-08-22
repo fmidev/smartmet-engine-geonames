@@ -6,7 +6,6 @@
 #include <spine/Options.h>
 #include <spine/Reactor.h>
 #include <iterator>
-#include <boost/lexical_cast.hpp>
 #include <libconfig.h++>
 #include <unistd.h>
 
@@ -903,11 +902,11 @@ void lonlatSearch()
 
   if (ptrs.front()->elevation != 11)
     TEST_FAILED("Elevation for Kumpula should be 11, not " +
-                boost::lexical_cast<std::string>(ptrs.front()->elevation));
+                Fmi::to_string(ptrs.front()->elevation));
 
   if (ptrs.front()->dem != 24)
     TEST_FAILED("DEM for Kumpula should be 24, not " +
-                boost::lexical_cast<std::string>(ptrs.front()->dem));
+                Fmi::to_string(ptrs.front()->dem));
 
   // Rooma
 

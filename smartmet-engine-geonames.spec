@@ -3,8 +3,8 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 24.8.7
-Release: 2%{?dist}.fmi
+Version: 24.9.28
+Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -29,12 +29,12 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-utils-devel >= 24.8.7
+BuildRequires: smartmet-utils-devel >= 24.9.10
 BuildRequires: smartmet-library-gis-devel >= 24.8.7
-BuildRequires: smartmet-library-locus-devel >= 24.8.7
-BuildRequires: smartmet-library-macgyver-devel >= 24.8.7
-BuildRequires: smartmet-library-newbase-devel >= 24.8.7
-BuildRequires: smartmet-library-spine-devel >= 24.8.7
+BuildRequires: smartmet-library-locus-devel >= 24.9.28
+BuildRequires: smartmet-library-macgyver-devel >= 24.9.28
+BuildRequires: smartmet-library-newbase-devel >= 24.9.25
+BuildRequires: smartmet-library-spine-devel >= 24.9.28
 Requires: %{smartmet_boost}-iostreams
 Requires: %{smartmet_boost}-locale
 Requires: %{smartmet_boost}-system
@@ -44,10 +44,10 @@ Requires: gdal38-libs
 Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 24.8.7
-Requires: smartmet-library-locus >= 24.8.7
-Requires: smartmet-library-macgyver >= 24.8.7
-Requires: smartmet-library-newbase >= 24.8.7
-Requires: smartmet-library-spine >= 24.8.7
+Requires: smartmet-library-locus >= 24.9.28
+Requires: smartmet-library-macgyver >= 24.9.28
+Requires: smartmet-library-newbase >= 24.9.25
+Requires: smartmet-library-spine >= 24.9.28
 Requires: smartmet-server >= 24.8.7
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
@@ -94,7 +94,7 @@ Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
-Requires: smartmet-library-locus-devel >= 24.8.7
+Requires: smartmet-library-locus-devel >= 24.9.28
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.
@@ -122,6 +122,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Sat Sep 28 2024 Mika Heiskanen <mika.heiskanen@fmi.fi> - 24.9.28-1.fmi
+- Repackaged due to PostgreSQLConnection ABI change
+
 * Wed Aug  7 2024 Andris Pavēnis <andris.pavenis@fmi.fi> 24.8.7-2.fmi
 - Fix requires (RHEL9, libpqxx)
 

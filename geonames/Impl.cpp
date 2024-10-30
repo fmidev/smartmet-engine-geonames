@@ -2929,21 +2929,23 @@ Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theO
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::name_cache_status(const std::shared_ptr<Spine::Table> &tablePtr,
-                                     Spine::TableFormatter::Names &theNames) const
+std::unique_ptr<Spine::Table> Engine::Impl::name_cache_status() const
 {
   try
   {
     auto contentList = itsNameSearchCache.getContent();
 
-    if (contentList.empty())
-      return;
-
+    std::unique_ptr<Spine::Table> tablePtr(new Spine::Table);
+    Spine::TableFormatter::Names theNames;
     theNames.push_back("Position");
     theNames.push_back("Hits");
     theNames.push_back("Key");
     theNames.push_back("Name");
     theNames.push_back("Geoid");
+    tablePtr->setNames(theNames);
+
+    if (contentList.empty())
+      return tablePtr;
 
     unsigned int row = 0;
     for (const auto &ReportObject : contentList)
@@ -2966,6 +2968,7 @@ void Engine::Impl::name_cache_status(const std::shared_ptr<Spine::Table> &tableP
 
       ++row;
     }
+    return tablePtr;
   }
   catch (...)
   {

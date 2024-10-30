@@ -169,8 +169,7 @@ class Engine::Impl
 
   Spine::LocationList to_locationlist(const Locus::Query::return_type& theList) const;
 
-  void name_cache_status(const std::shared_ptr<Spine::Table>& tablePtr,
-                         Spine::TableFormatter::Names& theNames) const;
+  std::unique_ptr<Spine::Table> name_cache_status() const;
 
   void shutdown();
 

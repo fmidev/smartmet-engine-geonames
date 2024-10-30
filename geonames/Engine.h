@@ -56,7 +56,7 @@ class LocationOptions
 
 };  // class LocationOptions
 
-using StatusReturnType = std::pair<std::shared_ptr<Spine::Table>, Spine::TableFormatter::Names>;
+using StatusReturnType = std::unique_ptr<Spine::Table>;
 
 class Engine : public Spine::SmartMetEngine
 {
@@ -255,6 +255,10 @@ class Engine : public Spine::SmartMetEngine
                  const std::string& theLanguage,
                  const std::string& theFeatures,
                  double theMaxDistance) const;
+
+  void requestReload(SmartMet::Spine::HTTP::Response& theResponse);
+
+  std::unique_ptr<Spine::Table> requestInfo(const SmartMet::Spine::HTTP::Request& request) const;
 
 };  // class Geo
 

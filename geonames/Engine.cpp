@@ -18,6 +18,7 @@
 #include <spine/Convenience.h>
 #include <spine/DebugFormatter.h>
 #include <spine/Location.h>
+#include <spine/Reactor.h>
 #include <spine/TableFormatterOptions.h>
 #include <algorithm>
 #include <atomic>
@@ -287,6 +288,16 @@ void Engine::init()
 {
   try
   {
+    Spine::Reactor *reactor = Spine::Reactor::instance;
+    if (reactor)
+    {
+      reactor->addAdminCustomRequestHandler(this, "reload", true,
+        std::bind(&Engine::requestReload, this, std::placeholders::_3), "Reload geoengine");
+      reactor->addAdminTableRequestHandler(this, "geonames", false,
+        std::bind(&Engine::requestInfo, this, std::placeholders::_2),
+         "Geoengine information");
+    }
+
     tmpImpl = std::make_shared<Impl>(itsConfigFile, false);
     bool first_construction = true;
     tmpImpl->init(first_construction);
@@ -1416,7 +1427,7 @@ StatusReturnType Engine::metadataStatus() const
 {
   try
   {
-    std::shared_ptr<Spine::Table> cacheTable(new Spine::Table());
+    std::unique_ptr<Spine::Table> cacheTable(new Spine::Table());
     Spine::TableFormatter::Names cacheHeaders;
 
     Fmi::DateTime now = Fmi::SecondClock::local_time();
@@ -1493,7 +1504,8 @@ StatusReturnType Engine::metadataStatus() const
     cacheHeaders.push_back("AutocompleteSearchRate");
     cacheHeaders.push_back("AutocompleteSearches");
 
-    return std::make_pair(cacheTable, cacheHeaders);
+    cacheTable->setNames(cacheHeaders);
+    return cacheTable;
   }
   catch (...)
   {
@@ -1509,9 +1521,7 @@ StatusReturnType Engine::cacheStatus() const
     Spine::TableFormatter::Names cacheHeaders;
 
     auto mycopy = impl.load();
-    mycopy->name_cache_status(cacheTable, cacheHeaders);
-
-    return std::make_pair(cacheTable, cacheHeaders);
+    return mycopy->name_cache_status();
   }
   catch (...)
   {
@@ -1557,6 +1567,66 @@ Spine::LocationPtr Engine::translateLocation(const Spine::Location& theLocation,
   mycopy->translate(newptr, theLang);
   return newptr;
 }
+
+void Engine::requestReload(SmartMet::Spine::HTTP::Response& theResponse)
+try
+{
+  std::ostringstream out;
+
+  out << "<html><head><title>SmartMet Admin</title></head><body>\n";
+
+  Fmi::DateTime now = Fmi::MicrosecClock::universal_time();
+  bool ok = reload();
+
+  if (ok)
+  {
+    Fmi::DateTime end = Fmi::MicrosecClock::universal_time();
+    Fmi::TimeDuration duration = end - now;
+    const double sec = 0.001 * duration.total_milliseconds();
+    out << "GeoEngine reloaded in " << fmt::format("{:0.3f}", sec) << " seconds\n";
+  }
+  else
+  {
+    out << "GeoEngine reload failed: " << errorMessage() << "\n";
+  }
+
+  out << "</body></html>\n";
+
+  // Make MIME header
+  std::string mime("text/html; charset=UTF-8");
+  theResponse.setHeader("Content-Type", mime);
+
+  // Set content
+  theResponse.setContent(out.str());
+}
+catch (...)
+{
+  throw Fmi::Exception::Trace(BCP, "Operation failed!");
+}
+
+
+std::unique_ptr<Spine::Table> Engine::requestInfo(const SmartMet::Spine::HTTP::Request& request) const
+try
+{
+  const std::string dataType = Spine::optional_string(request.getParameter("type"), "meta");
+  if (dataType == "meta")
+    {
+      return metadataStatus();
+    }
+    else if (dataType == "cache")
+    {
+      return cacheStatus();
+    }
+    else
+    {
+      throw Fmi::Exception(BCP, "Unknown type '" + dataType + "'");
+    }
+}
+catch (...)
+{
+  throw Fmi::Exception::Trace(BCP, "Operation failed!");
+}
+
 
 // ----------------------------------------------------------------------
 

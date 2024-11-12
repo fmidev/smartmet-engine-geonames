@@ -962,7 +962,9 @@ void reload()
 
   ptrs = names->keywordSearch(opts, "press_europe");
 
-  names->reload();
+  const std::pair<bool, std::string> result = names->reload();
+  if (!result.first)
+    TEST_FAILED("Failed to reload geonames data: " + result.second);
 
   TEST_PASSED();
 }

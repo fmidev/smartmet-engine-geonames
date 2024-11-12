@@ -179,7 +179,8 @@ class Engine : public Spine::SmartMetEngine
 
   // Reload all data
 
-  bool reload();
+  std::pair<bool, std::string> reload();
+
   const std::string& errorMessage() const;
 
   // Return cache status info

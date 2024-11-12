@@ -1341,23 +1341,29 @@ void Engine::sort(Spine::LocationList& theLocations) const
 // ----------------------------------------------------------------------
 /*!
  * \brief Reload the data from database
+ *
+ * Returns pair of values: first is true if reload was successful, second is output string
+ * (potentialy an eror message)
  */
 // ----------------------------------------------------------------------
 
-bool Engine::reload()
+std::pair<bool, std::string> Engine::reload()
 {
+  std::ostringstream output;
   try
   {
     if (itsReloading)
     {
       itsErrorMessage = "Geo reload was already in progress";
-      return false;
+      return {false, itsErrorMessage};
     }
 
     itsReloading = true;
 
-    std::cerr << Fmi::SecondClock::local_time() << " Geonames reloading initiated"
-              << std::endl;
+    const Fmi::DateTime begin = Fmi::MicrosecClock::local_time();
+    const std::string m1 = begin.to_simple_string() + " Geonames reloading initiated";
+    output << m1 << std::endl;
+    std::cout << m1 << std::endl;
 
     auto p = std::make_shared<Impl>(itsConfigFile, true);  // reload=true
     bool first_construction = false;
@@ -1366,25 +1372,42 @@ bool Engine::reload()
     if (!p->itsReloadOK)
     {
       itsErrorMessage = p->itsReloadError;
-      std::cerr << Fmi::SecondClock::local_time()
-                << " Geonames reloading failed: " << p->itsReloadError << std::endl;
+      const Fmi::DateTime end = Fmi::MicrosecClock::local_time();
+      const std::string m2 = end.to_simple_string() + " Geonames reloading failed: " + itsErrorMessage;
+      output << m2 << std::endl;
+      std::cout << m2 << std::endl;
       itsReloading = false;
-      return false;
+      return { false, output.str() };
     }
 
     impl.store(p);
 
-    itsLastReload = Fmi::SecondClock::local_time();
+    const Fmi::DateTime end = Fmi::MicrosecClock::local_time();
+    itsLastReload = end;
     itsErrorMessage = "";
     itsReloading = false;
 
-    std::cerr << itsLastReload << " Geonames reloading finished" << std::endl;
+    const double secs = 0.000001 * (end - begin).total_microseconds();
+    const std::string m3 = itsLastReload.to_simple_string() + " Geonames reloaded in "
+                          + fmt::format("{:0.3f}", secs) + " seconds"
+    ;
+    output << m3 << std::endl;
+    std::cout << m3 << std::endl;
 
-    return true;
+    return { true, output.str() };
   }
   catch (...)
   {
-    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+    const auto error = Fmi::Exception::Trace(BCP, "Geonames Reload failed");
+    std::ostringstream errmsg;
+    errmsg << Fmi::SecondClock::local_time() << ": C++ exception while reloading geonames:" << '\n'
+           << error << '\n';
+    output << errmsg.str() << std::endl;
+    std::cout << errmsg.str() << std::endl;
+    itsReloading = false; // Do not leave the system in reloading state
+    itsErrorMessage = errmsg.str();
+    // Return false and error message, but do not throw and exception
+    return { false, output.str() };
   }
 }
 
@@ -1569,39 +1592,36 @@ Spine::LocationPtr Engine::translateLocation(const Spine::Location& theLocation,
 }
 
 void Engine::requestReload(SmartMet::Spine::HTTP::Response& theResponse)
-try
 {
   std::ostringstream out;
-
-  out << "<html><head><title>SmartMet Admin</title></head><body>\n";
-
-  Fmi::DateTime now = Fmi::MicrosecClock::universal_time();
-  bool ok = reload();
-
-  if (ok)
+  try
   {
-    Fmi::DateTime end = Fmi::MicrosecClock::universal_time();
-    Fmi::TimeDuration duration = end - now;
-    const double sec = 0.001 * duration.total_milliseconds();
-    out << "GeoEngine reloaded in " << fmt::format("{:0.3f}", sec) << " seconds\n";
+    out << "<html><head><title>SmartMet Admin</title></head><body>\n";
+
+    // Make MIME header
+    std::string mime("text/html; charset=UTF-8");
+    theResponse.setHeader("Content-Type", mime);
+
+    Fmi::DateTime now = Fmi::MicrosecClock::universal_time();
+    const std::pair<bool, std::string> result = reload();
+
+    out << "</body></html>\n";
+    out << "<pre>\n";
+    out << result.second << '\n';
+    out << "</pre>\n";
+
+    // Set return code and content
+    theResponse.setStatus(result.first ? Spine::HTTP::Status::ok : Spine::HTTP::Status::internal_server_error);
+    theResponse.setContent(out.str());
   }
-  else
+  catch (...)
   {
-    out << "GeoEngine reload failed: " << errorMessage() << "\n";
+    const auto error = Fmi::Exception::Trace(BCP, "Operation failed!");
+    std::cout << error << std::endl;
+    out << error;
+    theResponse.setStatus(Spine::HTTP::Status::internal_server_error);
+    theResponse.setContent(out.str());
   }
-
-  out << "</body></html>\n";
-
-  // Make MIME header
-  std::string mime("text/html; charset=UTF-8");
-  theResponse.setHeader("Content-Type", mime);
-
-  // Set content
-  theResponse.setContent(out.str());
-}
-catch (...)
-{
-  throw Fmi::Exception::Trace(BCP, "Operation failed!");
 }
 
 

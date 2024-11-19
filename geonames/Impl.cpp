@@ -255,8 +255,7 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
       unsigned int suggestCacheSize = 10000;
       itsConfig.lookupValue("cache.suggest_max_size", suggestCacheSize);
       itsSuggestCache = std::make_unique<SuggestCache>(suggestCacheSize);
-      itsLanguagesSuggestCache =
-          std::make_unique<LanguagesSuggestCache>(suggestCacheSize);
+      itsLanguagesSuggestCache = std::make_unique<LanguagesSuggestCache>(suggestCacheSize);
 
       // Establish collator
 
@@ -1364,19 +1363,19 @@ Spine::LocationPtr Engine::Impl::extract_geoname(const pqxx::result::const_itera
 
   std::string country;  // country will be filled in upon request
   Spine::LocationPtr loc = std::make_shared<Spine::Location>(geoid,
-                                                               name,
-                                                               iso2,
-                                                               munip,
-                                                               area,
-                                                               feature,
-                                                               country,
-                                                               lon,
-                                                               lat,
-                                                               tz,
-                                                               pop,
-                                                               boost::numeric_cast<float>(ele),
-                                                               boost::numeric_cast<float>(dem),
-                                                               covertype);
+                                                             name,
+                                                             iso2,
+                                                             munip,
+                                                             area,
+                                                             feature,
+                                                             country,
+                                                             lon,
+                                                             lat,
+                                                             tz,
+                                                             pop,
+                                                             boost::numeric_cast<float>(ele),
+                                                             boost::numeric_cast<float>(dem),
+                                                             covertype);
 
   return loc;
 }
@@ -1496,6 +1495,7 @@ void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &
     // We assume sort order is geoid,language for the ifs to work
     Spine::GeoId last_handled_geoid = 0;
     std::string last_lang;
+    auto idinfo = itsGeoIdMap.end();
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
@@ -1509,13 +1509,15 @@ void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &
       if (geoid == last_handled_geoid && lang == last_lang)
         continue;
 
+      if (geoid != last_handled_geoid)
+        idinfo = itsGeoIdMap.find(geoid);  // update only when geoid changes for speed
+
       last_handled_geoid = geoid;
       last_lang = lang;
 
       // Discard translations which do not change anything to save memory and to avoid
       // duplicates more easily
 
-      auto idinfo = itsGeoIdMap.find(geoid);
       if (idinfo != itsGeoIdMap.end())
       {
         auto locptr = *idinfo->second;
@@ -1531,6 +1533,7 @@ void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &
 
       // Note that it is OK if this fails - the first translation found is
       // preferred
+
       translations.insert(std::make_pair(lang, name));
     }
 
@@ -1833,10 +1836,9 @@ void Engine::Impl::build_geotrees()
       std::cout << "build_geotrees: keyword '" << FMINAMES_DEFAULT_KEYWORD << "' of size "
                 << itsLocations.size() << std::endl;
 
-    auto it = itsGeoTrees
-                  .insert(std::make_pair(FMINAMES_DEFAULT_KEYWORD,
-                                         std::make_unique<GeoTree>()))
-                  .first;
+    auto it =
+        itsGeoTrees.insert(std::make_pair(FMINAMES_DEFAULT_KEYWORD, std::make_unique<GeoTree>()))
+            .first;
     for (const auto &ptr : itsLocations)
       it->second->insert(ptr);
   }
@@ -1985,17 +1987,17 @@ void Engine::Impl::build_lang_ternarytrees_all()
         // If there isn't one, create it now
 
         if (it == itsLangTernaryTreeMap.end())
-          it = itsLangTernaryTreeMap
-                   .insert(std::make_pair(lang, std::make_shared<TernaryTreeMap>()))
-                   .first;
+          it =
+              itsLangTernaryTreeMap.insert(std::make_pair(lang, std::make_shared<TernaryTreeMap>()))
+                  .first;
         // Then find keyword specific map, keyword being "all"
 
         auto &tmap = *it->second;
         auto tit = tmap.find("all");
 
         if (tit == tmap.end())
-          tit = tmap.insert(TernaryTreeMap::value_type("all", std::make_shared<TernaryTree>()))
-                    .first;
+          tit =
+              tmap.insert(TernaryTreeMap::value_type("all", std::make_shared<TernaryTree>())).first;
 
         // Insert the word "name, area" to the tree
 
@@ -2082,9 +2084,8 @@ void Engine::Impl::build_lang_ternarytrees_one_keyword(const std::string &keywor
       // If there isn't one, create it now
 
       if (it == itsLangTernaryTreeMap.end())
-        it =
-            itsLangTernaryTreeMap.insert(std::make_pair(lang, std::make_shared<TernaryTreeMap>()))
-                .first;
+        it = itsLangTernaryTreeMap.insert(std::make_pair(lang, std::make_shared<TernaryTreeMap>()))
+                 .first;
 
       // Then find keyword specific map
 
@@ -2092,8 +2093,8 @@ void Engine::Impl::build_lang_ternarytrees_one_keyword(const std::string &keywor
       auto tit = tmap.find(keyword);
 
       if (tit == tmap.end())
-        tit = tmap.insert(TernaryTreeMap::value_type(keyword, std::make_shared<TernaryTree>()))
-                  .first;
+        tit =
+            tmap.insert(TernaryTreeMap::value_type(keyword, std::make_shared<TernaryTree>())).first;
 
       // Insert the word "name, area" to the tree
 
@@ -2992,9 +2993,10 @@ template <typename T>
 Fmi::Cache::CacheStats convert_stats(const T &cache)
 {
   auto stats = cache.getCacheStatistics();
-  const Fmi::DateTime time = Fmi::date_time::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(
-                                                 stats.getConstructionTime().time_since_epoch())
-                                                 .count());
+  const Fmi::DateTime time =
+      Fmi::date_time::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(
+                                      stats.getConstructionTime().time_since_epoch())
+                                      .count());
   return {time,
           cache.maxSize(),
           cache.size(),

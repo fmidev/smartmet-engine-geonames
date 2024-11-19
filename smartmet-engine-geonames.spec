@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 24.11.12
+Version: 24.11.19
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -122,6 +122,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Tue Nov 19 2024 Mika Heiskanen <mika.heiskanen@fmi.fi> - 24.11.19-1.fmi
+- Speed improvement
+
 * Tue Nov 12 2024 Andris Pavēnis <andris.pavenis@fmi.fi> 24.11.12-1.fmi
 - Fix /admin?what=reload response
 

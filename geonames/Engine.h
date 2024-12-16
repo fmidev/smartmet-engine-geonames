@@ -205,6 +205,8 @@ class Engine : public Spine::SmartMetEngine
   // Has autocomplete data been initialized?
   bool isSuggestReady() const;
 
+  void assign_priorities(Spine::LocationList& locs) const;
+
  protected:
   void init() override;
   void shutdown() override;

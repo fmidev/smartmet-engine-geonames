@@ -177,6 +177,9 @@ class Engine::Impl
 
   Fmi::Cache::CacheStatistics getCacheStats() const;
 
+  void assign_priorities(Spine::LocationList& locs) const;
+
+
   bool itsReady = false;
   bool itsReloading = false;
   bool itsReloadOK = false;
@@ -207,6 +210,7 @@ class Engine::Impl
 
   const libconfig::Setting& lookup_database(const std::string& setting,
                                             const std::string& name) const;
+
   bool itsVerbose = false;
   bool itsDatabaseDisabled = false;
   bool itsAutocompleteDisabled = false;
@@ -303,7 +307,6 @@ class Engine::Impl
   void read_alternate_geonames(Fmi::Database::PostgreSQLConnection& conn);
   void read_alternate_municipalities(Fmi::Database::PostgreSQLConnection& conn);
   void read_geonames(Fmi::Database::PostgreSQLConnection& conn);
-  void assign_priorities(Spine::LocationList& locs) const;
   int population_priority(const Spine::Location& loc) const;
   int area_priority(const Spine::Location& loc) const;
   int country_priority(const Spine::Location& loc) const;

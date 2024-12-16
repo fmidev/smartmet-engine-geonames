@@ -1647,6 +1647,16 @@ catch (...)
   throw Fmi::Exception::Trace(BCP, "Operation failed!");
 }
 
+void Engine::assign_priorities(Spine::LocationList& locs) const
+try
+{
+  auto mycopy = impl.load();
+  mycopy->assign_priorities(locs);
+}
+catch (...)
+{
+  throw Fmi::Exception::Trace(BCP, "Operation failed!");
+}
 
 // ----------------------------------------------------------------------
 

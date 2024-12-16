@@ -1385,13 +1385,16 @@ void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
   try
   {
     std::string sql =
-        "SELECT id, geonames.name AS name, countries_iso2 as iso2, "
-        "features_code as feature, "
-        "municipalities_id as munip, lon, lat, timezone, population, "
-        "elevation, dem, landcover, admin1 "
-        "FROM "
-        "geonames WHERE EXISTS (SELECT * FROM keywords_has_geonames WHERE "
-        "geonames.id=keywords_has_geonames.geonames_id)";
+        "SELECT\n"
+        "  id, geonames.name AS name, countries_iso2 as iso2, features_code as feature, \n"
+        "  municipalities_id as munip, lon, lat, timezone, population, elevation, dem, landcover, admin1\n"
+        "FROM\n"
+        "  geonames\n"
+        "INNER JOIN\n"
+        "  keywords_has_geonames\n"
+        "ON\n"
+        "  geonames.id=keywords_has_geonames.geonames_id\n"
+        ;
 
     if (itsConfig.exists("database.where.geonames"))
     {

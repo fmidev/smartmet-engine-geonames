@@ -1013,64 +1013,18 @@ void Engine::Impl::read_config_priorities()
 {
   try
   {
-    try
-    {
-      if (!itsConfig.exists("priorities"))
-        return;
+    if (!itsConfig.exists("priorities"))
+      return;
 
-      itsConfig.lookupValue("priorities.match", itsNameMatchPriority);
+     itsConfig.lookupValue("priorities.match", itsNameMatchPriority);
 
-      read_config_prioritymap("populations", itsPopulationPriorities);
-      read_config_prioritymap("areas", itsAreaPriorities);
-      read_config_prioritymap("countries", itsCountryPriorities);
-
-      if (!itsConfig.exists("priorities.features"))
-        return;
-
-      const libconfig::Setting &tmp = itsConfig.lookup("priorities.features");
-
-      if (!tmp.isGroup())
-      {
-        Fmi::Exception exception(BCP, "Configured value of 'priorities.features' must be a group!");
-        exception.addParameter("Configuration file", itsConfigFile);
-        throw exception;
-      }
-      for (int i = 0; i < tmp.getLength(); ++i)
-      {
-        std::string countryname = tmp[i].getName();
-        std::string featurename = tmp[i];
-
-        std::string mapname = "priorities." + featurename;
-
-        if (!itsConfig.exists(mapname))
-        {
-          Fmi::Exception exception(BCP, "Configuration of '" + mapname + "' is missing!");
-          exception.addParameter("Configuration file", itsConfigFile);
-          throw exception;
-        }
-
-        const libconfig::Setting &tmpmap = itsConfig.lookup(mapname);
-
-        for (int j = 0; j < tmpmap.getLength(); ++j)
-        {
-          std::string name = tmpmap[j].getName();
-          int value = tmpmap[j];
-          itsFeaturePriorities[countryname][name] = value;
-        }
-      }
-    }
-    catch (const libconfig::SettingException &e)
-    {
-      Fmi::Exception exception(BCP, "Configuration file setting error!");
-      exception.addParameter("Path", e.getPath());
-      exception.addParameter("Configuration file", itsConfigFile);
-      exception.addParameter("Error description", e.what());
-      throw exception;
-    }
+    itsLocationPriorities.init(itsConfig);
   }
   catch (...)
   {
-    throw Fmi::Exception::Trace(BCP, "Reading config priorities failed!");
+    auto error = Fmi::Exception::Trace(BCP, "Reading config priorities failed!");
+    error.addParameter("Configuration file", itsConfigFile);
+    throw error;
   }
 }
 
@@ -1639,104 +1593,11 @@ void Engine::Impl::assign_priorities(Spine::LocationList &locs) const
 
     for (Spine::LocationPtr &v : locs)
     {
-      int score = population_priority(*v);
-      score += area_priority(*v);
-      score += country_priority(*v);
-      score += feature_priority(*v);
+      int score = itsLocationPriorities.getPriority(*v);
 
       auto &myloc = const_cast<Spine::Location &>(*v);  // NOLINT
       myloc.priority = score;
     }
-  }
-  catch (...)
-  {
-    throw Fmi::Exception::Trace(BCP, "Operation failed!");
-  }
-}
-
-int Engine::Impl::country_priority(const Spine::Location &loc) const
-{
-  try
-  {
-    auto it = itsCountryPriorities.find(loc.iso2);
-    if (it != itsCountryPriorities.end())
-      return it->second * priority_scale;
-
-    it = itsCountryPriorities.find("default");
-    if (it != itsCountryPriorities.end())
-      return it->second * priority_scale;
-
-    return 0;
-  }
-  catch (...)
-  {
-    throw Fmi::Exception::Trace(BCP, "Operation failed!");
-  }
-}
-
-int Engine::Impl::area_priority(const Spine::Location &loc) const
-{
-  try
-  {
-    auto it = itsAreaPriorities.find(loc.area);
-    if (it != itsAreaPriorities.end())
-      return it->second * priority_scale;
-
-    it = itsAreaPriorities.find("default");
-    if (it != itsAreaPriorities.end())
-      return it->second * priority_scale;
-
-    return 0;
-  }
-  catch (...)
-  {
-    throw Fmi::Exception::Trace(BCP, "Operation failed!");
-  }
-}
-
-int Engine::Impl::population_priority(const Spine::Location &loc) const
-{
-  try
-  {
-    auto it = itsPopulationPriorities.find(loc.iso2);
-    if (it != itsPopulationPriorities.end())
-      return lround(1.0 * priority_scale * loc.population / it->second);
-
-    it = itsPopulationPriorities.find("default");
-    if (it != itsPopulationPriorities.end())
-      return lround(1.0 * priority_scale * loc.population / it->second);
-
-    return 0;
-  }
-  catch (...)
-  {
-    throw Fmi::Exception::Trace(BCP, "Operation failed!");
-  }
-}
-
-int Engine::Impl::feature_priority(const Spine::Location &loc) const
-{
-  try
-  {
-    auto it = itsFeaturePriorities.find(loc.iso2);
-    if (it == itsFeaturePriorities.end())
-      it = itsFeaturePriorities.find("default");
-
-    if (it == itsFeaturePriorities.end())
-      return 0;
-
-    const auto &priomap = it->second;
-
-    auto jt = priomap.find(loc.feature);
-
-    if (jt != priomap.end())
-      return jt->second * priority_scale;
-
-    jt = priomap.find("default");
-    if (jt != priomap.end())
-      return jt->second * priority_scale;
-
-    return 0;
   }
   catch (...)
   {

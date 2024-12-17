@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Engine.h"
+#include "LocationPriorities.h"
 #include <boost/atomic.hpp>
 #include <boost/locale.hpp>
 #include <boost/locale/collator.hpp>
@@ -237,11 +238,8 @@ class Engine::Impl
   using FeaturePriorities = std::map<std::string, Priorities>;
 
   int itsNameMatchPriority = 50;
-  Priorities itsPopulationPriorities;
-  Priorities itsAreaPriorities;
-  Priorities itsCountryPriorities;
-  FeaturePriorities itsFeaturePriorities;
-
+  LocationPriorities itsLocationPriorities;
+  
   boost::atomic<bool> itsSuggestReadyFlag{false};
 
   // security
@@ -307,11 +305,7 @@ class Engine::Impl
   void read_alternate_geonames(Fmi::Database::PostgreSQLConnection& conn);
   void read_alternate_municipalities(Fmi::Database::PostgreSQLConnection& conn);
   void read_geonames(Fmi::Database::PostgreSQLConnection& conn);
-  int population_priority(const Spine::Location& loc) const;
-  int area_priority(const Spine::Location& loc) const;
-  int country_priority(const Spine::Location& loc) const;
-  int feature_priority(const Spine::Location& loc) const;
-
+  
   void build_geoid_map();
   void read_keywords(Fmi::Database::PostgreSQLConnection& conn);
 

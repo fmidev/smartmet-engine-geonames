@@ -291,9 +291,18 @@ void Engine::init()
     Spine::Reactor *reactor = Spine::Reactor::instance;
     if (reactor)
     {
-      reactor->addAdminCustomRequestHandler(this, "reload", true,
+      using AdminRequestAccess = Spine::Reactor::AdminRequestAccess;
+
+      reactor->addAdminCustomRequestHandler(
+        this,
+        "reload",
+        AdminRequestAccess::RequiresAuthentication,
         std::bind(&Engine::requestReload, this, std::placeholders::_3), "Reload geoengine");
-      reactor->addAdminTableRequestHandler(this, "geonames", false,
+
+      reactor->addAdminTableRequestHandler(
+        this,
+        "geonames",
+        AdminRequestAccess::Public,
         std::bind(&Engine::requestInfo, this, std::placeholders::_2),
          "Geoengine information");
     }

@@ -46,9 +46,11 @@ clean:
 	rm -f cnf/geonames.conf
 	-$(MAKE) stop-test-db
 	rm -rf tmp-geonames-db
+	rm -rf log
 
 test: $(TEST_PREPARE_TARGETS) $(PROG)
 	@echo Running tests:
+	mkdir -p log
 	@for prog in $(PROG); do $(TEST_RUNNER) ./$$prog; done
 	-$(MAKE) $(TEST_FINISH_TARGETS)
 

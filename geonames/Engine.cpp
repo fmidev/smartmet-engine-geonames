@@ -443,11 +443,11 @@ try
     const std::pair<bool, std::string> result = reload();
     if (result.first)
     {
-      std::cout << "  -- Geoengine reloaded successfully\n";
+      std::cout << "  -- Geoengine reloaded successfully" << std::endl;
     }
     else
     {
-      std::cout << "  -- Geoengine reload failed: " << result.second << "\n";
+      std::cout << "  -- Geoengine reload failed: " << result.second << std::endl;
     }
   }
 }

@@ -438,7 +438,6 @@ void Engine::autoReloadCheck()
 try
 {
   auto mycopy = impl.load();
-  std::cout << "  -- Checking if Geoengine needs to be reloaded\n";
   if (mycopy->isGeonamesUpdated())
   {
     const std::pair<bool, std::string> result = reload();

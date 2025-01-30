@@ -10,6 +10,7 @@
 #include <macgyver/DateTime.h>
 #include <atomic>
 #include <memory>
+#include <boost/asio.hpp>
 #include <boost/utility.hpp>
 #include <gis/OGR.h>
 #include <locus/Query.h>
@@ -67,7 +68,7 @@ class Engine : public Spine::SmartMetEngine
   Fmi::TimeZones itsTimeZones;
   Fmi::DateTime itsStartTime;
   Fmi::DateTime itsLastReload;
-  bool itsReloading;
+  std::atomic<bool> itsReloading;
   mutable std::atomic<long> itsNameSearchCount;  // TODO: These should be made into std::atomics
   mutable std::atomic<long> itsLonLatSearchCount;
   mutable std::atomic<long> itsIdSearchCount;
@@ -263,6 +264,18 @@ class Engine : public Spine::SmartMetEngine
 
   std::unique_ptr<Spine::Table> requestInfo(const SmartMet::Spine::HTTP::Request& request) const;
 
+  // Autoreload functionality related members
+  boost::asio::io_service itsIoService;
+  boost::asio::io_service::work itsWork;
+  boost::asio::basic_waitable_timer<std::chrono::steady_clock> itsTimer;
+
+  void runIoService(); // Run the io_service event loop (separate method to see it in GDB backtrace when needed)
+
+  void maybeScheduleAutoReloadCheck();
+
+  void autoReloadCheck();
+
+  boost::thread itsIoServiceThread;
 };  // class Geo
 
 }  // namespace Geonames

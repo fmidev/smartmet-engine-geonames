@@ -180,10 +180,27 @@ class Engine::Impl
 
   void assign_priorities(Spine::LocationList& locs) const;
 
+  /**
+   * @brief Check if geonames data has been updated since loading
+   */
+  bool isGeonamesUpdated();
+
+  /**
+   * @brief Check for next autoreload check time if enabled
+   *
+  * @param incr Increment in minutes (used to avoid check too soon after actual reload)
+   *
+   * @return Fmi::LocalDateTime if enabled, otherwise std::nullopt
+   */
+  std::optional<Fmi::DateTime> nextAutoreloadCheckTime(unsigned incr = 5) const;
+
+  inline bool is_autoreload_enabled() const { return itsAutoReloadInterval > 0; }
+
 
   bool itsReady = false;
   bool itsReloading = false;
   bool itsReloadOK = false;
+
   std::string itsReloadError;
   GeoTreeMap itsGeoTrees;
 
@@ -297,7 +314,7 @@ class Engine::Impl
 
   void read_config_security();
 
-  void read_database_hash_value(Fmi::Database::PostgreSQLConnection& conn);
+  std::optional<std::size_t> read_database_hash_value(Fmi::Database::PostgreSQLConnection& conn);
 
   void read_countries(Fmi::Database::PostgreSQLConnection& conn);
   void read_alternate_countries(Fmi::Database::PostgreSQLConnection& conn);
@@ -327,6 +344,20 @@ class Engine::Impl
   void add_exact_match_bonus(SmartMet::Spine::LocationList& locs,
                              const std::string& name,
                              int bonus) const;
+
+  /**
+   *  @brief Autoreload check interval in minutes (0 = disabled)
+   */
+  unsigned itsAutoReloadInterval = 0;
+
+  /**
+   * @brief How soon after loading reload is allowed
+   *
+   * This is used to avoid immediate reloads too soon after a successful reload
+   */
+  unsigned itsAutoReloadLimit = 5;
+
+  Fmi::DateTime startTime;
 
 };  // Impl
 

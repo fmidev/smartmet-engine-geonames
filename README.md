@@ -87,7 +87,7 @@ cache:
 
 </code></pre>
 
-* Automatic enginen uudelleenlataus tietokannan muutosten case
+* Automatic enginen reload tietokannan muutosten case
 
 <pre><code>
 autoreload:
@@ -97,7 +97,7 @@ autoreload:
 
 </code></pre>
 
-Oletusarvo 0 means - autoreload is disabled
+Default 0 means - autoreload is disabled
 
 
 * Priorities

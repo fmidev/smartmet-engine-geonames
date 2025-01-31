@@ -236,7 +236,9 @@ Engine::Impl::~Impl() = default;
 // ----------------------------------------------------------------------
 
 Engine::Impl::Impl(std::string configfile, bool reloading)
-    : itsReloading(reloading), itsConfigFile(std::move(configfile))
+    : itsReloading(reloading)
+    , itsConfigFile(std::move(configfile))
+    , startTime(Fmi::SecondClock::universal_time())
 {
   try
   {
@@ -712,7 +714,9 @@ void Engine::Impl::initSuggest(bool threaded)
         if (!conn.isConnected())
           throw Fmi::Exception(BCP, "Failed to connect to fminames database");
 
-        read_database_hash_value(conn);
+        const auto hash = read_database_hash_value(conn);
+        if (hash)
+          itsHashValue = *hash;
 
         Fmi::AsyncTask::interruption_point();
 
@@ -804,6 +808,81 @@ void Engine::Impl::initSuggest(bool threaded)
   }
 }
 
+std::optional<Fmi::DateTime> Engine::Impl::nextAutoreloadCheckTime(unsigned incr) const
+try
+{
+  if (itsAutoReloadInterval == 0)
+    return std::nullopt;
+
+  const Fmi::DateTime tmp = Fmi::SecondClock::local_time() + Fmi::Minutes(incr + itsAutoReloadInterval);
+  // Round down to closest itsAutoReloadInterval minutes
+  const Fmi::Date date = tmp.date();
+  const int minutes = tmp.time_of_day().total_minutes();
+  const int remainder = minutes % itsAutoReloadInterval;
+  const Fmi::DateTime next(date, Fmi::Minutes(minutes - remainder));
+  return next;
+}
+catch (...)
+{
+  throw Fmi::Exception::Trace(BCP, "Operation failed!");
+}
+
+bool Engine::Impl::isGeonamesUpdated()
+try
+{
+  if (itsDatabaseDisabled)
+  {
+    //std::cerr << "Warning: Geonames database is disabled" << std::endl;
+    return false;
+  }
+  else if (Fmi::SecondClock::universal_time() - startTime < Fmi::Minutes(itsAutoReloadLimit))
+  {
+    // Do not allow reload too soon after startup
+    return false;
+  }
+  else
+  {
+    const Fmi::DateTime now = Fmi::MicrosecClock::universal_time();
+    Fmi::Database::PostgreSQLConnectionOptions opt;
+    opt.host = itsHost;
+    opt.port = Fmi::stoul(itsPort);
+    opt.database = itsDatabase;
+    opt.username = itsUser;
+    opt.password = itsPass;
+    opt.encoding = "UTF8";
+    Fmi::Database::PostgreSQLConnection conn;
+    conn.open(opt);
+
+    if (!conn.isConnected())
+      throw Fmi::Exception(BCP, "Failed to connect to fminames database");
+
+    const auto new_hash = read_database_hash_value(conn);
+    const Fmi::DateTime check_done = Fmi::MicrosecClock::universal_time();
+    if (new_hash)
+    {
+      const bool updated = *new_hash != itsHashValue;
+      std::cout << "Geonames database update check done in "
+        << 0.001*(check_done - now).total_milliseconds()
+        << " seconds: " << (updated ? "update detected" : "no changes")
+        << std::endl;
+      return updated;
+    }
+
+    // No hash value available, cannot check for updates
+    std::cout << "Geonames database update check done in "
+        << 0.001*(check_done - now).total_milliseconds()
+        << " seconds: failed to get hesh"
+        << std::endl;
+    return false;
+  }
+}
+catch (const Fmi::Exception& error)
+{
+  // We do not want to fail here. Just log the error
+  std::cerr << error << std::endl;
+  return false;
+}
+
 // ----------------------------------------------------------------------
 /*!
  * \brief Initialize DEM data
@@ -860,6 +939,8 @@ void Engine::Impl::init(bool first_construction)
       initSuggest(false);
     else
       tg1.add("initSuggest", [this]() { initSuggest(true); });
+
+    itsConfig.lookupValue("autoreload.period", itsAutoReloadInterval);
 
     // Done apart from autocomplete. Ready to shutdown now though.
     itsReady = true;
@@ -1082,7 +1163,7 @@ void Engine::Impl::read_config_prioritymap(const std::string &partname, Prioriti
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_database_hash_value(Fmi::Database::PostgreSQLConnection &conn)
+std::optional<std::size_t> Engine::Impl::read_database_hash_value(Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1101,20 +1182,21 @@ void Engine::Impl::read_database_hash_value(Fmi::Database::PostgreSQLConnection 
     if (res.empty())
     {
       if (!itsStrict)
-        return;
+        return std::nullopt;
       throw Fmi::Exception(BCP, "FmiNames: Failed to read database hash value");
     }
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
       auto tmp = row["max"].as<double>();
-      itsHashValue = std::size_t(std::floor(tmp + 0.5));
+      return std::size_t(std::floor(tmp + 0.5));
     }
   }
   catch (...)
   {
     if (itsStrict)
       throw Fmi::Exception::Trace(BCP, "Operation failed!");
+    return std::nullopt;
   }
 }
 

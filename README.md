@@ -87,6 +87,19 @@ cache:
 
 </code></pre>
 
+* Automatic enginen reload tietokannan muutosten case
+
+<pre><code>
+autoreload:
+{
+       period        = period in minutes;
+};
+
+</code></pre>
+
+Default 0 means - autoreload is disabled
+
+
 * Priorities
 
 

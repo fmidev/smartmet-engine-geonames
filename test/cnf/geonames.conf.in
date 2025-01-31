@@ -93,6 +93,11 @@ security:
 	}
 }
 
+autoreload:
+{
+	# Not actually used in tests
+	period = 5;
+}
 
 # Priorities
 

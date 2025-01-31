@@ -266,7 +266,11 @@ Engine::Engine(std::string theConfigFile)
       itsKeywordSearchCount(0),
       itsSuggestCount(0),
       itsConfigFile(std::move(theConfigFile)),
-      initFailed(false)
+      initFailed(false),
+      itsIoService(),
+      itsWork(itsIoService),
+      itsTimer(itsIoService),
+      itsIoServiceThread([this] { runIoService(); })
 {
 }
 
@@ -311,6 +315,8 @@ void Engine::init()
     bool first_construction = true;
     tmpImpl->init(first_construction);
     impl.store(tmpImpl);
+
+    maybeScheduleAutoReloadCheck();
   }
   catch (...)
   {
@@ -330,6 +336,16 @@ void Engine::shutdown()
   try
   {
     std::cout << "  -- Shutdown requested (geoengine)\n";
+
+    itsIoService.stop();
+    if (itsIoServiceThread.joinable())
+    {
+      // Actual reload process my be running and in this case try to interrupt it. Otherwise
+      // this call would not be needed.
+      itsIoServiceThread.interrupt();
+      // Wait for the thread to finish
+      itsIoServiceThread.join();
+    }
 
     while (true)
     {
@@ -358,6 +374,87 @@ void Engine::shutdown()
   {
     throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief runIoService
+ */
+// ----------------------------------------------------------------------
+void Engine::runIoService()
+try
+{
+  itsIoService.run();
+}
+catch (...)
+{
+  // This is a separate thread, so we must catch exceptions
+  // and log them here
+  std::cout << Fmi::Exception::Trace(BCP, "Operation failed!") << std::endl;
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief maybeScheduleAutoReloadCheck
+ */
+// ----------------------------------------------------------------------
+
+void Engine::maybeScheduleAutoReloadCheck()
+try
+{
+  const std::optional<Fmi::DateTime> nextCheck = impl.load()->nextAutoreloadCheckTime(1);
+  if (nextCheck)
+  {
+    long expires_from_now = (nextCheck->get_impl() - Fmi::SecondClock::local_time()).total_seconds();
+    itsTimer.expires_from_now(std::chrono::seconds(expires_from_now));
+    itsTimer.async_wait([this](const boost::system::error_code& ec) {
+      if (!ec)
+      {
+        try
+        {
+          autoReloadCheck();
+        }
+        catch (...)
+        {
+          std::cout << Fmi::Exception::Trace(BCP, "Operation failed!") << std::endl;
+        }
+        maybeScheduleAutoReloadCheck();
+      }
+    });
+  }
+}
+catch (...)
+{
+  throw Fmi::Exception::Trace(BCP, "Operation failed!");
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief autoReloadCheck
+ */
+// ----------------------------------------------------------------------
+
+void Engine::autoReloadCheck()
+try
+{
+  auto mycopy = impl.load();
+  if (mycopy->isGeonamesUpdated())
+  {
+    const std::pair<bool, std::string> result = reload();
+    if (result.first)
+    {
+      std::cout << "  -- Geoengine reloaded successfully" << std::endl;
+    }
+    else
+    {
+      std::cout << "  -- Geoengine reload failed: " << result.second << std::endl;
+    }
+  }
+}
+catch (...)
+{
+  Fmi::Exception error(BCP, "Operation failed!");
+  std::cout << error << std::endl;
 }
 
 // ----------------------------------------------------------------------
@@ -1361,13 +1458,11 @@ std::pair<bool, std::string> Engine::reload()
   std::ostringstream output;
   try
   {
-    if (itsReloading)
+    if (itsReloading.exchange(true))
     {
       itsErrorMessage = "Geo reload was already in progress";
       return {false, itsErrorMessage};
     }
-
-    itsReloading = true;
 
     const Fmi::DateTime begin = Fmi::MicrosecClock::local_time();
     const std::string m1 = begin.to_simple_string() + " Geonames reloading initiated";
@@ -1402,6 +1497,11 @@ std::pair<bool, std::string> Engine::reload()
     ;
     output << m3 << std::endl;
     std::cout << m3 << std::endl;
+
+    // Cancel the auto-reload timer if it was enabled and possibly schedule again.
+    // Period may have changed during reload.
+    itsTimer.cancel();
+    maybeScheduleAutoReloadCheck();
 
     return { true, output.str() };
   }

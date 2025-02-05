@@ -292,23 +292,24 @@ void Engine::init()
 {
   try
   {
-    Spine::Reactor *reactor = Spine::Reactor::instance;
+    Spine::Reactor* reactor = Spine::Reactor::instance;
     if (reactor)
     {
       using AdminRequestAccess = Spine::Reactor::AdminRequestAccess;
 
       reactor->addAdminCustomRequestHandler(
-        this,
-        "reload",
-        AdminRequestAccess::RequiresAuthentication,
-        std::bind(&Engine::requestReload, this, std::placeholders::_3), "Reload geoengine");
+          this,
+          "reload",
+          AdminRequestAccess::RequiresAuthentication,
+          std::bind(&Engine::requestReload, this, std::placeholders::_3),
+          "Reload geoengine");
 
       reactor->addAdminTableRequestHandler(
-        this,
-        "geonames",
-        AdminRequestAccess::Public,
-        std::bind(&Engine::requestInfo, this, std::placeholders::_2),
-         "Geoengine information");
+          this,
+          "geonames",
+          AdminRequestAccess::Public,
+          std::bind(&Engine::requestInfo, this, std::placeholders::_2),
+          "Geoengine information");
     }
 
     tmpImpl = std::make_shared<Impl>(itsConfigFile, false);
@@ -405,22 +406,25 @@ try
   const std::optional<Fmi::DateTime> nextCheck = impl.load()->nextAutoreloadCheckTime(1);
   if (nextCheck)
   {
-    long expires_from_now = (nextCheck->get_impl() - Fmi::SecondClock::local_time()).total_seconds();
+    long expires_from_now =
+        (nextCheck->get_impl() - Fmi::SecondClock::local_time()).total_seconds();
     itsTimer.expires_from_now(std::chrono::seconds(expires_from_now));
-    itsTimer.async_wait([this](const boost::system::error_code& ec) {
-      if (!ec)
-      {
-        try
+    itsTimer.async_wait(
+        [this](const boost::system::error_code& ec)
         {
-          autoReloadCheck();
-        }
-        catch (...)
-        {
-          std::cout << Fmi::Exception::Trace(BCP, "Operation failed!") << std::endl;
-        }
-        maybeScheduleAutoReloadCheck();
-      }
-    });
+          if (!ec)
+          {
+            try
+            {
+              autoReloadCheck();
+            }
+            catch (...)
+            {
+              std::cout << Fmi::Exception::Trace(BCP, "Operation failed!") << std::endl;
+            }
+            maybeScheduleAutoReloadCheck();
+          }
+        });
   }
 }
 catch (...)
@@ -795,11 +799,13 @@ WktGeometries Engine::getWktGeometries(const LocationOptions& loptions,
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationList Engine::suggest(const std::string& thePattern,
-                                    const std::string& theLang,
-                                    const std::string& theKeyword,
-                                    unsigned int thePage,
-                                    unsigned int theMaxResults) const
+Spine::LocationList Engine::suggest(
+    const std::string& thePattern,
+    const std::function<bool(const Spine::LocationPtr&)>& thePredicate,
+    const std::string& theLang,
+    const std::string& theKeyword,
+    unsigned int thePage,
+    unsigned int theMaxResults) const
 {
   try
   {
@@ -808,7 +814,8 @@ Spine::LocationList Engine::suggest(const std::string& thePattern,
     ++itsSuggestCount;
 
     auto mycopy = impl.load();
-    return mycopy->suggest(thePattern, theLang, theKeyword, thePage, theMaxResults, false);
+    return mycopy->suggest(
+        thePattern, thePredicate, theLang, theKeyword, thePage, theMaxResults, false);
   }
   catch (...)
   {
@@ -822,11 +829,13 @@ Spine::LocationList Engine::suggest(const std::string& thePattern,
  */
 // ----------------------------------------------------------------------
 
-Spine::LocationList Engine::suggestDuplicates(const std::string& thePattern,
-                                              const std::string& theLang,
-                                              const std::string& theKeyword,
-                                              unsigned int thePage,
-                                              unsigned int theMaxResults) const
+Spine::LocationList Engine::suggestDuplicates(
+    const std::string& thePattern,
+    const std::function<bool(const Spine::LocationPtr&)>& thePredicate,
+    const std::string& theLang,
+    const std::string& theKeyword,
+    unsigned int thePage,
+    unsigned int theMaxResults) const
 {
   try
   {
@@ -835,7 +844,8 @@ Spine::LocationList Engine::suggestDuplicates(const std::string& thePattern,
     ++itsSuggestCount;
 
     auto mycopy = impl.load();
-    return mycopy->suggest(thePattern, theLang, theKeyword, thePage, theMaxResults, true);
+    return mycopy->suggest(
+        thePattern, thePredicate, theLang, theKeyword, thePage, theMaxResults, true);
   }
   catch (...)
   {
@@ -849,11 +859,13 @@ Spine::LocationList Engine::suggestDuplicates(const std::string& thePattern,
  */
 // ----------------------------------------------------------------------
 
-std::vector<Spine::LocationList> Engine::suggest(const std::string& thePattern,
-                                                 const std::vector<std::string>& theLanguages,
-                                                 const std::string& theKeyword,
-                                                 unsigned int thePage,
-                                                 unsigned int theMaxResults) const
+std::vector<Spine::LocationList> Engine::suggest(
+    const std::string& thePattern,
+    const std::function<bool(const Spine::LocationPtr&)>& thePredicate,
+    const std::vector<std::string>& theLanguages,
+    const std::string& theKeyword,
+    unsigned int thePage,
+    unsigned int theMaxResults) const
 {
   try
   {
@@ -865,7 +877,7 @@ std::vector<Spine::LocationList> Engine::suggest(const std::string& thePattern,
 
     auto mycopy = impl.load();
     return mycopy->suggest(
-        thePattern, theLanguages, theKeyword, thePage, theMaxResults, duplicates);
+        thePattern, thePredicate, theLanguages, theKeyword, thePage, theMaxResults, duplicates);
   }
   catch (...)
   {
@@ -1477,11 +1489,12 @@ std::pair<bool, std::string> Engine::reload()
     {
       itsErrorMessage = p->itsReloadError;
       const Fmi::DateTime end = Fmi::MicrosecClock::local_time();
-      const std::string m2 = end.to_simple_string() + " Geonames reloading failed: " + itsErrorMessage;
+      const std::string m2 =
+          end.to_simple_string() + " Geonames reloading failed: " + itsErrorMessage;
       output << m2 << std::endl;
       std::cout << m2 << std::endl;
       itsReloading = false;
-      return { false, output.str() };
+      return {false, output.str()};
     }
 
     impl.store(p);
@@ -1492,9 +1505,8 @@ std::pair<bool, std::string> Engine::reload()
     itsReloading = false;
 
     const double secs = 0.000001 * (end - begin).total_microseconds();
-    const std::string m3 = itsLastReload.to_simple_string() + " Geonames reloaded in "
-                          + fmt::format("{:0.3f}", secs) + " seconds"
-    ;
+    const std::string m3 = itsLastReload.to_simple_string() + " Geonames reloaded in " +
+                           fmt::format("{:0.3f}", secs) + " seconds";
     output << m3 << std::endl;
     std::cout << m3 << std::endl;
 
@@ -1503,7 +1515,7 @@ std::pair<bool, std::string> Engine::reload()
     itsTimer.cancel();
     maybeScheduleAutoReloadCheck();
 
-    return { true, output.str() };
+    return {true, output.str()};
   }
   catch (...)
   {
@@ -1513,10 +1525,10 @@ std::pair<bool, std::string> Engine::reload()
            << error << '\n';
     output << errmsg.str() << std::endl;
     std::cout << errmsg.str() << std::endl;
-    itsReloading = false; // Do not leave the system in reloading state
+    itsReloading = false;  // Do not leave the system in reloading state
     itsErrorMessage = errmsg.str();
     // Return false and error message, but do not throw and exception
-    return { false, output.str() };
+    return {false, output.str()};
   }
 }
 
@@ -1720,7 +1732,8 @@ void Engine::requestReload(SmartMet::Spine::HTTP::Response& theResponse)
     out << "</pre>\n";
 
     // Set return code and content
-    theResponse.setStatus(result.first ? Spine::HTTP::Status::ok : Spine::HTTP::Status::internal_server_error);
+    theResponse.setStatus(result.first ? Spine::HTTP::Status::ok
+                                       : Spine::HTTP::Status::internal_server_error);
     theResponse.setContent(out.str());
   }
   catch (...)
@@ -1733,23 +1746,23 @@ void Engine::requestReload(SmartMet::Spine::HTTP::Response& theResponse)
   }
 }
 
-
-std::unique_ptr<Spine::Table> Engine::requestInfo(const SmartMet::Spine::HTTP::Request& request) const
+std::unique_ptr<Spine::Table> Engine::requestInfo(
+    const SmartMet::Spine::HTTP::Request& request) const
 try
 {
   const std::string dataType = Spine::optional_string(request.getParameter("type"), "meta");
   if (dataType == "meta")
-    {
-      return metadataStatus();
-    }
-    else if (dataType == "cache")
-    {
-      return cacheStatus();
-    }
-    else
-    {
-      throw Fmi::Exception(BCP, "Unknown type '" + dataType + "'");
-    }
+  {
+    return metadataStatus();
+  }
+  else if (dataType == "cache")
+  {
+    return cacheStatus();
+  }
+  else
+  {
+    throw Fmi::Exception(BCP, "Unknown type '" + dataType + "'");
+  }
 }
 catch (...)
 {

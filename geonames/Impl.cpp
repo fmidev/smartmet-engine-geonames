@@ -93,43 +93,6 @@ void print(const std::list<SmartMet::Spine::LocationPtr *> &ptrs)
 
 namespace
 {
-// ----------------------------------------------------------------------
-/*!
- * \brief Cache key for a suggestion
- */
-// ----------------------------------------------------------------------
-
-std::size_t cache_key(const std::string &pattern,
-                      const std::string &lang,
-                      const std::string &keyword,
-                      unsigned int page,
-                      unsigned int maxresults,
-                      bool duplicates)
-{
-  auto hash = Fmi::hash_value(pattern);
-  Fmi::hash_combine(hash, Fmi::hash_value(lang));
-  Fmi::hash_combine(hash, Fmi::hash_value(keyword));
-  Fmi::hash_combine(hash, Fmi::hash_value(page));
-  Fmi::hash_combine(hash, Fmi::hash_value(maxresults));
-  Fmi::hash_combine(hash, Fmi::hash_value(duplicates));
-  return hash;
-}
-
-std::size_t cache_key(const std::string &pattern,
-                      const std::vector<std::string> &languages,
-                      const std::string &keyword,
-                      unsigned int page,
-                      unsigned int maxresults,
-                      bool duplicates)
-{
-  auto hash = Fmi::hash_value(pattern);
-  Fmi::hash_combine(hash, Fmi::hash_value(languages));
-  Fmi::hash_combine(hash, Fmi::hash_value(keyword));
-  Fmi::hash_combine(hash, Fmi::hash_value(page));
-  Fmi::hash_combine(hash, Fmi::hash_value(maxresults));
-  Fmi::hash_combine(hash, Fmi::hash_value(duplicates));
-  return hash;
-}
 
 // ----------------------------------------------------------------------
 /*!
@@ -140,6 +103,18 @@ std::size_t cache_key(const std::string &pattern,
 std::string to_language(const std::string &lang)
 {
   return Fmi::ascii_tolower_copy(lang);
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Keep only desired features
+ */
+// ----------------------------------------------------------------------
+
+void filter_features(SmartMet::Spine::LocationList &locs,
+                     const std::function<bool(const SmartMet::Spine::LocationPtr &)> &predicate)
+{
+  locs.remove_if(predicate);
 }
 
 // ----------------------------------------------------------------------
@@ -236,9 +211,9 @@ Engine::Impl::~Impl() = default;
 // ----------------------------------------------------------------------
 
 Engine::Impl::Impl(std::string configfile, bool reloading)
-    : itsReloading(reloading)
-    , itsConfigFile(std::move(configfile))
-    , startTime(Fmi::SecondClock::universal_time())
+    : itsReloading(reloading),
+      itsConfigFile(std::move(configfile)),
+      startTime(Fmi::SecondClock::universal_time())
 {
   try
   {
@@ -254,10 +229,10 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
       itsNameSearchCache.resize(cacheMaxSize);
 
       // Suggest cache settings
-      unsigned int suggestCacheSize = 10000;
+      unsigned int suggestCacheSize = 666;
       itsConfig.lookupValue("cache.suggest_max_size", suggestCacheSize);
-      itsSuggestCache = std::make_unique<SuggestCache>(suggestCacheSize);
-      itsLanguagesSuggestCache = std::make_unique<LanguagesSuggestCache>(suggestCacheSize);
+      if (suggestCacheSize != 666)
+        std::cerr << "Warning: cache.suggest_max_size is deprecated" << std::endl;
 
       // Establish collator
 
@@ -814,7 +789,8 @@ try
   if (itsAutoReloadInterval == 0)
     return std::nullopt;
 
-  const Fmi::DateTime tmp = Fmi::SecondClock::local_time() + Fmi::Minutes(incr + itsAutoReloadInterval);
+  const Fmi::DateTime tmp =
+      Fmi::SecondClock::local_time() + Fmi::Minutes(incr + itsAutoReloadInterval);
   // Round down to closest itsAutoReloadInterval minutes
   const Fmi::Date date = tmp.date();
   const int minutes = tmp.time_of_day().total_minutes();
@@ -832,7 +808,7 @@ try
 {
   if (itsDatabaseDisabled)
   {
-    //std::cerr << "Warning: Geonames database is disabled" << std::endl;
+    // std::cerr << "Warning: Geonames database is disabled" << std::endl;
     return false;
   }
   else if (Fmi::SecondClock::universal_time() - startTime < Fmi::Minutes(itsAutoReloadLimit))
@@ -862,21 +838,19 @@ try
     {
       const bool updated = *new_hash != itsHashValue;
       std::cout << "Geonames database update check done in "
-        << 0.001*(check_done - now).total_milliseconds()
-        << " seconds: " << (updated ? "update detected" : "no changes")
-        << std::endl;
+                << 0.001 * (check_done - now).total_milliseconds()
+                << " seconds: " << (updated ? "update detected" : "no changes") << std::endl;
       return updated;
     }
 
     // No hash value available, cannot check for updates
     std::cout << "Geonames database update check done in "
-        << 0.001*(check_done - now).total_milliseconds()
-        << " seconds: failed to get hesh"
-        << std::endl;
+              << 0.001 * (check_done - now).total_milliseconds() << " seconds: failed to get hesh"
+              << std::endl;
     return false;
   }
 }
-catch (const Fmi::Exception& error)
+catch (const Fmi::Exception &error)
 {
   // We do not want to fail here. Just log the error
   std::cerr << error << std::endl;
@@ -1097,7 +1071,7 @@ void Engine::Impl::read_config_priorities()
     if (!itsConfig.exists("priorities"))
       return;
 
-     itsConfig.lookupValue("priorities.match", itsNameMatchPriority);
+    itsConfig.lookupValue("priorities.match", itsNameMatchPriority);
 
     itsLocationPriorities.init(itsConfig);
   }
@@ -1163,7 +1137,8 @@ void Engine::Impl::read_config_prioritymap(const std::string &partname, Prioriti
  */
 // ----------------------------------------------------------------------
 
-std::optional<std::size_t> Engine::Impl::read_database_hash_value(Fmi::Database::PostgreSQLConnection &conn)
+std::optional<std::size_t> Engine::Impl::read_database_hash_value(
+    Fmi::Database::PostgreSQLConnection &conn)
 {
   try
   {
@@ -1423,14 +1398,14 @@ void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
     std::string sql =
         "SELECT\n"
         "  id, geonames.name AS name, countries_iso2 as iso2, features_code as feature, \n"
-        "  municipalities_id as munip, lon, lat, timezone, population, elevation, dem, landcover, admin1\n"
+        "  municipalities_id as munip, lon, lat, timezone, population, elevation, dem, landcover, "
+        "admin1\n"
         "FROM\n"
         "  geonames\n"
         "INNER JOIN\n"
         "  keywords_has_geonames\n"
         "ON\n"
-        "  geonames.id=keywords_has_geonames.geonames_id\n"
-        ;
+        "  geonames.id=keywords_has_geonames.geonames_id\n";
 
     if (itsConfig.exists("database.where.geonames"))
     {
@@ -2425,24 +2400,20 @@ Spine::LocationList Engine::Impl::suggest_one_keyword(const std::string &pattern
   return result;
 }
 
-Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
-                                          const std::string &lang,
-                                          const std::string &keyword,
-                                          unsigned int page,
-                                          unsigned int maxresults,
-                                          bool duplicates) const
+Spine::LocationList Engine::Impl::suggest(
+    const std::string &pattern,
+    const std::function<bool(const Spine::LocationPtr &)> &predicate,
+    const std::string &lang,
+    const std::string &keyword,
+    unsigned int page,
+    unsigned int maxresults,
+    bool duplicates) const
 {
   if (!itsSuggestReadyFlag)
     throw Fmi::Exception(BCP, "Attempt to use geonames suggest before it is ready!");
 
   try
   {
-    // Try using the cache first
-    auto cachekey = cache_key(pattern, lang, keyword, page, maxresults, duplicates);
-    auto cached_result = itsSuggestCache->find(cachekey);
-    if (cached_result)
-      return *cached_result;
-
     Spine::LocationList ret;
 
     // return null if any keyword is wrong, this mimics previous behaviour
@@ -2471,6 +2442,8 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
         ret.insert(ret.end(), result.begin(), result.end());
     }
 
+    filter_features(ret, predicate);
+
     // Translate the names
 
     translate(ret, lang);
@@ -2494,8 +2467,6 @@ Spine::LocationList Engine::Impl::suggest(const std::string &pattern,
     // results are cached.
 
     keep_wanted_page(ret, maxresults, page);
-
-    itsSuggestCache->insert(cachekey, ret);
 
     return ret;
   }
@@ -2533,12 +2504,14 @@ void Engine::Impl::add_exact_match_bonus(Spine::LocationList &locs,
  */
 // ----------------------------------------------------------------------
 
-std::vector<Spine::LocationList> Engine::Impl::suggest(const std::string &pattern,
-                                                       const std::vector<std::string> &languages,
-                                                       const std::string &keyword,
-                                                       unsigned int page,
-                                                       unsigned int maxresults,
-                                                       bool duplicates) const
+std::vector<Spine::LocationList> Engine::Impl::suggest(
+    const std::string &pattern,
+    const std::function<bool(const Spine::LocationPtr &)> &predicate,
+    const std::vector<std::string> &languages,
+    const std::string &keyword,
+    unsigned int page,
+    unsigned int maxresults,
+    bool duplicates) const
 {
   try
   {
@@ -2550,12 +2523,6 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(const std::string &patter
 
     if (languages.size() < 2)
       throw Fmi::Exception(BCP, "Called autocomplete for N languages with less than 2 languages");
-
-    // Try using the cache first
-    auto key = cache_key(pattern, languages, keyword, page, maxresults, duplicates);
-    auto cached_result = itsLanguagesSuggestCache->find(key);
-    if (cached_result)
-      return *cached_result;
 
     // return null if keyword is wrong
 
@@ -2587,6 +2554,9 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(const std::string &patter
         }
       }
     }
+
+    for (auto &loc_list : ret)
+      filter_features(loc_list, predicate);
 
     // Remove duplicates
 
@@ -2630,8 +2600,6 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(const std::string &patter
       translate(tmp, lang);
       ret.push_back(tmp);
     }
-
-    itsLanguagesSuggestCache->insert(key, ret);
 
     return ret;
   }
@@ -2956,8 +2924,6 @@ Fmi::Cache::CacheStatistics Engine::Impl::getCacheStats() const
   Fmi::Cache::CacheStatistics ret;
 
   ret["Geonames::name_search_cache"] = itsNameSearchCache.statistics();
-  ret["Geonames::suggest_cache"] = convert_stats(*itsSuggestCache);
-  ret["Geonames::language_suggest_cache"] = convert_stats(*itsLanguagesSuggestCache);
 
   return ret;
 }

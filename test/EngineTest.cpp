@@ -14,6 +14,8 @@ using namespace std;
 SmartMet::Spine::Reactor *reactor;
 SmartMet::Engine::Geonames::Engine *names;
 
+auto accept_all = [](const SmartMet::Spine::LocationPtr &loc) { return false; };
+
 void print(const SmartMet::Spine::LocationPtr &ptr)
 {
   if (!ptr)
@@ -162,7 +164,7 @@ void suggest()
 
   // Match he
 
-  ptrs = names->suggest("he");
+  ptrs = names->suggest("he", accept_all);
 
   if (ptrs.size() != 15)
     TEST_FAILED("Should find 15 places starting with 'he', not " + Fmi::to_string(ptrs.size()));
@@ -180,7 +182,7 @@ void suggest()
 
   // Match hAm
 
-  ptrs = names->suggest("hAm");
+  ptrs = names->suggest("hAm", accept_all);
   if (ptrs.size() != 15)
     TEST_FAILED("Should find 15 places starting with 'hAm', not " + Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Hamina")
@@ -188,14 +190,14 @@ void suggest()
 
   // Match Äänekoski
 
-  ptrs = names->suggest("Äänekoski");
+  ptrs = names->suggest("Äänekoski", accept_all);
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 places starting with 'Äänekoski', not " +
                 Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Äänekoski")
     TEST_FAILED("First match for 'Äänekoski' should be Äänekoski, not " + ptrs.front()->name);
 
-  ptrs = names->suggest("Ääne");
+  ptrs = names->suggest("Ääne", accept_all);
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 places starting with 'Ääne', not " +
                 Fmi::to_string(ptrs.size()));
@@ -204,7 +206,7 @@ void suggest()
 
   // Match helsinki in swedish
 
-  ptrs = names->suggest("helsinki", "sv");
+  ptrs = names->suggest("helsinki", accept_all, "sv");
 
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 places starting with 'helsinki', not " +
@@ -212,7 +214,7 @@ void suggest()
 
   // Match Åbo in Swedish
 
-  ptrs = names->suggest("Åb", "sv");
+  ptrs = names->suggest("Åb", accept_all, "sv");
 
   if (ptrs.size() < 7)
     TEST_FAILED("Should find at least 7 places starting with 'Åbo', not " +
@@ -223,7 +225,7 @@ void suggest()
 
   // Match Helsingfors in Swedish
 
-  ptrs = names->suggest("helsi", "sv");
+  ptrs = names->suggest("helsi", accept_all, "sv");
 
   if (ptrs.size() != 15)
     TEST_FAILED("Should find 15 place starting with 'helsi' in lang=sv, not " +
@@ -234,21 +236,21 @@ void suggest()
 
   // Test paging
 
-  ptrs = names->suggest("h", "fi", "ajax_fi_all", 0, 5);
+  ptrs = names->suggest("h", accept_all, "fi", "ajax_fi_all", 0, 5);
   if (ptrs.size() != 5)
     TEST_FAILED("Should find 5 places starting with 'h' in first page, not " +
                 Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Helsinki")
     TEST_FAILED("Should find Helsinki in page 1 at pos 1");
 
-  ptrs = names->suggest("h", "fi", "ajax_fi_all", 1, 5);
+  ptrs = names->suggest("h", accept_all, "fi", "ajax_fi_all", 1, 5);
   if (ptrs.size() != 5)
     TEST_FAILED("Should find 5 places starting with 'h' in 2nd page, not " +
                 Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name[0] != 'H')
     TEST_FAILED("Should find H... in page 2 at pos 1");
 
-  ptrs = names->suggest("h", "fi", "ajax_fi_all", 2, 5);
+  ptrs = names->suggest("h", accept_all, "fi", "ajax_fi_all", 2, 5);
   if (ptrs.size() != 5)
     TEST_FAILED("Should find 5 places starting with 'h' in 3rd page, not " +
                 Fmi::to_string(ptrs.size()));
@@ -257,7 +259,7 @@ void suggest()
 
   // Ii, Iisalmi, Iitti
 
-  ptrs = names->suggest("ii");
+  ptrs = names->suggest("ii", accept_all);
   if (ptrs.size() < 15)
     TEST_FAILED("Should find at least 15 places starting with 'ii'");
   if (ptrs.front()->name != "Ii")
@@ -268,7 +270,7 @@ void suggest()
 
   // Vaasa is the preferred name over Nikolainkaupunki
 
-  ptrs = names->suggest("vaasa");
+  ptrs = names->suggest("vaasa", accept_all);
   if (ptrs.size() < 1)
     TEST_FAILED("Should find at least 1 place starting with 'vaasa'");
   if (ptrs.front()->name != "Vaasa")
@@ -276,7 +278,7 @@ void suggest()
 
   // Test words within location names
 
-  ptrs = names->suggest("York");
+  ptrs = names->suggest("York", accept_all);
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 1 York and New York");
   if (ptrs.front()->name != "York")
@@ -285,7 +287,7 @@ void suggest()
   if (ptrs.front()->name != "New York")
     TEST_FAILED("Second match should be New York, not '" + ptrs.front()->name + "'");
 
-  ptrs = names->suggest("Orlea");
+  ptrs = names->suggest("Orlea", accept_all);
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 *Orlea* matches");
   if (ptrs.front()->name != "New Orleans")
@@ -296,13 +298,13 @@ void suggest()
 
   // Test comma
 
-  ptrs = names->suggest("Kumpula,Helsinki");
+  ptrs = names->suggest("Kumpula,Helsinki", accept_all);
   if (ptrs.size() < 1)
     TEST_FAILED("Should find Kumpula,Helsinki");
   if (ptrs.front()->area != "Helsinki")
     TEST_FAILED("Kumpula,Helsinki should be in Helsinki, not " + ptrs.front()->area);
 
-  ptrs = names->suggest("Kumpula, Helsinki");
+  ptrs = names->suggest("Kumpula, Helsinki", accept_all);
   if (ptrs.size() < 1)
     TEST_FAILED("Should find Kumpula, Helsinki with a space after comma");
   if (ptrs.front()->area != "Helsinki")
@@ -310,14 +312,14 @@ void suggest()
 
   // Test fmisid
 
-  ptrs = names->suggest("100539", "fmisid");
+  ptrs = names->suggest("100539", accept_all, "fmisid");
   if (ptrs.size() < 1)
     TEST_FAILED("Should find Kemi Ajos");
   if (ptrs.front()->geoid != -100539)
     TEST_FAILED("GeoId of Kemi Ajos mareograph should be -100539, not " +
                 std::to_string(ptrs.front()->geoid));
 
-  ptrs = names->suggest("100540", "fmisid");
+  ptrs = names->suggest("100540", accept_all, "fmisid");
   if (ptrs.size() < 1)
     TEST_FAILED("Should find Raahe Lapaluoto");
   if (ptrs.front()->geoid != -100540)
@@ -326,7 +328,7 @@ void suggest()
 
   // Test special political entities
 
-  ptrs = names->suggest("the");
+  ptrs = names->suggest("the", accept_all);
   if (ptrs.size() < 1)
     TEST_FAILED("Should find 'The Settlement' and 'The Valley' for 'the'");
 
@@ -343,20 +345,20 @@ void suggest()
 
   // nameSearch and suggest should get similar results
 
-  ptrs = names->suggest("noumea");
+  ptrs = names->suggest("noumea", accept_all);
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find 'Nouméa' with pattern 'noumea'");
   if (ptrs.front()->name != "Nouméa")
     TEST_FAILED("Name of the first match for 'noumea' should be 'Nouméa', not " +
                 ptrs.front()->name);
 
-  ptrs = names->suggest("liege");
+  ptrs = names->suggest("liege", accept_all);
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find 'Liege' with pattern 'liege'");
   if (ptrs.front()->name != "Liege")
     TEST_FAILED("Name of the first match for 'liege' should be 'Liege', not " + ptrs.front()->name);
 
-  ptrs = names->suggest("montreal");
+  ptrs = names->suggest("montreal", accept_all);
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find 'Montreal' with pattern 'Montreal'");
   if (ptrs.front()->name != "Montreal")
@@ -365,14 +367,14 @@ void suggest()
   if (ptrs.front()->area != "Kanada")
     TEST_FAILED("Area of first match for 'montreal' should be 'Kanada', not " + ptrs.front()->area);
 
-  ptrs = names->suggest("pristina");
+  ptrs = names->suggest("pristina", accept_all);
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find 'Pristina' with pattern 'Pristina'");
   if (ptrs.front()->name != "Pristina")
     TEST_FAILED("Name of the first match for 'pristina' should be 'Pristina', not " +
                 ptrs.front()->name);
 
-  ptrs = names->suggest("malakka");
+  ptrs = names->suggest("malakka", accept_all);
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find 'Malakka' with pattern 'Malakka'");
   if (ptrs.front()->name != "Malakka")
@@ -381,14 +383,14 @@ void suggest()
 
   // Test English country names
 
-  ptrs = names->suggest("oslo", "en");
+  ptrs = names->suggest("oslo", accept_all, "en");
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find 'Oslo' with lang=en");
   if (ptrs.front()->country != "Norway")
     TEST_FAILED("Country of first match for 'oslo' should be 'Norway', not " +
                 ptrs.front()->country);
 
-  ptrs = names->suggest("stockholm", "en");
+  ptrs = names->suggest("stockholm", accept_all, "en");
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find 'Stockholm' with lang=en");
   if (ptrs.front()->country != "Sweden")
@@ -396,7 +398,7 @@ void suggest()
                 ptrs.front()->country);
 
   // BRAINSTORM-2113: SIGABRT (must handle case when non UTF-8 text entered)
-  ptrs = names->suggest("\344\344", "fi");  // ää in latin1
+  ptrs = names->suggest("\344\344", accept_all, "fi");  // ää in latin1
   if (ptrs.size() < 1)
     TEST_FAILED("Failed to find suggestions by provided 'ää' in Latin1 encoding");
   if (ptrs.front()->name != "Äänekoski")
@@ -406,7 +408,7 @@ void suggest()
         ptrs.front()->name + "'");
 
   // BRAINSTORM-2113: SIGABRT (must handle case when empty string or whitespace only entered)
-  ptrs = names->suggest("", "fi");
+  ptrs = names->suggest("", accept_all, "fi");
   if (ptrs.size() != 0)
     TEST_FAILED("No suggestions expected when empty string or whitespace only provided. Got " +
                 std::to_string(int(ptrs.size())) + " suggestions");
@@ -429,7 +431,7 @@ void suggest_duplicates()
 
   // Match he
 
-  ptrs = names->suggestDuplicates("he");
+  ptrs = names->suggestDuplicates("he", accept_all);
 
   if (ptrs.size() != 15)
     TEST_FAILED("Should find 15 places starting with 'he', not " + Fmi::to_string(ptrs.size()));
@@ -447,7 +449,7 @@ void suggest_duplicates()
 
   // Match hAm
 
-  ptrs = names->suggestDuplicates("hAm");
+  ptrs = names->suggestDuplicates("hAm", accept_all);
   if (ptrs.size() != 15)
     TEST_FAILED("Should find 15 places starting with 'hAm', not " + Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Hamina")
@@ -455,14 +457,14 @@ void suggest_duplicates()
 
   // Match Äänekoski
 
-  ptrs = names->suggestDuplicates("Äänekoski");
+  ptrs = names->suggestDuplicates("Äänekoski", accept_all);
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 places starting with 'Äänekoski', not " +
                 Fmi::to_string(ptrs.size()));
   if (ptrs.front()->name != "Äänekoski")
     TEST_FAILED("First match for 'Äänekoski' should be Äänekoski, not " + ptrs.front()->name);
 
-  ptrs = names->suggestDuplicates("Ääne");
+  ptrs = names->suggestDuplicates("Ääne", accept_all);
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 places starting with 'Ääne', not " +
                 Fmi::to_string(ptrs.size()));
@@ -471,7 +473,7 @@ void suggest_duplicates()
 
   // Match helsinki in swedish
 
-  ptrs = names->suggestDuplicates("helsinki", "sv");
+  ptrs = names->suggestDuplicates("helsinki", accept_all, "sv");
 
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 places starting with 'helsinki', not " +
@@ -479,7 +481,7 @@ void suggest_duplicates()
 
   // Match Åbo in Swedish
 
-  ptrs = names->suggestDuplicates("Åb", "sv");
+  ptrs = names->suggestDuplicates("Åb", accept_all, "sv");
 
   if (ptrs.size() < 7)
     TEST_FAILED("Should find at least 7 places starting with 'Åbo', not " +
@@ -490,7 +492,7 @@ void suggest_duplicates()
 
   // Match Helsingfors in Swedish
 
-  ptrs = names->suggestDuplicates("helsi", "sv");
+  ptrs = names->suggestDuplicates("helsi", accept_all, "sv");
 
   if (ptrs.size() != 15)
     TEST_FAILED("Should find 15 place starting with 'helsi' in lang=sv, not " +
@@ -501,7 +503,7 @@ void suggest_duplicates()
 
   // Test words within location names
 
-  ptrs = names->suggestDuplicates("York");
+  ptrs = names->suggestDuplicates("York", accept_all);
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 1 York and New York");
   if (ptrs.front()->name != "York")
@@ -510,7 +512,7 @@ void suggest_duplicates()
   if (ptrs.front()->name != "New York")
     TEST_FAILED("Second match should be New York, not '" + ptrs.front()->name + "'");
 
-  ptrs = names->suggestDuplicates("Orlea");
+  ptrs = names->suggestDuplicates("Orlea", accept_all);
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 *Orlea* matches");
   if (ptrs.front()->name != "New Orleans")
@@ -521,7 +523,7 @@ void suggest_duplicates()
 
   // Kaisaniemi station
 
-  ptrs = names->suggestDuplicates("Kaisaniemi", "fi", "all");
+  ptrs = names->suggestDuplicates("Kaisaniemi", accept_all, "fi", "all");
   if (ptrs.size() < 2)
     TEST_FAILED("Should find at least 2 matches for Kaisaniemi with keyword 'all'");
   if (ptrs.front()->feature != "PPL")
@@ -550,7 +552,7 @@ void suggest_languages()
 
   // Match he
 
-  auto ptrs = names->suggest("he", languages);
+  auto ptrs = names->suggest("he", accept_all, languages);
 
   if (ptrs.size() != 3)
     TEST_FAILED("Should find 3 translation lists with 'he'");
@@ -581,7 +583,7 @@ void suggest_languages()
 
   // Match Åbo
 
-  ptrs = names->suggest("Åb", languages);
+  ptrs = names->suggest("Åb", accept_all, languages);
 
   if (ptrs.size() != 3)
     TEST_FAILED("Should find 3 translation lists with 'Åb'");
@@ -905,8 +907,7 @@ void lonlatSearch()
                 Fmi::to_string(ptrs.front()->elevation));
 
   if (ptrs.front()->dem != 24)
-    TEST_FAILED("DEM for Kumpula should be 24, not " +
-                Fmi::to_string(ptrs.front()->dem));
+    TEST_FAILED("DEM for Kumpula should be 24, not " + Fmi::to_string(ptrs.front()->dem));
 
   // Rooma
 

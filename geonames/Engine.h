@@ -269,8 +269,8 @@ class Engine : public Spine::SmartMetEngine
   std::unique_ptr<Spine::Table> requestInfo(const SmartMet::Spine::HTTP::Request& request) const;
 
   // Autoreload functionality related members
-  boost::asio::io_service itsIoService;
-  boost::asio::io_service::work itsWork;
+  boost::asio::io_context itsIoService;
+  boost::asio::executor_work_guard<boost::asio::io_context::executor_type> itsWork;
   boost::asio::basic_waitable_timer<std::chrono::steady_clock> itsTimer;
 
   void runIoService();  // Run the io_service event loop (separate method to see it in GDB backtrace

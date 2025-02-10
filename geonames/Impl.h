@@ -99,14 +99,6 @@ class Engine::Impl
   // From search hash key to result
   using NameSearchCache = Fmi::Cache::Cache<std::size_t, Spine::LocationList>;
 
-  // Suggest cache
-  using SuggestCache = Fmi::TimedCache::Cache<std::size_t, Spine::LocationList>;
-  std::unique_ptr<SuggestCache> itsSuggestCache;
-
-  using LanguagesSuggestCache =
-      Fmi::TimedCache::Cache<std::size_t, std::vector<Spine::LocationList>>;
-  std::unique_ptr<LanguagesSuggestCache> itsLanguagesSuggestCache;
-
   ~Impl();
   Impl(std::string configfile, bool reloading);
 
@@ -130,18 +122,21 @@ class Engine::Impl
   Fmi::LandCover::Type coverType(double lon, double lat) const;
 
   Spine::LocationList suggest(const std::string& pattern,
+                              const std::function<bool(const Spine::LocationPtr&)>& predicate,
                               const std::string& lang,
                               const std::string& keyword,
                               unsigned int page,
                               unsigned int maxresults,
                               bool duplicates) const;
 
-  std::vector<Spine::LocationList> suggest(const std::string& pattern,
-                                           const std::vector<std::string>& languages,
-                                           const std::string& keyword,
-                                           unsigned int page,
-                                           unsigned int maxresults,
-                                           bool duplicates) const;
+  std::vector<Spine::LocationList> suggest(
+      const std::string& pattern,
+      const std::function<bool(const Spine::LocationPtr&)>& predicate,
+      const std::vector<std::string>& languages,
+      const std::string& keyword,
+      unsigned int page,
+      unsigned int maxresults,
+      bool duplicates) const;
 
   Spine::LocationList name_search(const Locus::QueryOptions& theOptions,
                                   const std::string& theName);
@@ -188,14 +183,13 @@ class Engine::Impl
   /**
    * @brief Check for next autoreload check time if enabled
    *
-  * @param incr Increment in minutes (used to avoid check too soon after actual reload)
+   * @param incr Increment in minutes (used to avoid check too soon after actual reload)
    *
    * @return Fmi::LocalDateTime if enabled, otherwise std::nullopt
    */
   std::optional<Fmi::DateTime> nextAutoreloadCheckTime(unsigned incr = 5) const;
 
   inline bool is_autoreload_enabled() const { return itsAutoReloadInterval > 0; }
-
 
   bool itsReady = false;
   bool itsReloading = false;
@@ -256,7 +250,7 @@ class Engine::Impl
 
   int itsNameMatchPriority = 50;
   LocationPriorities itsLocationPriorities;
-  
+
   boost::atomic<bool> itsSuggestReadyFlag{false};
 
   // security
@@ -322,7 +316,7 @@ class Engine::Impl
   void read_alternate_geonames(Fmi::Database::PostgreSQLConnection& conn);
   void read_alternate_municipalities(Fmi::Database::PostgreSQLConnection& conn);
   void read_geonames(Fmi::Database::PostgreSQLConnection& conn);
-  
+
   void build_geoid_map();
   void read_keywords(Fmi::Database::PostgreSQLConnection& conn);
 

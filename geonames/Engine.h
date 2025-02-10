@@ -7,15 +7,13 @@
 #pragma once
 
 #include "WktGeometry.h"
-#include <macgyver/DateTime.h>
-#include <atomic>
-#include <memory>
 #include <boost/asio.hpp>
 #include <boost/utility.hpp>
 #include <gis/OGR.h>
 #include <locus/Query.h>
 #include <macgyver/AtomicSharedPtr.h>
 #include <macgyver/CacheStats.h>
+#include <macgyver/DateTime.h>
 #include <macgyver/TimeZones.h>
 #include <spine/HTTP.h>
 #include <spine/Location.h>
@@ -23,6 +21,9 @@
 #include <spine/Table.h>
 #include <spine/TableFormatter.h>
 #include <spine/Thread.h>
+#include <atomic>
+#include <functional>
+#include <memory>
 #include <string>
 
 #define FMINAMES_DEFAULT_KEYWORD "all"
@@ -142,6 +143,7 @@ class Engine : public Spine::SmartMetEngine
   // suggest alphabetical completions
 
   Spine::LocationList suggest(const std::string& thePattern,
+                              const std::function<bool(const Spine::LocationPtr&)>& thePredicate,
                               const std::string& theLang = "fi",
                               const std::string& theKeyword = FMINAMES_DEFAULT_KEYWORD,
                               unsigned int thePage = 0,
@@ -149,6 +151,7 @@ class Engine : public Spine::SmartMetEngine
 
   Spine::LocationList suggestDuplicates(
       const std::string& thePattern,
+      const std::function<bool(const Spine::LocationPtr&)>& thePredicate,
       const std::string& theLang = "fi",
       const std::string& theKeyword = FMINAMES_DEFAULT_KEYWORD,
       unsigned int thePage = 0,
@@ -156,6 +159,7 @@ class Engine : public Spine::SmartMetEngine
 
   std::vector<Spine::LocationList> suggest(
       const std::string& thePattern,
+      const std::function<bool(const Spine::LocationPtr&)>& thePredicate,
       const std::vector<std::string>& theLanguages,
       const std::string& theKeyword = FMINAMES_DEFAULT_KEYWORD,
       unsigned int thePage = 0,
@@ -269,7 +273,8 @@ class Engine : public Spine::SmartMetEngine
   boost::asio::io_service::work itsWork;
   boost::asio::basic_waitable_timer<std::chrono::steady_clock> itsTimer;
 
-  void runIoService(); // Run the io_service event loop (separate method to see it in GDB backtrace when needed)
+  void runIoService();  // Run the io_service event loop (separate method to see it in GDB backtrace
+                        // when needed)
 
   void maybeScheduleAutoReloadCheck();
 

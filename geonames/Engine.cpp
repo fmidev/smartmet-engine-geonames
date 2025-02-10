@@ -268,7 +268,7 @@ Engine::Engine(std::string theConfigFile)
       itsConfigFile(std::move(theConfigFile)),
       initFailed(false),
       itsIoService(),
-      itsWork(itsIoService),
+      itsWork(itsIoService.get_executor()),
       itsTimer(itsIoService),
       itsIoServiceThread([this] { runIoService(); })
 {
@@ -408,7 +408,7 @@ try
   {
     long expires_from_now =
         (nextCheck->get_impl() - Fmi::SecondClock::local_time()).total_seconds();
-    itsTimer.expires_from_now(std::chrono::seconds(expires_from_now));
+    itsTimer.expires_after(std::chrono::seconds(expires_from_now));
     itsTimer.async_wait(
         [this](const boost::system::error_code& ec)
         {

@@ -1166,6 +1166,8 @@ std::optional<std::size_t> Engine::Impl::read_database_hash_value(
       auto tmp = row["max"].as<double>();
       return std::size_t(std::floor(tmp + 0.5));
     }
+
+    return std::nullopt;
   }
   catch (...)
   {

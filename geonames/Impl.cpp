@@ -837,9 +837,9 @@ try
     if (new_hash)
     {
       const bool updated = *new_hash != itsHashValue;
-      std::cout << "Geonames database update check done in "
-                << 0.001 * (check_done - now).total_milliseconds()
-                << " seconds: " << (updated ? "update detected" : "no changes") << std::endl;
+      //std::cout << "Geonames database update check done in "
+      //          << 0.001 * (check_done - now).total_milliseconds()
+      //          << " seconds: " << (updated ? "update detected" : "no changes") << std::endl;
       return updated;
     }
 

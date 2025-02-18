@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 25.2.4
+Version: 25.2.18
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -122,6 +122,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Tue Feb 18 2025 Andris Pavēnis <andris.pavenis@fmi.fi> 25.2.18-1.fmi
+- Update to gdal-3.10, geos-3.13 and proj-9.5
+
 * Tue Feb  4 2025 Mika Heiskanen <mika.heiskanen@fmi.fi> - 25.2.4-1.fmi
 - Added support for filtering autocomplete suggestions
 

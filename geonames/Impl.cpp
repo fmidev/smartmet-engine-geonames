@@ -25,9 +25,17 @@
 #include <cerrno>  // iconv uses errno
 #include <cmath>
 #include <csignal>
-#include <sstream>
-#include <stdexcept>
 #include <string>
+
+namespace SmartMet
+{
+namespace Engine
+{
+namespace Geonames
+{
+
+namespace
+{
 
 // We want to allow empty databases in order to be able to build it one part a time while testing
 // the engine too
@@ -44,19 +52,19 @@ const int priority_scale = 1000;
 
 void print(const SmartMet::Spine::Location &loc)
 {
-  std::cout << "Geoid:\t" << loc.geoid << std::endl
-            << "Name:\t" << loc.name << std::endl
-            << "Feature:\t" << loc.feature << std::endl
-            << "ISO2:\t" << loc.iso2 << std::endl
-            << "Area:\t" << loc.area << std::endl
-            << "Country:\t" << loc.country << std::endl
-            << "Lon:\t" << loc.longitude << std::endl
-            << "Lat:\t" << loc.latitude << std::endl
-            << "TZ:\t" << loc.timezone << std::endl
-            << "Popu:\t" << loc.population << std::endl
-            << "Elev:\t" << loc.elevation << std::endl
-            << "DEM:\t" << loc.dem << std::endl
-            << "Priority:\t" << loc.priority << std::endl;
+  std::cout << "Geoid:\t" << loc.geoid << '\n'
+            << "Name:\t" << loc.name << '\n'
+            << "Feature:\t" << loc.feature << '\n'
+            << "ISO2:\t" << loc.iso2 << '\n'
+            << "Area:\t" << loc.area << '\n'
+            << "Country:\t" << loc.country << '\n'
+            << "Lon:\t" << loc.longitude << '\n'
+            << "Lat:\t" << loc.latitude << '\n'
+            << "TZ:\t" << loc.timezone << '\n'
+            << "Popu:\t" << loc.population << '\n'
+            << "Elev:\t" << loc.elevation << '\n'
+            << "DEM:\t" << loc.dem << '\n'
+            << "Priority:\t" << loc.priority << '\n';
 }
 
 void print(const SmartMet::Spine::LocationPtr &ptr)
@@ -64,7 +72,7 @@ void print(const SmartMet::Spine::LocationPtr &ptr)
   try
   {
     if (!ptr)
-      std::cout << "No location to print" << std::endl;
+      std::cout << "No location to print\n";
     else
       print(*ptr);
   }
@@ -81,7 +89,7 @@ void print(const std::list<SmartMet::Spine::LocationPtr *> &ptrs)
     for (const SmartMet::Spine::LocationPtr *ptr : ptrs)
     {
       print(*ptr);
-      std::cout << std::endl;
+      std::cout << '\n';
     }
   }
   catch (...)
@@ -90,9 +98,6 @@ void print(const std::list<SmartMet::Spine::LocationPtr *> &ptrs)
   }
 }
 #endif
-
-namespace
-{
 
 // ----------------------------------------------------------------------
 /*!
@@ -162,14 +167,72 @@ void check_forbidden_name_search(const std::string &name,
   }
 }
 
+// ----------------------------------------------------------------------
+/*!
+ * \brief Trivial sort to find duplicates (doesn't care about localization)
+ */
+// ----------------------------------------------------------------------
+
+bool basicSort(const Spine::LocationPtr &a, const Spine::LocationPtr &b)
+{
+  try
+  {
+    if (a->name != b->name)
+      return (a->name < b->name);
+
+    if (a->iso2 != b->iso2)
+      return (a->iso2 < b->iso2);
+
+    if (a->area != b->area)
+      return (a->area < b->area);
+
+    return (a->priority > b->priority);
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Definition of unique for Spine::LocationPtr*
+ */
+// ----------------------------------------------------------------------
+
+bool closeEnough(const Spine::LocationPtr &a, const Spine::LocationPtr &b)
+{
+  try
+  {
+    // testing a->geoid == b->geoid would be redundant here
+    return (((a->name == b->name)) && (a->iso2 == b->iso2) && (a->area == b->area));
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Definition of unique for Spine::LocationPtr*
+ */
+// ----------------------------------------------------------------------
+
+bool reallyClose(const Spine::LocationPtr &a, const Spine::LocationPtr &b)
+{
+  try
+  {
+    return (a->geoid == b->geoid);
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
 }  // namespace
 
-namespace SmartMet
-{
-namespace Engine
-{
-namespace Geonames
-{
 // ----------------------------------------------------------------------
 /*!
  * \brief Characterset Conversion
@@ -232,7 +295,7 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
       unsigned int suggestCacheSize = 666;
       itsConfig.lookupValue("cache.suggest_max_size", suggestCacheSize);
       if (suggestCacheSize != 666)
-        std::cerr << "Warning: cache.suggest_max_size is deprecated" << std::endl;
+        std::cerr << "Warning: cache.suggest_max_size is deprecated\n";
 
       // Establish collator
 
@@ -265,7 +328,8 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
       if (!itsDatabaseDisabled)
       {
         query_worker_pool.reset(new Fmi::WorkerPool<Locus::Query>(
-            [this]() -> std::shared_ptr<Locus::Query> {
+            [this]() -> std::shared_ptr<Locus::Query>
+            {
               return std::make_shared<Locus::Query>(
                   itsHost, itsUser, itsPass, itsDatabase, itsPort);
             },
@@ -595,11 +659,11 @@ const libconfig::Setting &Engine::Impl::lookup_database(const std::string &setti
           if (boost::algorithm::istarts_with(name, trial_host) && override[i].exists(setting))
             return override[i][setting.c_str()];
         }  // for int j
-      }    // for int i
-    }      // if
+      }  // for int i
+    }  // if
     return default_value;
   }
-  catch (const libconfig::SettingNotFoundException &ex)
+  catch (const libconfig::SettingNotFoundException &)
   {
     throw Fmi::Exception(BCP, "Override configuration error: " + setting, nullptr);
   }
@@ -636,7 +700,7 @@ void Engine::Impl::setup_fallback_encodings()
       encodings.emplace_back("latin1");
     }
   }
-  catch (const libconfig::ConfigException &ex)
+  catch (const libconfig::ConfigException &)
   {
     throw Fmi::Exception(BCP, "Unexpected configuration error");
   }
@@ -648,8 +712,7 @@ void Engine::Impl::setup_fallback_encodings()
     {
       fallback_converters.emplace_back(new Fmi::CharsetConverter(encoding, "UTF-8", 256));
       // if (itsVerbose)
-      std::cout << "Geonames: Added fallback charset converter " << encoding << " --> UTF-8"
-                << std::endl;
+      std::cout << "Geonames: Added fallback charset converter " << encoding << " --> UTF-8\n";
     }
     else
     {
@@ -673,7 +736,7 @@ void Engine::Impl::initSuggest(bool threaded)
       itsConfig.lookupValue("maxdemresolution", itsMaxDemResolution);
 
       if (itsDatabaseDisabled)
-        std::cerr << "Warning: Geonames database is disabled" << std::endl;
+        std::cerr << "Warning: Geonames database is disabled\n";
       else
       {
         Fmi::Database::PostgreSQLConnectionOptions opt;
@@ -777,7 +840,7 @@ void Engine::Impl::initSuggest(bool threaded)
     if (!threaded)
       throw exception;
 
-    std::cerr << exception.getStackTrace() << std::endl;
+    std::cerr << exception.getStackTrace() << '\n';
     kill(getpid(), SIGKILL);  // If we use exit() we might get a core dump.
                               // exit(-1);
   }
@@ -795,7 +858,7 @@ try
   const Fmi::Date date = tmp.date();
   const int minutes = tmp.time_of_day().total_minutes();
   const int remainder = minutes % itsAutoReloadInterval;
-  const Fmi::DateTime next(date, Fmi::Minutes(minutes - remainder));
+  Fmi::DateTime next(date, Fmi::Minutes(minutes - remainder));
   return next;
 }
 catch (...)
@@ -808,52 +871,50 @@ try
 {
   if (itsDatabaseDisabled)
   {
-    // std::cerr << "Warning: Geonames database is disabled" << std::endl;
+    // std::cerr << "Warning: Geonames database is disabled\n";
     return false;
   }
-  else if (Fmi::SecondClock::universal_time() - startTime < Fmi::Minutes(itsAutoReloadLimit))
+
+  if (Fmi::SecondClock::universal_time() - startTime < Fmi::Minutes(itsAutoReloadLimit))
   {
     // Do not allow reload too soon after startup
     return false;
   }
-  else
+
+  const Fmi::DateTime now = Fmi::MicrosecClock::universal_time();
+  Fmi::Database::PostgreSQLConnectionOptions opt;
+  opt.host = itsHost;
+  opt.port = Fmi::stoul(itsPort);
+  opt.database = itsDatabase;
+  opt.username = itsUser;
+  opt.password = itsPass;
+  opt.encoding = "UTF8";
+  Fmi::Database::PostgreSQLConnection conn;
+  conn.open(opt);
+
+  if (!conn.isConnected())
+    throw Fmi::Exception(BCP, "Failed to connect to fminames database");
+
+  const auto new_hash = read_database_hash_value(conn);
+  const Fmi::DateTime check_done = Fmi::MicrosecClock::universal_time();
+  if (new_hash)
   {
-    const Fmi::DateTime now = Fmi::MicrosecClock::universal_time();
-    Fmi::Database::PostgreSQLConnectionOptions opt;
-    opt.host = itsHost;
-    opt.port = Fmi::stoul(itsPort);
-    opt.database = itsDatabase;
-    opt.username = itsUser;
-    opt.password = itsPass;
-    opt.encoding = "UTF8";
-    Fmi::Database::PostgreSQLConnection conn;
-    conn.open(opt);
-
-    if (!conn.isConnected())
-      throw Fmi::Exception(BCP, "Failed to connect to fminames database");
-
-    const auto new_hash = read_database_hash_value(conn);
-    const Fmi::DateTime check_done = Fmi::MicrosecClock::universal_time();
-    if (new_hash)
-    {
-      const bool updated = *new_hash != itsHashValue;
-      //std::cout << "Geonames database update check done in "
-      //          << 0.001 * (check_done - now).total_milliseconds()
-      //          << " seconds: " << (updated ? "update detected" : "no changes") << std::endl;
-      return updated;
-    }
-
-    // No hash value available, cannot check for updates
-    std::cout << "Geonames database update check done in "
-              << 0.001 * (check_done - now).total_milliseconds() << " seconds: failed to get hesh"
-              << std::endl;
-    return false;
+    const bool updated = *new_hash != itsHashValue;
+    // std::cout << "Geonames database update check done in "
+    //           << 0.001 * (check_done - now).total_milliseconds()
+    //           << " seconds: " << (updated ? "update detected" : "no changes") << '\n';
+    return updated;
   }
+
+  // No hash value available, cannot check for updates
+  std::cout << "Geonames database update check done in "
+            << 0.001 * (check_done - now).total_milliseconds() << " seconds: failed to get hash\n";
+  return false;
 }
 catch (const Fmi::Exception &error)
 {
   // We do not want to fail here. Just log the error
-  std::cerr << error << std::endl;
+  std::cerr << error << '\n';
   return false;
 }
 
@@ -976,7 +1037,7 @@ void Engine::Impl::read_config()
     try
     {
       if (itsVerbose)
-        std::cout << "Reading fminames configuration file '" << itsConfigFile << "'" << std::endl;
+        std::cout << "Reading fminames configuration file '" << itsConfigFile << "'\n";
 
       // Enable sensible relative include paths
       std::filesystem::path p = itsConfigFile;
@@ -1138,7 +1199,7 @@ void Engine::Impl::read_config_prioritymap(const std::string &partname, Prioriti
 // ----------------------------------------------------------------------
 
 std::optional<std::size_t> Engine::Impl::read_database_hash_value(
-    Fmi::Database::PostgreSQLConnection &conn)
+    Fmi::Database::PostgreSQLConnection &conn) const
 {
   try
   {
@@ -1198,7 +1259,7 @@ void Engine::Impl::read_countries(Fmi::Database::PostgreSQLConnection &conn)
         "('PCLD','PCLF','PCLI') ORDER BY features_code ASC");
 
     if (itsVerbose)
-      std::cout << "read_countries: " << query << std::endl;
+      std::cout << "read_countries: " << query << '\n';
 
     pqxx::result res = conn.executeNonTransaction(query);
 
@@ -1207,8 +1268,7 @@ void Engine::Impl::read_countries(Fmi::Database::PostgreSQLConnection &conn)
       if (itsStrict)
         throw Fmi::Exception(BCP, "FmiNames: Found no PCLI/PCLF/PCLD places from geonames table");
 
-      std::cerr << "Warning: FmiNames: Found no PCLI/PCLF/PCLD places from geonames table"
-                << std::endl;
+      std::cerr << "Warning: FmiNames: Found no PCLI/PCLF/PCLD places from geonames table\n";
     }
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
@@ -1219,7 +1279,7 @@ void Engine::Impl::read_countries(Fmi::Database::PostgreSQLConnection &conn)
     }
 
     if (itsVerbose)
-      std::cout << "read_countries: " << res.size() << " countries" << std::endl;
+      std::cout << "read_countries: " << res.size() << " countries\n";
   }
   catch (...)
   {
@@ -1247,7 +1307,7 @@ void Engine::Impl::read_alternate_countries(Fmi::Database::PostgreSQLConnection 
         "a.preferred DESC, length ASC, alt_gname ASC");
 
     if (itsVerbose)
-      std::cout << "read_alternate_countries: " << query << std::endl;
+      std::cout << "read_alternate_countries: " << query << '\n';
 
     pqxx::result res = conn.executeNonTransaction(query);
 
@@ -1256,7 +1316,7 @@ void Engine::Impl::read_alternate_countries(Fmi::Database::PostgreSQLConnection 
       if (itsStrict)
         throw Fmi::Exception(BCP, "Found no country translations");
 
-      std::cerr << "Warning: Found no country translations" << std::endl;
+      std::cerr << "Warning: Found no country translations\n";
     }
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
@@ -1281,7 +1341,7 @@ void Engine::Impl::read_alternate_countries(Fmi::Database::PostgreSQLConnection 
 
     if (itsVerbose)
 
-      std::cout << "read_alternate_countries: " << res.size() << " translations" << std::endl;
+      std::cout << "read_alternate_countries: " << res.size() << " translations\n";
   }
   catch (...)
   {
@@ -1302,7 +1362,7 @@ void Engine::Impl::read_municipalities(Fmi::Database::PostgreSQLConnection &conn
     std::string query("SELECT id, name FROM municipalities");
 
     if (itsVerbose)
-      std::cout << "read_municipalities: " << query << std::endl;
+      std::cout << "read_municipalities: " << query << '\n';
 
     pqxx::result res = conn.executeNonTransaction(query);
 
@@ -1318,8 +1378,7 @@ void Engine::Impl::read_municipalities(Fmi::Database::PostgreSQLConnection &conn
     }
 
     if (itsVerbose)
-      std::cout << "read_municipalities: " << itsMunicipalities.size() << " municipalities"
-                << std::endl;
+      std::cout << "read_municipalities: " << itsMunicipalities.size() << " municipalities\n";
   }
   catch (...)
   {
@@ -1370,7 +1429,7 @@ Spine::LocationPtr Engine::Impl::extract_geoname(const pqxx::result::const_itera
       area = admin.append(", ").append(area);
 #if 0
           else
-            std::cerr << "Failed to find country " << key << " for geoid " << geoid << std::endl;
+            std::cerr << "Failed to find country " << key << " for geoid " << geoid << '\n';
 #endif
   }
 
@@ -1416,7 +1475,7 @@ void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
     }
 
     if (itsVerbose)
-      std::cout << "read_geonames: " << sql << std::endl;
+      std::cout << "read_geonames: " << sql << '\n';
 
     pqxx::result res = conn.executeNonTransaction(sql);
 
@@ -1425,7 +1484,7 @@ void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
       if (itsStrict)
         throw Fmi::Exception(BCP, "Found nothing from fminames database");
 
-      std::cerr << "Warning: Found nothing from fminames database" << std::endl;
+      std::cerr << "Warning: Found nothing from fminames database\n";
     }
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
@@ -1433,8 +1492,8 @@ void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
       if (row["timezone"].is_null())
       {
         std::cerr << "Warning: " << Fmi::stoi(row["id"].as<std::string>()) << " '"
-                  << row["name"].as<std::string>() << "' timezone is null, discarding the location"
-                  << std::endl;
+                  << row["name"].as<std::string>()
+                  << "' timezone is null, discarding the location\n";
       }
       else
       {
@@ -1444,7 +1503,7 @@ void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
     }
 
     if (itsVerbose)
-      std::cout << "read_geonames: " << itsLocations.size() << " locations" << std::endl;
+      std::cout << "read_geonames: " << itsLocations.size() << " locations\n";
   }
   catch (...)
   {
@@ -1493,7 +1552,7 @@ void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &
 #endif
 
     if (itsVerbose)
-      std::cout << "read_alternate_geonames: " << sql << std::endl;
+      std::cout << "read_alternate_geonames: " << sql << '\n';
 
     pqxx::result res = conn.executeNonTransaction(sql);
 
@@ -1502,11 +1561,11 @@ void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &
       if (itsStrict)
         throw Fmi::Exception(BCP, "Found nothing from alternate_geonames database");
 
-      std::cerr << "Warning: Found nothing from alternate_geonames database" << std::endl;
+      std::cerr << "Warning: Found nothing from alternate_geonames database\n";
     }
 
     if (itsVerbose)
-      std::cout << "read_alternate_geonames: " << res.size() << " translations" << std::endl;
+      std::cout << "read_alternate_geonames: " << res.size() << " translations\n";
 
     // We assume sort order is geoid,language for the ifs to work
     Spine::GeoId last_handled_geoid = 0;
@@ -1554,7 +1613,7 @@ void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &
     }
 
     if (itsVerbose)
-      std::cout << "read_alternate_geonames done" << std::endl;
+      std::cout << "read_alternate_geonames done\n";
   }
   catch (...)
   {
@@ -1577,7 +1636,7 @@ void Engine::Impl::read_alternate_municipalities(Fmi::Database::PostgreSQLConnec
         "alternate_municipalities");
 
     if (itsVerbose)
-      std::cout << "read_alternate_municipalities: " << query << std::endl;
+      std::cout << "read_alternate_municipalities: " << query << '\n';
 
     pqxx::result res = conn.executeNonTransaction(query);
 
@@ -1586,7 +1645,7 @@ void Engine::Impl::read_alternate_municipalities(Fmi::Database::PostgreSQLConnec
     // alternate_municipalities database");
 
     if (itsVerbose)
-      std::cout << "read_alternate_geonames: " << res.size() << " translations" << std::endl;
+      std::cout << "read_alternate_geonames: " << res.size() << " translations\n";
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
@@ -1605,7 +1664,7 @@ void Engine::Impl::read_alternate_municipalities(Fmi::Database::PostgreSQLConnec
     }
 
     if (itsVerbose)
-      std::cout << "read_alternate_municipalities: " << res.size() << " translations" << std::endl;
+      std::cout << "read_alternate_municipalities: " << res.size() << " translations\n";
   }
   catch (...)
   {
@@ -1626,10 +1685,10 @@ void Engine::Impl::build_geoid_map()
   try
   {
     if (itsVerbose)
-      std::cout << "build_geoid_map()" << std::endl;
+      std::cout << "build_geoid_map()\n";
 
     for (Spine::LocationPtr &v : itsLocations)
-      itsGeoIdMap.emplace(GeoIdMap::value_type(v->geoid, &v));
+      itsGeoIdMap.emplace(v->geoid, &v);
   }
   catch (...)
   {
@@ -1648,7 +1707,7 @@ void Engine::Impl::assign_priorities(Spine::LocationList &locs) const
   try
   {
     if (itsVerbose)
-      std::cout << "assign_priorities" << std::endl;
+      std::cout << "assign_priorities\n";
 
     for (Spine::LocationPtr &v : locs)
     {
@@ -1677,7 +1736,7 @@ void Engine::Impl::read_keywords(Fmi::Database::PostgreSQLConnection &conn)
     std::string query("SELECT keyword, geonames_id as id FROM keywords_has_geonames");
 
     if (itsVerbose)
-      std::cout << "read_keywords: " << query << std::endl;
+      std::cout << "read_keywords: " << query << '\n';
 
     pqxx::result res = conn.executeNonTransaction(query);
 
@@ -1709,16 +1768,14 @@ void Engine::Impl::read_keywords(Fmi::Database::PostgreSQLConnection &conn)
         ++count_bad;
         if (!limited_db)
         {
-          std::cerr << "  warning: keyword " << key << " uses nonexistent geoid " << geoid
-                    << std::endl;
+          std::cerr << "  warning: keyword " << key << " uses nonexistent geoid " << geoid << '\n';
         }
       }
     }
 
     if (itsVerbose)
-      std::cout << "read_keywords: attached " << count_ok << " keywords to locations succesfully"
-                << std::endl
-                << "read_keywords: found " << count_bad << " unknown locations" << std::endl;
+      std::cout << "read_keywords: attached " << count_ok << " keywords to locations succesfully\n"
+                << "read_keywords: found " << count_bad << " unknown locations\n";
   }
   catch (...)
   {
@@ -1742,8 +1799,7 @@ void Engine::Impl::build_geotrees()
       const Spine::LocationList &locs = name_locs.second;
 
       if (itsVerbose)
-        std::cout << "build_geotrees:  keyword '" << keyword << "' of size " << locs.size()
-                  << std::endl;
+        std::cout << "build_geotrees:  keyword '" << keyword << "' of size " << locs.size() << '\n';
 
       auto it = itsGeoTrees.find(keyword);
       if (it == itsGeoTrees.end())
@@ -1757,7 +1813,7 @@ void Engine::Impl::build_geotrees()
 
     if (itsVerbose)
       std::cout << "build_geotrees: keyword '" << FMINAMES_DEFAULT_KEYWORD << "' of size "
-                << itsLocations.size() << std::endl;
+                << itsLocations.size() << '\n';
 
     auto it =
         itsGeoTrees.insert(std::make_pair(FMINAMES_DEFAULT_KEYWORD, std::make_unique<GeoTree>()))
@@ -1790,7 +1846,7 @@ void Engine::Impl::build_ternarytrees()
 
       if (itsVerbose)
         std::cout << "build_ternarytrees: keyword '" << keyword << "' of size " << locs.size()
-                  << std::endl;
+                  << '\n';
 
       auto it = itsTernaryTrees.find(keyword);
       if (it == itsTernaryTrees.end())
@@ -1814,7 +1870,7 @@ void Engine::Impl::build_ternarytrees()
 
     if (itsVerbose)
       std::cout << "build_ternarytrees: keyword '" << FMINAMES_DEFAULT_KEYWORD << "' of size "
-                << itsLocations.size() << std::endl;
+                << itsLocations.size() << '\n';
 
     auto newtree = std::make_shared<TernaryTree>();
     auto it = itsTernaryTrees.insert(std::make_pair(FMINAMES_DEFAULT_KEYWORD, newtree)).first;
@@ -1847,7 +1903,7 @@ void Engine::Impl::build_lang_ternarytrees()
   try
   {
     if (itsVerbose)
-      std::cout << "build_lang_ternarytrees" << std::endl;
+      std::cout << "build_lang_ternarytrees\n";
 
     build_lang_ternarytrees_all();
     build_lang_ternarytrees_keywords();
@@ -1877,8 +1933,7 @@ void Engine::Impl::build_lang_ternarytrees_all()
     // traverse all alternate names
 
     if (itsVerbose)
-      std::cout << "build_lang_ternarytrees_all: " << itsAlternateNames.size() << " names"
-                << std::endl;
+      std::cout << "build_lang_ternarytrees_all: " << itsAlternateNames.size() << " names\n";
 
     for (const auto &gt : itsAlternateNames)
     {
@@ -1959,7 +2014,7 @@ void Engine::Impl::build_lang_ternarytrees_keywords()
     // Traverse all alternate names
 
     if (itsVerbose)
-      std::cout << "build_lang_ternarytrees_keywords()" << std::endl;
+      std::cout << "build_lang_ternarytrees_keywords()\n";
 
     for (auto &kloc : itsKeywords)
     {
@@ -2038,7 +2093,7 @@ void Engine::Impl::build_lang_ternarytrees_one_keyword(const std::string &keywor
 
   if (itsVerbose)
     std::cout << "build_lang_ternarytrees_keywords: " << keyword << " with " << ntranslations
-              << " translations" << std::endl;
+              << " translations\n";
 }
 
 // ----------------------------------------------------------------------
@@ -2244,70 +2299,6 @@ bool Engine::Impl::prioritySort(const Spine::LocationPtr &a, const Spine::Locati
 
 // ----------------------------------------------------------------------
 /*!
- * \brief Trivial sort to find duplicates (doesn't care about localization)
- */
-// ----------------------------------------------------------------------
-
-bool basicSort(const Spine::LocationPtr &a, const Spine::LocationPtr &b)
-{
-  try
-  {
-    if (a->name != b->name)
-      return (a->name < b->name);
-
-    if (a->iso2 != b->iso2)
-      return (a->iso2 < b->iso2);
-
-    if (a->area != b->area)
-      return (a->area < b->area);
-
-    return (a->priority > b->priority);
-  }
-  catch (...)
-  {
-    throw Fmi::Exception::Trace(BCP, "Operation failed!");
-  }
-}
-
-// ----------------------------------------------------------------------
-/*!
- * \brief Definition of unique for Spine::LocationPtr*
- */
-// ----------------------------------------------------------------------
-
-bool closeEnough(const Spine::LocationPtr &a, const Spine::LocationPtr &b)
-{
-  try
-  {
-    // testing a->geoid == b->geoid would be redundant here
-    return (((a->name == b->name)) && (a->iso2 == b->iso2) && (a->area == b->area));
-  }
-  catch (...)
-  {
-    throw Fmi::Exception::Trace(BCP, "Operation failed!");
-  }
-}
-
-// ----------------------------------------------------------------------
-/*!
- * \brief Definition of unique for Spine::LocationPtr*
- */
-// ----------------------------------------------------------------------
-
-bool reallyClose(const Spine::LocationPtr &a, const Spine::LocationPtr &b)
-{
-  try
-  {
-    return (a->geoid == b->geoid);
-  }
-  catch (...)
-  {
-    throw Fmi::Exception::Trace(BCP, "Operation failed!");
-  }
-}
-
-// ----------------------------------------------------------------------
-/*!
  * \brief Priority sort a list of locations
  */
 // ----------------------------------------------------------------------
@@ -2383,7 +2374,7 @@ Spine::LocationList Engine::Impl::suggest_one_keyword(const std::string &pattern
       {
         tmp = converter->convert(pattern);
       }
-      catch (const Fmi::Exception &e)
+      catch (const Fmi::Exception &)
       {
         // Not interested in errors, just try the next converter.
         continue;
@@ -2854,11 +2845,11 @@ std::unique_ptr<Spine::Table> Engine::Impl::name_cache_status() const
 
     std::unique_ptr<Spine::Table> tablePtr(new Spine::Table);
     Spine::TableFormatter::Names theNames;
-    theNames.push_back("Position");
-    theNames.push_back("Hits");
-    theNames.push_back("Key");
-    theNames.push_back("Name");
-    theNames.push_back("Geoid");
+    theNames.emplace_back("Position");
+    theNames.emplace_back("Hits");
+    theNames.emplace_back("Key");
+    theNames.emplace_back("Name");
+    theNames.emplace_back("Geoid");
     tablePtr->setNames(theNames);
 
     if (contentList.empty())
@@ -2904,23 +2895,6 @@ bool Engine::Impl::isSuggestReady() const
   return itsSuggestReadyFlag;
 }
 
-// Convert TimedCache statistics to regular statistics
-template <typename T>
-Fmi::Cache::CacheStats convert_stats(const T &cache)
-{
-  auto stats = cache.getCacheStatistics();
-  const Fmi::DateTime time =
-      Fmi::date_time::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(
-                                      stats.getConstructionTime().time_since_epoch())
-                                      .count());
-  return {time,
-          cache.maxSize(),
-          cache.size(),
-          stats.getHits(),
-          stats.getMisses(),
-          stats.getInsertSuccesses()};
-}
-
 Fmi::Cache::CacheStatistics Engine::Impl::getCacheStats() const
 {
   Fmi::Cache::CacheStatistics ret;
@@ -2948,7 +2922,7 @@ void Engine::Impl::read_config_security()
     if (disabled)
     {
       if (itsVerbose)
-        std::cout << "Geonames security settings disabled" << std::endl;
+        std::cout << "Geonames security settings disabled\n";
       return;
     }
 
@@ -2966,7 +2940,6 @@ void Engine::Impl::read_config_security()
             throw Fmi::Exception(
                 BCP, "Configured value of '" + name + "' must be an array of pattern strings");
           itsForbiddenNamePatterns.emplace_back(rule.c_str());
-          ;
         }
       }
     }

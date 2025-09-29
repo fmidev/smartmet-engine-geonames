@@ -5,6 +5,46 @@
 using namespace SmartMet::Engine::Geonames;
 using namespace SmartMet::Spine;
 
+namespace
+{
+void readPriorityMap(const std::string& part_name,
+                     const libconfig::Config& config,
+                     std::map<std::string, int>& priomap)
+try
+{
+  std::string name = "priorities." + part_name;
+
+  if (!config.exists(name))
+    return;
+
+  const libconfig::Setting& tmp = config.lookup(name);
+
+  if (!tmp.isGroup())
+  {
+    Fmi::Exception exception(BCP, "Configured value of '" + name + "' must be a group!");
+    throw exception;
+  }
+
+  for (int i = 0; i < tmp.getLength(); ++i)
+  {
+    std::string varname = tmp[i].getName();
+    int value = tmp[i];
+    priomap[varname] = value;
+  }
+}
+catch (const libconfig::SettingException& e)
+{
+  Fmi::Exception exception(BCP, "Configuration file setting error!");
+  exception.addParameter("Path", e.getPath());
+  exception.addParameter("Error description", e.what());
+  throw exception;
+}
+catch (...)
+{
+  throw Fmi::Exception::Trace(BCP, "Operation failed!");
+}
+}  // namespace
+
 LocationPriorities::LocationPriorities() = default;
 LocationPriorities::~LocationPriorities() = default;
 
@@ -80,7 +120,7 @@ void LocationPriorities::setFeaturePriorities(const std::string& iso2,
 {
   try
   {
-    itsFeaturePriorities[iso2] = prtyMap;
+    itsFeaturePriorities[iso2] = std::move(prtyMap);
   }
   catch (...)
   {
@@ -181,93 +221,55 @@ int LocationPriorities::featurePriority(const Location& loc) const
 void LocationPriorities::init(const libconfig::Config& config)
 try
 {
-    if (!config.exists("priorities"))
-        return;
+  if (!config.exists("priorities"))
+    return;
 
-    readPriorityMap("populations", config, itsPopulationPriorities);
-    readPriorityMap("areas", config, itsAreaPriorities);
-    readPriorityMap("countries", config, itsCountryPriorities);
+  readPriorityMap("populations", config, itsPopulationPriorities);
+  readPriorityMap("areas", config, itsAreaPriorities);
+  readPriorityMap("countries", config, itsCountryPriorities);
 
-    if (!config.exists("priorities.features"))
-        return;
+  if (!config.exists("priorities.features"))
+    return;
 
-    const libconfig::Setting &tmp = config.lookup("priorities.features");
+  const libconfig::Setting& tmp = config.lookup("priorities.features");
 
-    if (!tmp.isGroup())
-    {
-        Fmi::Exception exception(BCP, "Configured value of 'priorities.features' must be a group!");
-        throw exception;
-    }
-
-    for (int i = 0; i < tmp.getLength(); ++i)
-    {
-        std::string countryname = tmp[i].getName();
-        std::string featurename = tmp[i];
-
-        std::string mapname = "priorities." + featurename;
-
-        if (!config.exists(mapname))
-        {
-              Fmi::Exception exception(BCP, "Configuration of '" + mapname + "' is missing!");
-              throw exception;
-        }
-
-        const libconfig::Setting &tmpmap = config.lookup(mapname);
-
-        for (int j = 0; j < tmpmap.getLength(); ++j)
-        {
-            std::string name = tmpmap[j].getName();
-            int value = tmpmap[j];
-            itsFeaturePriorities[countryname][name] = value;
-        }
-    }
-}
-catch (const libconfig::SettingException &e)
-{
-    Fmi::Exception exception(BCP, "Configuration file setting error!");
-    exception.addParameter("Path", e.getPath());
-    exception.addParameter("Error description", e.what());
+  if (!tmp.isGroup())
+  {
+    Fmi::Exception exception(BCP, "Configured value of 'priorities.features' must be a group!");
     throw exception;
+  }
+
+  for (int i = 0; i < tmp.getLength(); ++i)
+  {
+    std::string countryname = tmp[i].getName();
+    std::string featurename = tmp[i];
+
+    std::string mapname = "priorities." + featurename;
+
+    if (!config.exists(mapname))
+    {
+      Fmi::Exception exception(BCP, "Configuration of '" + mapname + "' is missing!");
+      throw exception;
+    }
+
+    const libconfig::Setting& tmpmap = config.lookup(mapname);
+
+    for (int j = 0; j < tmpmap.getLength(); ++j)
+    {
+      std::string name = tmpmap[j].getName();
+      int value = tmpmap[j];
+      itsFeaturePriorities[countryname][name] = value;
+    }
+  }
+}
+catch (const libconfig::SettingException& e)
+{
+  Fmi::Exception exception(BCP, "Configuration file setting error!");
+  exception.addParameter("Path", e.getPath());
+  exception.addParameter("Error description", e.what());
+  throw exception;
 }
 catch (...)
 {
-    throw Fmi::Exception::Trace(BCP, "Operation failed!");
-}
-
-void LocationPriorities::readPriorityMap(
-    const std::string& part_name,
-    const libconfig::Config& config,
-    std::map<std::string, int>& priomap)
-try
-{
-    std::string name = "priorities." + part_name;
-
-    if (!config.exists(name))
-        return;
-
-    const libconfig::Setting &tmp = config.lookup(name);
-
-    if (!tmp.isGroup())
-    {
-        Fmi::Exception exception(BCP, "Configured value of '" + name + "' must be a group!");
-        throw exception;
-    }
-
-    for (int i = 0; i < tmp.getLength(); ++i)
-    {
-        std::string varname = tmp[i].getName();
-        int value = tmp[i];
-        priomap[varname] = value;
-    }
-}
-catch (const libconfig::SettingException &e)
-{
-    Fmi::Exception exception(BCP, "Configuration file setting error!");
-    exception.addParameter("Path", e.getPath());
-    exception.addParameter("Error description", e.what());
-    throw exception;
-}
-catch (...)
-{
-    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  throw Fmi::Exception::Trace(BCP, "Operation failed!");
 }

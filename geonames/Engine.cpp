@@ -22,8 +22,6 @@
 #include <spine/TableFormatterOptions.h>
 #include <algorithm>
 #include <atomic>
-#include <iterator>
-#include <limits>
 #include <ogr_geometry.h>
 #include <sstream>
 #include <string>
@@ -35,9 +33,13 @@ namespace Engine
 {
 namespace Geonames
 {
+
+namespace
+{
+
 // Default parameters for location option parsing
-static const std::string default_language = "fi";
-static const char* default_maxdistance = "15km";  // km
+const std::string default_language = "fi";
+const char* const default_maxdistance = "15km";  // km
 
 std::string parse_radius(const std::string& inputStr, double& radius)
 {
@@ -241,9 +243,40 @@ void parse_bboxes(LocationOptions& theOptions, const Spine::HTTP::Request& theRe
   }
 }
 
+// ----------------------------------------------------------------------
+/*!
+ * \brief Convenience function for status()
+ */
+// ----------------------------------------------------------------------
+
+std::string printrate(long count, long secs)
+{
+  try
+  {
+    std::ostringstream out;
+    if (secs > 0)
+    {
+      out << std::setprecision(6) << 1.0 * count / secs << "/sec, " << 60.0 * count / secs
+          << "/min";
+    }
+    else
+    {
+      out << "Not available";
+    }
+
+    return out.str();
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+}  // namespace
+
 void LocationOptions::add(const std::string& theTag, const Spine::LocationPtr& theLoc)
 {
-  itsLocations.push_back(Spine::TaggedLocation(theTag, theLoc));
+  itsLocations.emplace_back(theTag, theLoc);
 }
 
 void LocationOptions::add(const std::string& theTag, std::unique_ptr<Spine::Location>& theLoc)
@@ -267,7 +300,6 @@ Engine::Engine(std::string theConfigFile)
       itsSuggestCount(0),
       itsConfigFile(std::move(theConfigFile)),
       initFailed(false),
-      itsIoService(),
       itsWork(itsIoService.get_executor()),
       itsTimer(itsIoService),
       itsIoServiceThread([this] { runIoService(); })
@@ -391,7 +423,7 @@ catch (...)
 {
   // This is a separate thread, so we must catch exceptions
   // and log them here
-  std::cout << Fmi::Exception::Trace(BCP, "Operation failed!") << std::endl;
+  std::cout << Fmi::Exception::Trace(BCP, "Operation failed!") << '\n';
 }
 
 // ----------------------------------------------------------------------
@@ -420,7 +452,7 @@ try
             }
             catch (...)
             {
-              std::cout << Fmi::Exception::Trace(BCP, "Operation failed!") << std::endl;
+              std::cout << Fmi::Exception::Trace(BCP, "Operation failed!") << '\n';
             }
             maybeScheduleAutoReloadCheck();
           }
@@ -447,18 +479,18 @@ try
     const std::pair<bool, std::string> result = reload();
     if (result.first)
     {
-      std::cout << "  -- Geoengine reloaded successfully" << std::endl;
+      std::cout << "  -- Geoengine reloaded successfully\n";
     }
     else
     {
-      std::cout << "  -- Geoengine reload failed: " << result.second << std::endl;
+      std::cout << "  -- Geoengine reload failed: " << result.second << '\n';
     }
   }
 }
 catch (...)
 {
   Fmi::Exception error(BCP, "Operation failed!");
-  std::cout << error << std::endl;
+  std::cout << error << '\n';
 }
 
 // ----------------------------------------------------------------------
@@ -1478,8 +1510,8 @@ std::pair<bool, std::string> Engine::reload()
 
     const Fmi::DateTime begin = Fmi::MicrosecClock::local_time();
     const std::string m1 = begin.to_simple_string() + " Geonames reloading initiated";
-    output << m1 << std::endl;
-    std::cout << m1 << std::endl;
+    output << m1 << '\n';
+    std::cout << m1 << '\n';
 
     auto p = std::make_shared<Impl>(itsConfigFile, true);  // reload=true
     bool first_construction = false;
@@ -1491,8 +1523,8 @@ std::pair<bool, std::string> Engine::reload()
       const Fmi::DateTime end = Fmi::MicrosecClock::local_time();
       const std::string m2 =
           end.to_simple_string() + " Geonames reloading failed: " + itsErrorMessage;
-      output << m2 << std::endl;
-      std::cout << m2 << std::endl;
+      output << m2 << '\n';
+      std::cout << m2 << '\n';
       itsReloading = false;
       return {false, output.str()};
     }
@@ -1507,8 +1539,8 @@ std::pair<bool, std::string> Engine::reload()
     const double secs = 0.000001 * (end - begin).total_microseconds();
     const std::string m3 = itsLastReload.to_simple_string() + " Geonames reloaded in " +
                            fmt::format("{:0.3f}", secs) + " seconds";
-    output << m3 << std::endl;
-    std::cout << m3 << std::endl;
+    output << m3 << '\n';
+    std::cout << m3 << '\n';
 
     // Cancel the auto-reload timer if it was enabled and possibly schedule again.
     // Period may have changed during reload.
@@ -1523,41 +1555,12 @@ std::pair<bool, std::string> Engine::reload()
     std::ostringstream errmsg;
     errmsg << Fmi::SecondClock::local_time() << ": C++ exception while reloading geonames:" << '\n'
            << error << '\n';
-    output << errmsg.str() << std::endl;
-    std::cout << errmsg.str() << std::endl;
+    output << errmsg.str() << '\n';
+    std::cout << errmsg.str() << '\n';
     itsReloading = false;  // Do not leave the system in reloading state
     itsErrorMessage = errmsg.str();
     // Return false and error message, but do not throw and exception
     return {false, output.str()};
-  }
-}
-
-// ----------------------------------------------------------------------
-/*!
- * \brief Convenience function for status()
- */
-// ----------------------------------------------------------------------
-
-std::string printrate(long count, long secs)
-{
-  try
-  {
-    std::ostringstream out;
-    if (secs > 0)
-    {
-      out << std::setprecision(6) << 1.0 * count / secs << "/sec, " << 60.0 * count / secs
-          << "/min";
-    }
-    else
-    {
-      out << "Not available";
-    }
-
-    return out.str();
-  }
-  catch (...)
-  {
-    throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
 }
 
@@ -1633,20 +1636,20 @@ StatusReturnType Engine::metadataStatus() const
     cacheTable->set(column, row, Fmi::to_string(itsSuggestCount));
     ++column;
 
-    cacheHeaders.push_back("StartTime");
-    cacheHeaders.push_back("Uptime");
-    cacheHeaders.push_back("LastReload");
-    cacheHeaders.push_back("CacheMaxSize");
-    cacheHeaders.push_back("NameSearchRate");
-    cacheHeaders.push_back("NameSearches");
-    cacheHeaders.push_back("CoordinateSearchRate");
-    cacheHeaders.push_back("CoordinateSearches");
-    cacheHeaders.push_back("GeoidSearchRate");
-    cacheHeaders.push_back("GeoidSearches");
-    cacheHeaders.push_back("KeywordSearchRate");
-    cacheHeaders.push_back("KeywordSearches");
-    cacheHeaders.push_back("AutocompleteSearchRate");
-    cacheHeaders.push_back("AutocompleteSearches");
+    cacheHeaders.emplace_back("StartTime");
+    cacheHeaders.emplace_back("Uptime");
+    cacheHeaders.emplace_back("LastReload");
+    cacheHeaders.emplace_back("CacheMaxSize");
+    cacheHeaders.emplace_back("NameSearchRate");
+    cacheHeaders.emplace_back("NameSearches");
+    cacheHeaders.emplace_back("CoordinateSearchRate");
+    cacheHeaders.emplace_back("CoordinateSearches");
+    cacheHeaders.emplace_back("GeoidSearchRate");
+    cacheHeaders.emplace_back("GeoidSearches");
+    cacheHeaders.emplace_back("KeywordSearchRate");
+    cacheHeaders.emplace_back("KeywordSearches");
+    cacheHeaders.emplace_back("AutocompleteSearchRate");
+    cacheHeaders.emplace_back("AutocompleteSearches");
 
     cacheTable->setNames(cacheHeaders);
     return cacheTable;
@@ -1739,7 +1742,7 @@ void Engine::requestReload(SmartMet::Spine::HTTP::Response& theResponse)
   catch (...)
   {
     const auto error = Fmi::Exception::Trace(BCP, "Operation failed!");
-    std::cout << error << std::endl;
+    std::cout << error << '\n';
     out << error;
     theResponse.setStatus(Spine::HTTP::Status::internal_server_error);
     theResponse.setContent(out.str());
@@ -1752,17 +1755,12 @@ try
 {
   const std::string dataType = Spine::optional_string(request.getParameter("type"), "meta");
   if (dataType == "meta")
-  {
     return metadataStatus();
-  }
-  else if (dataType == "cache")
-  {
+
+  if (dataType == "cache")
     return cacheStatus();
-  }
-  else
-  {
-    throw Fmi::Exception(BCP, "Unknown type '" + dataType + "'");
-  }
+
+  throw Fmi::Exception(BCP, "Unknown type '" + dataType + "'");
 }
 catch (...)
 {

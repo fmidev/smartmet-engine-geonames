@@ -301,7 +301,7 @@ Spine::LocationPtr WktGeometry::locationFromGeometry(
     break;
     default:
       break;
-  };
+  }
 
   Spine::LocationPtr ret(tmp.release());
 

@@ -26,7 +26,6 @@
 #include <cmath>
 #include <iconv.h>
 #include <libconfig.h++>
-#include <list>
 #include <map>
 #include <memory>
 #include <string>
@@ -189,7 +188,7 @@ class Engine::Impl
    */
   std::optional<Fmi::DateTime> nextAutoreloadCheckTime(unsigned incr = 5) const;
 
-  inline bool is_autoreload_enabled() const { return itsAutoReloadInterval > 0; }
+  bool is_autoreload_enabled() const { return itsAutoReloadInterval > 0; }
 
   bool itsReady = false;
   bool itsReloading = false;
@@ -308,7 +307,8 @@ class Engine::Impl
 
   void read_config_security();
 
-  std::optional<std::size_t> read_database_hash_value(Fmi::Database::PostgreSQLConnection& conn);
+  std::optional<std::size_t> read_database_hash_value(
+      Fmi::Database::PostgreSQLConnection& conn) const;
 
   void read_countries(Fmi::Database::PostgreSQLConnection& conn);
   void read_alternate_countries(Fmi::Database::PostgreSQLConnection& conn);

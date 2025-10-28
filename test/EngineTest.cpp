@@ -12,7 +12,7 @@
 using namespace std;
 
 SmartMet::Spine::Reactor *reactor;
-SmartMet::Engine::Geonames::Engine *names;
+std::shared_ptr<SmartMet::Engine::Geonames::Engine> names;
 
 auto accept_all = [](const SmartMet::Spine::LocationPtr &loc) { return false; };
 
@@ -1074,12 +1074,12 @@ int main(void)
 
   reactor = new SmartMet::Spine::Reactor(opts);
   reactor->init();
-  names = reinterpret_cast<SmartMet::Engine::Geonames::Engine *>(
-      reactor->getSingleton("Geonames", NULL));
+  names = reactor->getEngine<SmartMet::Engine::Geonames::Engine>("Geonames", NULL);
 
   cout << endl << "Geonames tester" << endl << "================" << endl;
   Tests::tests t;
   int result = t.run();
+  names.reset();
   delete reactor;
   return result;
 }

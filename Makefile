@@ -16,7 +16,6 @@ LIBS += $(PREFIX_LDFLAGS) \
 	-lboost_locale \
 	-lboost_thread \
 	-lboost_chrono \
-	-lboost_system \
 	-latomic
 
 # What to install

@@ -23,7 +23,6 @@ LIBS += \
 	-lboost_regex \
 	-lboost_iostreams \
 	-lboost_chrono \
-	-lboost_system \
 	-lbz2 -lz -lpthread
 
 TEST_PREPARE_TARGETS := cnf/geonames.conf

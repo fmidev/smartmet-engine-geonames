@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 25.9.29
+Version: 25.11.3
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -39,12 +39,12 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-utils-devel >= 25.8.19
+BuildRequires: smartmet-utils-devel >= 25.10.10
 BuildRequires: smartmet-library-gis-devel >= 25.9.15
 BuildRequires: smartmet-library-locus-devel >= 25.9.29
-BuildRequires: smartmet-library-macgyver-devel >= 25.9.19
+BuildRequires: smartmet-library-macgyver-devel >= 25.10.30
 BuildRequires: smartmet-library-newbase-devel >= 25.3.20
-BuildRequires: smartmet-library-spine-devel >= 25.9.16
+BuildRequires: smartmet-library-spine-devel >= 25.10.27
 Requires: %{smartmet_boost}-iostreams
 Requires: %{smartmet_boost}-locale
 Requires: %{smartmet_boost}-system
@@ -55,10 +55,10 @@ Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 25.9.15
 Requires: smartmet-library-locus >= 25.9.29
-Requires: smartmet-library-macgyver >= 25.9.19
+Requires: smartmet-library-macgyver >= 25.10.30
 Requires: smartmet-library-newbase >= 25.3.20
-Requires: smartmet-library-spine >= 25.9.16
-Requires: smartmet-server >= 25.9.9
+Requires: smartmet-library-spine >= 25.10.27
+Requires: smartmet-server >= 25.10.27
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -132,6 +132,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Nov  3 2025 Mika Heiskanen <mika.heiskanen@fmi.fi> - 25.11.3-1.fmi
+- Added PCL to country name searches to fix Saint Helier, New Jersey autocomplete
+
 * Mon Sep 29 2025 Mika Heiskanen <mika.heiskanen@fmi.fi> - 25.9.29-1.fmi
 - Fixed compiler warnings
 

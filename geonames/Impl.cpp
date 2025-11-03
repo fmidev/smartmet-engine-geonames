@@ -1249,14 +1249,12 @@ void Engine::Impl::read_countries(Fmi::Database::PostgreSQLConnection &conn)
   try
   {
     // Note: PCLI overrides smaller political entities if there are multiple
-    // for
-    // the same iso2
-    // country
-    // code
+    // for the same iso2 country code.
+
     std::string query(
         "SELECT name, countries_iso2 as iso2 FROM geonames WHERE "
         "features_code in "
-        "('PCLD','PCLF','PCLI') ORDER BY features_code ASC");
+        "('PCL', 'PCLD','PCLF','PCLI') ORDER BY features_code ASC");
 
     if (itsVerbose)
       std::cout << "read_countries: " << query << '\n';
@@ -1266,9 +1264,9 @@ void Engine::Impl::read_countries(Fmi::Database::PostgreSQLConnection &conn)
     if (res.empty())
     {
       if (itsStrict)
-        throw Fmi::Exception(BCP, "FmiNames: Found no PCLI/PCLF/PCLD places from geonames table");
+        throw Fmi::Exception(BCP, "FmiNames: Found no country places from geonames table");
 
-      std::cerr << "Warning: FmiNames: Found no PCLI/PCLF/PCLD places from geonames table\n";
+      std::cerr << "Warning: FmiNames: Found no country places places from geonames table\n";
     }
 
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)

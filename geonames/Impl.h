@@ -21,7 +21,6 @@
 #include <macgyver/NearTree.h>
 #include <macgyver/PostgreSQLConnection.h>
 #include <macgyver/TernarySearchTree.h>
-#include <macgyver/TimedCache.h>
 #include <macgyver/WorkerPool.h>
 #include <cmath>
 #include <iconv.h>

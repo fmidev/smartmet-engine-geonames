@@ -4,7 +4,7 @@
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
 Version: 25.12.2
-Release: 1%{?dist}.fmi
+Release: 2%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -42,7 +42,7 @@ BuildRequires: rpm-build
 BuildRequires: smartmet-utils-devel >= 25.10.10
 BuildRequires: smartmet-library-gis-devel >= 25.9.15
 BuildRequires: smartmet-library-locus-devel >= 25.9.29
-BuildRequires: smartmet-library-macgyver-devel >= 25.10.30
+BuildRequires: smartmet-library-macgyver-devel >= 25.12.2
 BuildRequires: smartmet-library-newbase-devel >= 25.3.20
 BuildRequires: smartmet-library-spine-devel >= 25.10.27
 Requires: %{smartmet_boost}-iostreams
@@ -55,7 +55,7 @@ Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 25.9.15
 Requires: smartmet-library-locus >= 25.9.29
-Requires: smartmet-library-macgyver >= 25.10.30
+Requires: smartmet-library-macgyver >= 25.12.2
 Requires: smartmet-library-newbase >= 25.3.20
 Requires: smartmet-library-spine >= 25.10.27
 Requires: smartmet-server >= 25.10.27
@@ -132,7 +132,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
-* Tue Dec  2 2025 Andris Pavēnis <andris.pavenis@fmi.fi> 25.12.2-1.fmi
+* Tue Dec  2 2025 Andris Pavēnis <andris.pavenis@fmi.fi> 25.12.2-2.fmi
 - Repackage due to Fmi::Pool<> changes
 
 * Mon Nov  3 2025 Mika Heiskanen <mika.heiskanen@fmi.fi> - 25.11.3-1.fmi

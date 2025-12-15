@@ -18,3 +18,5 @@ compile_commands.json
 
 # Distribution files in CI
 dist/
+
+/.vscode

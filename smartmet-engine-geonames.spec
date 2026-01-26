@@ -33,7 +33,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: %{smartmet_boost}-devel
 BuildRequires: %{smartmet_fmt_devel}
 BuildRequires: gcc-c++
-BuildRequires: gdal310-devel
+BuildRequires: gdal312-devel
 BuildRequires: libatomic
 BuildRequires: libicu-devel
 BuildRequires: make
@@ -50,7 +50,7 @@ Requires: %{smartmet_boost}-locale
 Requires: %{smartmet_boost}-system
 Requires: %{smartmet_boost}-thread
 Requires: %{smartmet_fmt}
-Requires: gdal310-libs
+Requires: gdal312-libs
 Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 25.9.15
@@ -93,7 +93,7 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: smartmet-test-data
 #TestRequires: smartmet-test-db
 #TestRequires: zlib-devel
-#TestRequires: gdal310-devel
+#TestRequires: gdal312-devel
 
 %description
 SmartMet geonames engine

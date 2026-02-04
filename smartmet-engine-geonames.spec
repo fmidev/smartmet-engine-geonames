@@ -20,45 +20,40 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 %define smartmet_boost boost
 %endif
 
-%if 0%{?rhel} && 0%{rhel} <= 9
-%define smartmet_fmt_min 11.0.1
-%define smartmet_fmt_max 12.0.0
+%define smartmet_fmt_min 12.0.0
+%define smartmet_fmt_max 13.0.0
 %define smartmet_fmt fmt-libs >= %{smartmet_fmt_min}, fmt-libs < %{smartmet_fmt_max}
 %define smartmet_fmt_devel fmt-devel >= %{smartmet_fmt_min}, fmt-devel < %{smartmet_fmt_max}
-%else
-%define smartmet_fmt fmt
-%define smartmet_fmt_devel fmt-devel
-%endif
 
 BuildRequires: %{smartmet_boost}-devel
 BuildRequires: %{smartmet_fmt_devel}
 BuildRequires: gcc-c++
-BuildRequires: gdal310-devel
+BuildRequires: gdal312-devel
 BuildRequires: libatomic
 BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-utils-devel >= 25.10.10
-BuildRequires: smartmet-library-gis-devel >= 25.9.15
-BuildRequires: smartmet-library-locus-devel >= 25.9.29
-BuildRequires: smartmet-library-macgyver-devel >= 25.12.2
-BuildRequires: smartmet-library-newbase-devel >= 25.3.20
-BuildRequires: smartmet-library-spine-devel >= 25.10.27
+BuildRequires: smartmet-utils-devel >= 26.2.4
+BuildRequires: smartmet-library-gis-devel >= 26.2.4
+BuildRequires: smartmet-library-locus-devel >= 26.2.4
+BuildRequires: smartmet-library-macgyver-devel >= 26.2.4
+BuildRequires: smartmet-library-newbase-devel >= 26.2.4
+BuildRequires: smartmet-library-spine-devel >= 26.2.4
 Requires: %{smartmet_boost}-iostreams
 Requires: %{smartmet_boost}-locale
 Requires: %{smartmet_boost}-system
 Requires: %{smartmet_boost}-thread
 Requires: %{smartmet_fmt}
-Requires: gdal310-libs
+Requires: gdal312-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 25.9.15
-Requires: smartmet-library-locus >= 25.9.29
-Requires: smartmet-library-macgyver >= 25.12.2
-Requires: smartmet-library-newbase >= 25.3.20
-Requires: smartmet-library-spine >= 25.10.27
-Requires: smartmet-server >= 25.10.27
+Requires: smartmet-library-gis >= 26.2.4
+Requires: smartmet-library-locus >= 26.2.4
+Requires: smartmet-library-macgyver >= 26.2.4
+Requires: smartmet-library-newbase >= 26.2.4
+Requires: smartmet-library-spine >= 26.2.4
+Requires: smartmet-server >= 26.2.4
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -93,7 +88,7 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: smartmet-test-data
 #TestRequires: smartmet-test-db
 #TestRequires: zlib-devel
-#TestRequires: gdal310-devel
+#TestRequires: gdal312-devel
 
 %description
 SmartMet geonames engine
@@ -104,7 +99,7 @@ Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
-Requires: smartmet-library-locus-devel >= 25.9.29
+Requires: smartmet-library-locus-devel >= 26.2.4
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.

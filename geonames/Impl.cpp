@@ -1073,7 +1073,7 @@ void Engine::Impl::read_config()
       itsConfig.lookupValue("remove_underscores", itsRemoveUnderscores);
 
       read_config_priorities();
-
+      read_config_areaspecifiers();
       read_config_security();
 
       const std::string &name = boost::asio::ip::host_name();
@@ -1116,6 +1116,88 @@ void Engine::Impl::read_config()
   catch (...)
   {
     throw Fmi::Exception::Trace(BCP, "Configuration read failed!");
+  }
+}
+
+namespace
+{
+// Empty means produce no area specifiers
+const std::set<std::string> valid_features{
+    "", "ADMIN1", "COUNTRY", "MUNICIPALITY", "MUNICIPALITY|COUNTRY"};
+
+void check_feature(const std::string &feature)
+{
+  if (valid_features.find(feature) != valid_features.end())
+    return;
+
+  throw Fmi::Exception(BCP, "Feature code '" + feature + "' is not supported in area specifiers");
+}
+}  // namespace
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Read the configuration file section on areaspecifiers
+ *
+ * Sample settings:
+ *
+ * areas:
+ * {
+ *   default = "COUNTRY";       // default is just country
+ *   US = ["ADMIN1","COUNTRY"]; // USA uses state and country
+ *   FI = "MUNICIPALITY";       // Finland a geonames extension, ok too: MUNICIPALITY|COUNTRY
+ *   SG = "";                   // Singapore, Singapore is useless information
+ * };
+ */
+// ----------------------------------------------------------------------
+
+void Engine::Impl::read_config_areaspecifiers()
+{
+  try
+  {
+    if (!itsConfig.exists("areas"))
+      return;
+
+    const std::string errmsg =
+        "Configured values for specific countries in 'areas' must be strings or arrays of strings";
+
+    const auto &areas = itsConfig.lookup("areas");
+
+    if (!areas.isGroup())
+      throw Fmi::Exception(BCP, "Configured value or 'areas' must be a group!");
+
+    for (int i = 0; i < areas.getLength(); ++i)
+    {
+      std::string iso2 = areas[i].getName();
+      const auto &value = areas[i];
+
+      if (value.isString())  // "COUNTRY", "ADMIN1" etc
+      {
+        std::string feature = value;
+        check_feature(feature);
+        itsAreaSpecifiers[iso2] = {feature};
+      }
+      else if (value.isArray())  // ["ADMIN1", "COUNTRY"] etc
+      {
+        std::vector<std::string> features;
+        for (int j = 0; j < value.getLength(); ++j)
+        {
+          if (!value[j].isString())
+            throw Fmi::Exception(BCP, errmsg);
+          std::string feature = value[j];
+          check_feature(feature);
+          features.emplace_back(feature);
+        }
+        itsAreaSpecifiers[iso2] = features;
+      }
+      else
+        throw Fmi::Exception(BCP, errmsg);
+    }
+  }
+  catch (...)
+  {
+    auto error = Fmi::Exception::Trace(BCP, "Reading config 'areas' failed!");
+    error.addParameter("Configuration file", itsConfigFile);
+    throw error;
   }
 }
 
@@ -1392,46 +1474,112 @@ void Engine::Impl::read_municipalities(Fmi::Database::PostgreSQLConnection &conn
 
 Spine::LocationPtr Engine::Impl::extract_geoname(const pqxx::result::const_iterator &row) const
 {
+  // Get location info from database iterator
   Spine::GeoId geoid = Fmi::stoi(row["id"].as<std::string>());
-  auto name = row["name"].as<std::string>();
 
-  auto iso2 = (row["iso2"].is_null() ? "" : row["iso2"].as<std::string>());
-  auto feature = (row["feature"].is_null() ? "" : row["feature"].as<std::string>());
-  auto munip = row["munip"].as<int>();
-  auto lon = row["lon"].as<double>();
-  auto lat = row["lat"].as<double>();
-  auto tz = row["timezone"].as<std::string>();
-  auto pop = (!row["population"].is_null() ? row["population"].as<int>() : 0);
-  auto ele = (!row["elevation"].is_null() ? row["elevation"].as<double>()
-                                          : std::numeric_limits<float>::quiet_NaN());
-  double dem = (!row["dem"].is_null() ? row["dem"].as<int>() : elevation(lon, lat));
-  auto admin = (!row["admin1"].is_null() ? row["admin1"].as<std::string>() : "");
-  auto covertype = Fmi::LandCover::Type(
-      (!row["landcover"].is_null() ? row["landcover"].as<int>() : coverType(lon, lat)));
+  // clang-format off
+  auto name     = row["name"].as<std::string>();
+  auto iso2     = row["iso2"].is_null() ? "" : row["iso2"].as<std::string>();
+  auto feature  = row["feature"].is_null() ? "" : row["feature"].as<std::string>();
+  auto munip    = row["munip"].as<int>();
+  auto lon      = row["lon"].as<double>();
+  auto lat      = row["lat"].as<double>();
+  auto tz       = row["timezone"].as<std::string>();
+  auto pop      = !row["population"].is_null() ? row["population"].as<int>() : 0;
+  auto ele      = !row["elevation"].is_null() ? row["elevation"].as<double>()
+                  : std::numeric_limits<float>::quiet_NaN();
+  double dem    = !row["dem"].is_null() ? row["dem"].as<int>() : elevation(lon, lat);
+  auto admin1   = !row["admin1"].is_null() ? row["admin1"].as<std::string>() : "";
+  auto covertype = Fmi::LandCover::Type(!row["landcover"].is_null() ? row["landcover"].as<int>() : coverType(lon, lat));
+  // clang-format on
 
-  std::string area;
-  if (munip != 0)
-  {
-    auto it = itsMunicipalities.find(munip);
-    if (it != itsMunicipalities.end())
-      area = it->second;
-  }
-
-  if (area.empty())
+  // Establish country
+  std::string country = "";
   {
     auto it = itsCountries.find(iso2);
-    auto us = itsCountries.find("US");
     if (it != itsCountries.end())
-      area = it->second;
-    if (it == us)
-      area = admin.append(", ").append(area);
-#if 0
-          else
-            std::cerr << "Failed to find country " << key << " for geoid " << geoid << '\n';
-#endif
+      country = it->second;
   }
 
-  std::string country;  // country will be filled in upon request
+  // Now use area logic to determine whether we should return variations such as
+  //   location, country
+  //   location, municipality
+  //   location, state, USA
+  // If the municipality has been set, it will be used instead of admin1, since
+  // it is a geonames extension to fix inaccuracies. Currently only known use is in Finland.
+
+  std::string area;
+
+  // To make code clearer by avoiding multiple if statements
+
+  auto area_append = [&area](const std::string &s)
+  {
+    if (!area.empty())
+      area += ", ";
+    area += s;
+  };
+
+  auto pos = itsAreaSpecifiers.find(iso2);
+  if (pos == itsAreaSpecifiers.end())
+    pos = itsAreaSpecifiers.find("default");
+
+  if (pos == itsAreaSpecifiers.end())
+    area += country;  // fallback is name, country
+  else
+  {
+    for (const auto &spec : pos->second)
+    {
+      if (spec.empty())
+      {
+        area = "";  // we do not want area at all into autocomplete
+        break;
+      }
+
+      if (spec == "COUNTRY")
+      {
+        if (!country.empty())
+          area_append(country);
+      }
+
+      else if (spec == "MUNICIPALITY")
+      {
+        if (munip != 0)
+        {
+          auto it = itsMunicipalities.find(munip);
+          if (it != itsMunicipalities.end())
+            area_append(it->second);
+        }
+      }
+
+      else if (spec == "MUNICIPALITY|COUNTRY")
+      {
+        if (munip != 0)
+        {
+          auto it = itsMunicipalities.find(munip);
+          if (it != itsMunicipalities.end())
+            area_append(it->second);
+          else if (!country.empty())
+            area_append(country);
+        }
+        else if (!country.empty())
+          area_append(country);
+      }
+
+      else if (spec == "ADMIN1")
+        area_append(admin1);
+
+      else
+      {
+        // Should not happen, config reader should have verified input
+        throw Fmi::Exception(
+            BCP, "Internal error: Unknown area specifier '" + spec + "' in geonames areas");
+      }
+    }
+  }
+
+  // country will be translated from iso2 upon request
+  country = "";
+
   Spine::LocationPtr loc = std::make_shared<Spine::Location>(geoid,
                                                              name,
                                                              iso2,
@@ -1457,7 +1605,8 @@ void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
     std::string sql =
         "SELECT\n"
         "  id, geonames.name AS name, countries_iso2 as iso2, features_code as feature, \n"
-        "  municipalities_id as munip, lon, lat, timezone, population, elevation, dem, landcover, "
+        "  municipalities_id as munip, lon, lat, timezone, population, elevation, dem, "
+        "landcover, "
         "admin1\n"
         "FROM\n"
         "  geonames\n"

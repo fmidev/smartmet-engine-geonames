@@ -249,6 +249,11 @@ class Engine::Impl
   int itsNameMatchPriority = 50;
   LocationPriorities itsLocationPriorities;
 
+  // area specifiers per country (and country "default"). If nothing is set
+
+  using AreaSpecifiers = std::map<std::string, std::vector<std::string>>;  // US --> [ADM1,ISO2] etc
+  AreaSpecifiers itsAreaSpecifiers;
+
   boost::atomic<bool> itsSuggestReadyFlag{false};
 
   // security
@@ -300,6 +305,7 @@ class Engine::Impl
   std::unique_ptr<Fmi::WorkerPool<Locus::Query>> query_worker_pool;
 
   void read_config();
+  void read_config_areaspecifiers();
   void read_config_priorities();
   void read_config_prioritymap(const std::string& partname, Priorities& priomap);
   void setup_fallback_encodings();

@@ -99,7 +99,17 @@ autoreload:
 	period = 5;
 }
 
-# Priorities
+# Location specifiers for autocomplete as in "Kallio, Finland" or "Bonn, Germany."
+
+areas:
+{
+	default = "COUNTRY";		// default is just country
+	US = ["ADMIN1","COUNTRY"];	// USA uses state and country
+	FI = "MUNICIPALITY|COUNTRY";	// FMI specific geonames extension
+	SG = "";                	// Singapore, Singapore is useless info
+};
+
+# Autocomplete priorities
 
 priorities:
 {

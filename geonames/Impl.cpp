@@ -500,17 +500,59 @@ void Engine::Impl::add_treewords(std::set<std::string> &words,
     if (count < 2)
       return;
 
-    // Extract the remaining name starting from all word boundaries
+    // Extract the remaining name starting from all word boundaries in upper case
 
-    // BRAINSTORM-3383 suggests ways of dropping intermediate articles as starting
-    // points to avoid "de" from suggesting "Santiago de Compostela". Not done, since
-    // short segments are not necessarily just articles in a particular language,
-    // but be in other languages.
-
+    const int max_glyph_count = 4;
+    bool is_first = true;
     for (const auto &p : map)
     {
       if (p.rule() != 0)
       {
+        // Discard conjunction starts by checking if the segment starts in lower case.
+        // This if block can be omitted to enable autocomplete for them too.
+        if (!is_first)
+        {
+          // BRAINSTORM-3383
+          // Check case on the original segment string, before any collation.
+          // If the first character is lowercase, this is a connector word
+          // like "de", "von", "sur", "am" etc. and should not be a starting point.
+
+          const std::string seg(p.begin(), p.end());
+
+          if (!seg.empty())
+          {
+            // Count UTF-8 code points (glyphs) in the segment
+            int glyph_count = 0;
+            for (auto it = seg.cbegin(); it != seg.cend(); ++it)
+            {
+              if ((*it & 0xC0) != 0x80)  // skip UTF-8 continuation bytes
+              {
+                ++glyph_count;
+                if (glyph_count > max_glyph_count)  // early exit, no need to count more
+                  break;
+              }
+            }
+
+            // If the segment is short, it might be a conjunction instead
+            // of a word like "airport, "harbour" etc
+
+            if (glyph_count <= max_glyph_count)
+            {
+              // We check glyph count first since this is likely to be slower:
+              const std::string upper_seg = boost::locale::to_upper(seg, itsLocale);
+
+              if (upper_seg[0] != seg[0])
+              {
+                // std::cout << "Skipped likely conjunction in the middle: '" << seg << "' from " <<
+                // name << "\n";
+                continue;
+              }
+            }
+          }
+        }
+
+        is_first = false;
+
         const auto &it = p.begin();
         if (it != name.end())
         {
@@ -1163,7 +1205,8 @@ void Engine::Impl::read_config_areaspecifiers()
       return;
 
     const std::string errmsg =
-        "Configured values for specific countries in 'areas' must be strings or arrays of strings";
+        "Configured values for specific countries in 'areas' must be strings or arrays of "
+        "strings";
 
     const auto &areas = itsConfig.lookup("areas");
 

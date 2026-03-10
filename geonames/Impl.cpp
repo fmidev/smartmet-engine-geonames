@@ -502,6 +502,11 @@ void Engine::Impl::add_treewords(std::set<std::string> &words,
 
     // Extract the remaining name starting from all word boundaries
 
+    // BRAINSTORM-3383 suggests ways of dropping intermediate articles as starting
+    // points to avoid "de" from suggesting "Santiago de Compostela". Not done, since
+    // short segments are not necessarily just articles in a particular language,
+    // but be in other languages.
+
     for (const auto &p : map)
     {
       if (p.rule() != 0)

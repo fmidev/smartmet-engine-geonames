@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.2.4
+Version: 26.2.10
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -35,11 +35,11 @@ BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-utils-devel >= 26.2.4
-BuildRequires: smartmet-library-gis-devel >= 26.2.4
+BuildRequires: smartmet-library-gis-devel >= 26.2.17
 BuildRequires: smartmet-library-locus-devel >= 26.2.4
 BuildRequires: smartmet-library-macgyver-devel >= 26.2.4
 BuildRequires: smartmet-library-newbase-devel >= 26.2.4
-BuildRequires: smartmet-library-spine-devel >= 26.2.4
+BuildRequires: smartmet-library-spine-devel >= 26.3.9
 Requires: %{smartmet_boost}-iostreams
 Requires: %{smartmet_boost}-locale
 Requires: %{smartmet_boost}-system
@@ -48,12 +48,12 @@ Requires: %{smartmet_fmt}
 Requires: gdal312-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 26.2.4
+Requires: smartmet-library-gis >= 26.2.17
 Requires: smartmet-library-locus >= 26.2.4
 Requires: smartmet-library-macgyver >= 26.2.4
 Requires: smartmet-library-newbase >= 26.2.4
-Requires: smartmet-library-spine >= 26.2.4
-Requires: smartmet-server >= 26.2.4
+Requires: smartmet-library-spine >= 26.3.9
+Requires: smartmet-server >= 26.3.9
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -127,6 +127,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Tue Mar 10 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.2.10-1.fmi
+- Added configurable area specifiers (BRAINSTORM-3372) as in "Austin, TX, USA" or "Kallio, Helsinki"
+- Remove likely conjunctions such as de, al, es etc as possible matches for autocomplete
+
 * Wed Feb  4 2026 Andris Pavēnis <andris.pavenis@fmi.fi> 26.2.4-1.fmi
 - Update to proj-9.7, gdal-3.12, fmt-12
 

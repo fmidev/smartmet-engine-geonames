@@ -35,7 +35,7 @@ BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-utils-devel >= 26.2.4
-BuildRequires: smartmet-library-gis-devel >= 26.2.17
+BuildRequires: smartmet-library-gis-devel >= 26.2.5
 BuildRequires: smartmet-library-locus-devel >= 26.2.4
 BuildRequires: smartmet-library-macgyver-devel >= 26.2.4
 BuildRequires: smartmet-library-newbase-devel >= 26.2.4
@@ -48,7 +48,7 @@ Requires: %{smartmet_fmt}
 Requires: gdal312-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 26.2.17
+Requires: smartmet-library-gis >= 26.2.5
 Requires: smartmet-library-locus >= 26.2.4
 Requires: smartmet-library-macgyver >= 26.2.4
 Requires: smartmet-library-newbase >= 26.2.4

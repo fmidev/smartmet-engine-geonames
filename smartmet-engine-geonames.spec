@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.2.10
+Version: 26.3.10
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -127,7 +127,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
-* Tue Mar 10 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.2.10-1.fmi
+* Tue Mar 10 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.3.10-1.fmi
 - Added configurable area specifiers (BRAINSTORM-3372) as in "Austin, TX, USA" or "Kallio, Helsinki"
 - Remove likely conjunctions such as de, al, es etc as possible matches for autocomplete
 

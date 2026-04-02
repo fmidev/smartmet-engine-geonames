@@ -1,34 +1,12 @@
+# smartmet-engine-geonames
 
-Table of Contents
-=================
+Part of [SmartMet Server](https://github.com/fmidev/smartmet-server). See the [SmartMet Server documentation](https://github.com/fmidev/smartmet-server) for a full overview of the ecosystem.
 
-  * [SmartMet Server](#SmartMet Server)
-  * [Introduction](#introduction)
-  * [Configuration](#configuration)
-  * [Docker](#docker)
+## Overview
 
+The geonames engine (also called geoengine) provides shared location services to SmartMet Server. It resolves place names to coordinates and vice versa, using a PostGIS database based on the [GeoNames](http://www.geonames.org) geographical database with over eleven million place names.
 
-# SmartMet Server
-[SmartMet Server](https://github.com/fmidev/smartmet-server) is a data
-and procut server for MetOcean data. It provides high capacity and
-high availability data and product server for MetOcean data. The
-server is written in C++.
-
-#Introduction
-
-SmartMet engine geonames (geoengine) provides location services for
-other services. It resolves the location information for coordinates
-and vice versa.
-
-Geoengine provides shared access to the location database in the
-SmartMet server. The location database is a PostGIS database and it is
-based on <a href="http://www.geonames.org">the Geonames</a>, a
-geographical database that covers all countries and contains over
-eleven million placenames that are available for download free of
-charge. The location database has to be synced with the 
-the Geonames database from  time to time.
-
-#Configuration
+## Configuration
 
 The configuration file consists of the configuration of
 several parameters that are needed for specifying the location
@@ -175,9 +153,16 @@ Priorities of areas within a country
    };
 </code></pre>
 
-# Docker
+## Docker
 
 SmartMet Server can be dockerized. This [tutorial](docs/docker.md)
 explains how to explains how to configure the GeoNames engine of the
 SmartMet Server when using Docker.
 
+## License
+
+MIT — see [LICENSE](LICENSE)
+
+## Contributing
+
+Bug reports and pull requests are welcome on [GitHub](../../issues).

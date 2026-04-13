@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.3.10
+Version: 26.4.13
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -35,11 +35,11 @@ BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-utils-devel >= 26.2.4
-BuildRequires: smartmet-library-gis-devel >= 26.2.5
-BuildRequires: smartmet-library-locus-devel >= 26.2.4
-BuildRequires: smartmet-library-macgyver-devel >= 26.2.4
+BuildRequires: smartmet-library-gis-devel >= 26.4.13
+BuildRequires: smartmet-library-locus-devel >= 26.4.13
+BuildRequires: smartmet-library-macgyver-devel >= 26.4.13
 BuildRequires: smartmet-library-newbase-devel >= 26.2.4
-BuildRequires: smartmet-library-spine-devel >= 26.3.9
+BuildRequires: smartmet-library-spine-devel >= 26.4.13
 Requires: %{smartmet_boost}-iostreams
 Requires: %{smartmet_boost}-locale
 Requires: %{smartmet_boost}-system
@@ -48,12 +48,12 @@ Requires: %{smartmet_fmt}
 Requires: gdal312-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 26.2.5
-Requires: smartmet-library-locus >= 26.2.4
-Requires: smartmet-library-macgyver >= 26.2.4
+Requires: smartmet-library-gis >= 26.4.13
+Requires: smartmet-library-locus >= 26.4.13
+Requires: smartmet-library-macgyver >= 26.4.13
 Requires: smartmet-library-newbase >= 26.2.4
-Requires: smartmet-library-spine >= 26.3.9
-Requires: smartmet-server >= 26.3.9
+Requires: smartmet-library-spine >= 26.4.13
+Requires: smartmet-server >= 26.4.13
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -99,7 +99,7 @@ Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
-Requires: smartmet-library-locus-devel >= 26.2.4
+Requires: smartmet-library-locus-devel >= 26.4.13
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.
@@ -127,6 +127,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Mon Apr 13 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.4.13-1.fmi
+- Repackaged due to API changes
+
 * Tue Mar 10 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.3.10-1.fmi
 - Added configurable area specifiers (BRAINSTORM-3372) as in "Austin, TX, USA" or "Kallio, Helsinki"
 - Remove likely conjunctions such as de, al, es etc as possible matches for autocomplete

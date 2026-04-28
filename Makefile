@@ -10,9 +10,10 @@ DEFINES = -DUNIX -D_REENTRANT
 LIBS += $(PREFIX_LDFLAGS) \
 	$(REQUIRED_LIBS) \
 	-lsmartmet-locus \
-	-lsmartmet-macgyver \
-	-lsmartmet-gis \
 	-lsmartmet-spine \
+	-lsmartmet-newbase \
+	-lsmartmet-gis \
+	-lsmartmet-macgyver \
 	-lboost_locale \
 	-lboost_thread \
 	-lboost_chrono \

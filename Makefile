@@ -10,6 +10,7 @@ DEFINES = -DUNIX -D_REENTRANT
 LIBS += $(PREFIX_LDFLAGS) \
 	$(REQUIRED_LIBS) \
 	-lsmartmet-locus \
+	-lsmartmet-osm \
 	-lsmartmet-spine \
 	-lsmartmet-newbase \
 	-lsmartmet-gis \

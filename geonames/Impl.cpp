@@ -17,6 +17,10 @@
 #include <macgyver/Exception.h>
 #include <macgyver/Hash.h>
 #include <macgyver/StringConversion.h>
+#include <osm/CountryInfo.h>
+#include <osm/FileDataSource.h>
+#include <osm/Keywords.h>
+#include <osm/Place.h>
 #include <spine/ConfigTools.h>
 #include <spine/Exceptions.h>
 #include <spine/Location.h>
@@ -782,7 +786,12 @@ void Engine::Impl::initSuggest(bool threaded)
     {
       itsConfig.lookupValue("maxdemresolution", itsMaxDemResolution);
 
-      if (itsDatabaseDisabled)
+      if (itsBackend == "osm")
+      {
+        Fmi::AsyncTask::interruption_point();
+        load_from_osm();
+      }
+      else if (itsDatabaseDisabled)
         std::cerr << "Warning: Geonames database is disabled\n";
       else
       {
@@ -916,15 +925,22 @@ catch (...)
 bool Engine::Impl::isGeonamesUpdated()
 try
 {
-  if (itsDatabaseDisabled)
-  {
-    // std::cerr << "Warning: Geonames database is disabled\n";
-    return false;
-  }
-
   if (Fmi::SecondClock::universal_time() - startTime < Fmi::Minutes(itsAutoReloadLimit))
   {
     // Do not allow reload too soon after startup
+    return false;
+  }
+
+  if (itsBackend == "osm")
+  {
+    SmartMet::Osm::FileDataSource src(itsOsmDataDir);
+    const auto h = src.dataHash();
+    return h != itsOsmDataHash;
+  }
+
+  if (itsDatabaseDisabled)
+  {
+    // std::cerr << "Warning: Geonames database is disabled\n";
     return false;
   }
 
@@ -1094,20 +1110,35 @@ void Engine::Impl::read_config()
       itsConfig.readFile(itsConfigFile.c_str());
       Spine::expandVariables(itsConfig);
 
-      if (!itsConfig.exists("database"))
+      // Backend defaults to "geonames" (SQL against fminames DB). "osm" uses
+      // smartmet-library-osm and skips the SQL reads entirely.
+      itsConfig.lookupValue("backend", itsBackend);
+      if (itsBackend != "geonames" && itsBackend != "osm")
+      {
+        Fmi::Exception exception(BCP, "Unknown backend value");
+        exception.addParameter("Configuration file", itsConfigFile);
+        exception.addParameter("backend", itsBackend);
+        throw exception;
+      }
+
+      const bool osm_backend = (itsBackend == "osm");
+
+      if (!osm_backend && !itsConfig.exists("database"))
       {
         Fmi::Exception exception(BCP, "Configuration file must specify the database details!");
         exception.addParameter("Configuration file", itsConfigFile);
         throw exception;
       }
 
-      const libconfig::Setting &db = itsConfig.lookup("database");
-
-      if (!db.isGroup())
+      if (!osm_backend)
       {
-        Fmi::Exception exception(BCP, "Configured value of 'database' must be a group!");
-        exception.addParameter("Configuration file", itsConfigFile);
-        throw exception;
+        const libconfig::Setting &db = itsConfig.lookup("database");
+        if (!db.isGroup())
+        {
+          Fmi::Exception exception(BCP, "Configured value of 'database' must be a group!");
+          exception.addParameter("Configuration file", itsConfigFile);
+          throw exception;
+        }
       }
 
       itsConfig.lookupValue("verbose", itsVerbose);
@@ -1123,18 +1154,31 @@ void Engine::Impl::read_config()
       read_config_areaspecifiers();
       read_config_security();
 
-      const std::string &name = boost::asio::ip::host_name();
-      itsUser = lookup_database("user", name).c_str();
-      itsHost = lookup_database("host", name).c_str();
-      itsPass = lookup_database("pass", name).c_str();
-      itsDatabase = lookup_database("database", name).c_str();
+      if (osm_backend)
+      {
+        if (!itsConfig.lookupValue("osm.data_dir", itsOsmDataDir) || itsOsmDataDir.empty())
+        {
+          Fmi::Exception exception(BCP, "Backend 'osm' requires 'osm.data_dir' setting");
+          exception.addParameter("Configuration file", itsConfigFile);
+          throw exception;
+        }
+        itsDatabaseDisabled = true;
+      }
+      else
+      {
+        const std::string &name = boost::asio::ip::host_name();
+        itsUser = lookup_database("user", name).c_str();
+        itsHost = lookup_database("host", name).c_str();
+        itsPass = lookup_database("pass", name).c_str();
+        itsDatabase = lookup_database("database", name).c_str();
 
-      itsConfig.lookupValue("database.disable", itsDatabaseDisabled);
+        itsConfig.lookupValue("database.disable", itsDatabaseDisabled);
 
-      // port is optional
-      int port = default_port;
-      itsConfig.lookupValue("database.port", port);
-      itsPort = Fmi::to_string(port);
+        // port is optional
+        int port = default_port;
+        itsConfig.lookupValue("database.port", port);
+        itsPort = Fmi::to_string(port);
+      }
     }
     catch (const libconfig::SettingException &e)
     {
@@ -1971,6 +2015,166 @@ void Engine::Impl::read_keywords(Fmi::Database::PostgreSQLConnection &conn)
     if (itsVerbose)
       std::cout << "read_keywords: attached " << count_ok << " keywords to locations succesfully\n"
                 << "read_keywords: found " << count_bad << " unknown locations\n";
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Build a Spine::LocationPtr from OSM-sourced fields
+ *
+ * Mirrors extract_geoname() but takes its inputs from a smartmet-library-osm
+ * Place rather than a SQL row. Feature is already a GeoNames-style code by
+ * the time it gets here (the OSM library does the place=* mapping).
+ */
+// ----------------------------------------------------------------------
+
+Spine::LocationPtr Engine::Impl::extract_osm_place(long id,
+                                                    const std::string &name,
+                                                    const std::string &iso2,
+                                                    const std::string &feature,
+                                                    double lon,
+                                                    double lat,
+                                                    int population,
+                                                    const std::string &timezone,
+                                                    const std::string &admin1) const
+{
+  std::string country;
+  {
+    auto it = itsCountries.find(iso2);
+    if (it != itsCountries.end())
+      country = it->second;
+  }
+
+  std::string area;
+  auto area_append = [&area](const std::string &s)
+  {
+    if (!area.empty())
+      area += ", ";
+    area += s;
+  };
+
+  auto pos = itsAreaSpecifiers.find(iso2);
+  if (pos == itsAreaSpecifiers.end())
+    pos = itsAreaSpecifiers.find("default");
+
+  if (pos == itsAreaSpecifiers.end())
+  {
+    area = country;
+  }
+  else
+  {
+    for (const auto &spec : pos->second)
+    {
+      if (spec.empty())
+      {
+        area = "";
+        break;
+      }
+      if (spec == "COUNTRY")
+      {
+        if (!country.empty())
+          area_append(country);
+      }
+      else if (spec == "ADMIN1")
+      {
+        if (!admin1.empty())
+          area_append(admin1);
+      }
+      // MUNICIPALITY / MUNICIPALITY|COUNTRY don't apply to OSM data
+    }
+  }
+
+  // Country gets translated from iso2 at request time, like in extract_geoname.
+  const std::string country_unset;
+  const float ele_nan = std::numeric_limits<float>::quiet_NaN();
+  const double dem_val = elevation(lon, lat);
+  const Fmi::LandCover::Type covertype = coverType(lon, lat);
+
+  return std::make_shared<Spine::Location>(static_cast<Spine::GeoId>(id),
+                                            name,
+                                            iso2,
+                                            0,  // munip — not applicable to OSM
+                                            area,
+                                            feature,
+                                            country_unset,
+                                            lon,
+                                            lat,
+                                            timezone,
+                                            population,
+                                            ele_nan,
+                                            boost::numeric_cast<float>(dem_val),
+                                            covertype);
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Load place data from smartmet-library-osm (file backend)
+ *
+ * Populates itsCountries, itsLocations, itsGeoIdMap, and itsKeywords. After
+ * this returns, the build_geotrees / build_ternarytrees / assign_priorities
+ * pipeline runs unchanged: those functions operate on the in-memory
+ * containers and don't care which source filled them.
+ *
+ * AlternateCountries / AlternateNames / AlternateMunicipalities / Municipalities
+ * are intentionally left empty — translations are out of scope for the
+ * day-1 OSM prototype, and FMI extensions (fmisid/wmo/lpnn, Finnish
+ * municipality ids) are GeoNames-only.
+ */
+// ----------------------------------------------------------------------
+
+void Engine::Impl::load_from_osm()
+{
+  try
+  {
+    SmartMet::Osm::FileDataSource src(itsOsmDataDir);
+
+    // Countries first — extract_osm_place looks up names from itsCountries.
+    for (const auto &c : src.readCountries())
+      itsCountries.emplace(c.iso2, c.name);
+
+    auto places = src.readPlaces();
+    if (places.empty() && itsStrict)
+      throw Fmi::Exception(BCP, "Backend 'osm' loaded zero places")
+          .addParameter("data_dir", itsOsmDataDir);
+
+    for (const auto &p : places)
+    {
+      auto loc = extract_osm_place(
+          p.id, p.name, p.iso2, p.feature, p.lon, p.lat, p.population, p.timezone, p.admin1);
+      itsLocations.push_back(std::move(loc));
+    }
+
+    build_geoid_map();
+
+    // Materialize default keyword sets (cities, populated). The library
+    // helper produces keyword -> place_id; we resolve to LocationPtrs via
+    // itsGeoIdMap (just built above).
+    const auto kw_ids = SmartMet::Osm::defaultKeywords(places);
+    for (const auto &[keyword, ids] : kw_ids)
+    {
+      auto &locs = itsKeywords[keyword];
+      for (long pid : ids)
+      {
+        auto it = itsGeoIdMap.find(static_cast<Spine::GeoId>(pid));
+        if (it != itsGeoIdMap.end())
+          locs.push_back(*it->second);
+      }
+    }
+
+    // Build the lowercase-name index used by name_search_inmemory.
+    for (const auto &ptr : itsLocations)
+      itsNameMap[Fmi::ascii_tolower_copy(ptr->name)].push_back(ptr);
+
+    itsOsmDataHash = src.dataHash();
+
+    if (itsVerbose)
+      std::cout << "load_from_osm: loaded " << itsLocations.size() << " places, "
+                << itsCountries.size() << " countries, " << itsKeywords.size()
+                << " keyword sets from " << itsOsmDataDir << '\n';
   }
   catch (...)
   {
@@ -2855,6 +3059,9 @@ Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_typ
 Spine::LocationList Engine::Impl::name_search(const Locus::QueryOptions &theOptions,
                                               const std::string &theName)
 {
+  if (itsBackend == "osm")
+    return name_search_inmemory(theOptions, theName);
+
   if (itsDatabaseDisabled)
     return {};
 
@@ -2910,6 +3117,9 @@ Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOptions &theOp
                                                 float theRadius)
 {
   // Let the engine handle setting the timezone, dem and covertype
+  if (itsBackend == "osm")
+    return lonlat_search_inmemory(theOptions, theLongitude, theLatitude, theRadius);
+
   if (itsDatabaseDisabled)
     return {};
 
@@ -2951,6 +3161,9 @@ Spine::LocationList Engine::Impl::lonlat_search(const Locus::QueryOptions &theOp
 
 Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions &theOptions, int theId)
 {
+  if (itsBackend == "osm")
+    return id_search_inmemory(theOptions, theId);
+
   if (itsDatabaseDisabled)
     return {};
 
@@ -2992,6 +3205,9 @@ Spine::LocationList Engine::Impl::id_search(const Locus::QueryOptions &theOption
 Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theOptions,
                                                  const std::string &theKeyword)
 {
+  if (itsBackend == "osm")
+    return keyword_search_inmemory(theOptions, theKeyword);
+
   if (itsDatabaseDisabled)
     return {};
 
@@ -3019,6 +3235,179 @@ Spine::LocationList Engine::Impl::keyword_search(const Locus::QueryOptions &theO
     itsNameSearchCache.insert(key, ptrs);
 
     return ptrs;
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief In-memory search helpers for the OSM backend.
+ *
+ * The four *_inmemory methods walk the same in-memory indices the rest
+ * of the engine already maintains (itsNameMap, itsGeoTrees, itsGeoIdMap,
+ * itsKeywords) and apply Locus::QueryOptions filters in a uniform way.
+ *
+ * They handle "all"-keyword semantics, "all"-country semantics ("all" or
+ * empty list = no filter), and an empty features list = no filter.
+ * Translation is skipped — OSM mode does not load alternate names.
+ */
+// ----------------------------------------------------------------------
+
+namespace
+{
+bool list_contains(const std::list<std::string> &l, const std::string &v)
+{
+  return std::find(l.begin(), l.end(), v) != l.end();
+}
+
+bool passes_country_filter(const Spine::LocationPtr &p,
+                            const std::list<std::string> &countries,
+                            const std::list<std::string> &excluded)
+{
+  // GeoNames convention: empty list, single "all", or "%" means no filter.
+  const bool any_country = countries.empty() || list_contains(countries, "all") ||
+                            list_contains(countries, "%");
+  if (!any_country && !list_contains(countries, p->iso2))
+    return false;
+  if (!excluded.empty() && list_contains(excluded, p->iso2))
+    return false;
+  return true;
+}
+
+bool passes_feature_filter(const Spine::LocationPtr &p,
+                            const std::list<std::string> &features)
+{
+  if (features.empty())
+    return true;
+  return list_contains(features, p->feature);
+}
+
+bool passes_population_filter(const Spine::LocationPtr &p, unsigned int pmin, unsigned int pmax)
+{
+  if (pmin > 0 && static_cast<unsigned int>(std::max(0, p->population)) < pmin)
+    return false;
+  if (pmax > 0 && static_cast<unsigned int>(std::max(0, p->population)) > pmax)
+    return false;
+  return true;
+}
+
+bool passes_all_filters(const Spine::LocationPtr &p, const Locus::QueryOptions &opts)
+{
+  if (!passes_country_filter(p, opts.GetCountries(), opts.GetExcludedCountries()))
+    return false;
+  if (!passes_feature_filter(p, opts.GetFeatures()))
+    return false;
+  if (!passes_population_filter(p, opts.GetPopulationMin(), opts.GetPopulationMax()))
+    return false;
+  return true;
+}
+
+void apply_result_limit(Spine::LocationList &locs, unsigned int limit)
+{
+  if (limit > 0 && locs.size() > limit)
+    locs.resize(limit);
+}
+}  // namespace
+
+Spine::LocationList Engine::Impl::name_search_inmemory(const Locus::QueryOptions &opts,
+                                                        const std::string &name) const
+{
+  try
+  {
+    Spine::LocationList result;
+
+    auto it = itsNameMap.find(Fmi::ascii_tolower_copy(name));
+    if (it == itsNameMap.end())
+      return result;
+
+    for (const auto &p : it->second)
+      if (passes_all_filters(p, opts))
+        result.push_back(p);
+
+    result.sort([this](const Spine::LocationPtr &a, const Spine::LocationPtr &b)
+                { return prioritySort(a, b); });
+
+    apply_result_limit(result, opts.GetResultLimit());
+    return result;
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+Spine::LocationList Engine::Impl::lonlat_search_inmemory(const Locus::QueryOptions &opts,
+                                                          double lon,
+                                                          double lat,
+                                                          double radius) const
+{
+  try
+  {
+    Spine::LocationList result;
+
+    // Use the global "all" KD-tree built by build_geotrees().
+    const auto tree_it = itsGeoTrees.find(FMINAMES_DEFAULT_KEYWORD);
+    if (tree_it == itsGeoTrees.end())
+      return result;
+
+    Spine::LocationPtr probe = std::make_shared<Spine::Location>(lon, lat);
+    auto nearby = tree_it->second->nearestones(probe, radius);
+    // nearestones returns std::multimap<distance, LocationPtr>, already
+    // ordered by distance ascending.
+    for (const auto &kv : nearby)
+      if (passes_all_filters(kv.second, opts))
+        result.push_back(kv.second);
+
+    apply_result_limit(result, opts.GetResultLimit());
+    return result;
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+Spine::LocationList Engine::Impl::id_search_inmemory(const Locus::QueryOptions &opts,
+                                                      int id) const
+{
+  try
+  {
+    Spine::LocationList result;
+    auto it = itsGeoIdMap.find(static_cast<Spine::GeoId>(id));
+    if (it == itsGeoIdMap.end() || !it->second)
+      return result;
+    Spine::LocationPtr p = *it->second;
+    if (passes_all_filters(p, opts))
+      result.push_back(p);
+    return result;
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+Spine::LocationList Engine::Impl::keyword_search_inmemory(const Locus::QueryOptions &opts,
+                                                           const std::string &keyword) const
+{
+  try
+  {
+    Spine::LocationList result;
+    auto it = itsKeywords.find(keyword);
+    if (it == itsKeywords.end())
+      return result;
+    for (const auto &p : it->second)
+      if (passes_all_filters(p, opts))
+        result.push_back(p);
+
+    result.sort([this](const Spine::LocationPtr &a, const Spine::LocationPtr &b)
+                { return prioritySort(a, b); });
+
+    apply_result_limit(result, opts.GetResultLimit());
+    return result;
   }
   catch (...)
   {

@@ -81,6 +81,10 @@ class Engine::Impl
   using KeywordMap = std::map<std::string, Spine::LocationList>;  // geoids belonging to
                                                                   // keywords
 
+  // Lowercase-keyed name index used by the OSM-mode in-memory name search.
+  // Populated only when itsBackend == "osm".
+  using NameMap = std::map<std::string, Spine::LocationList>;
+
   using GeoTree = Fmi::NearTree<Spine::LocationPtr, LocationPtrDistance>;
   using GeoTreePtr = std::unique_ptr<GeoTree>;
   using GeoTreeMap = std::map<std::string, GeoTreePtr>;  // nearest point searches
@@ -148,6 +152,20 @@ class Engine::Impl
 
   Spine::LocationList keyword_search(const Locus::QueryOptions& theOptions,
                                      const std::string& theKeyword);
+
+  // In-memory equivalents used when itsBackend == "osm". They walk the
+  // same indices the autocomplete suggest() / spatial keywordSearch()
+  // already consult, then apply the QueryOptions filters (countries,
+  // excluded countries, features, populationMin/Max, resultLimit).
+  Spine::LocationList name_search_inmemory(const Locus::QueryOptions& theOptions,
+                                            const std::string& theName) const;
+  Spine::LocationList lonlat_search_inmemory(const Locus::QueryOptions& theOptions,
+                                              double theLongitude,
+                                              double theLatitude,
+                                              double theRadius) const;
+  Spine::LocationList id_search_inmemory(const Locus::QueryOptions& theOptions, int theId) const;
+  Spine::LocationList keyword_search_inmemory(const Locus::QueryOptions& theOptions,
+                                                const std::string& theKeyword) const;
 
   // Priority sort of locations
   void sort(Spine::LocationList& theLocations) const;
@@ -231,6 +249,10 @@ class Engine::Impl
 
   Spine::LocationList itsLocations;
 
+  // OSM-mode only: lowercase(name) -> list of LocationPtrs with that name.
+  // Empty in GeoNames mode.
+  NameMap itsNameMap;
+
   Countries itsCountries;
   AlternateCountries itsAlternateCountries;
   Municipalities itsMunicipalities;
@@ -299,6 +321,16 @@ class Engine::Impl
   std::string itsDatabase;
   std::string itsPort;
 
+  // Backend selection. "geonames" (default) uses the SQL reads against the
+  // GeoNames-derived fminames database. "osm" uses smartmet-library-osm and
+  // skips the database connection entirely. The two modes are mutually
+  // exclusive — see CLAUDE.md / README for the design rationale.
+  std::string itsBackend = "geonames";
+
+  // Only used when itsBackend == "osm"
+  std::string itsOsmDataDir;
+  std::string itsOsmDataHash;
+
   Fmi::AsyncTaskGroup tg1;
   std::shared_ptr<Fmi::AsyncTask> initSuggestTask;
 
@@ -322,6 +354,12 @@ class Engine::Impl
   void read_alternate_municipalities(Fmi::Database::PostgreSQLConnection& conn);
   void read_geonames(Fmi::Database::PostgreSQLConnection& conn);
 
+  // OSM backend load path. Bypasses the SQL reads above and populates
+  // itsCountries / itsLocations / itsKeywords from a smartmet-library-osm
+  // DataSource (currently file-only). All the build_* index-construction
+  // steps that follow are unchanged.
+  void load_from_osm();
+
   void build_geoid_map();
   void read_keywords(Fmi::Database::PostgreSQLConnection& conn);
 
@@ -334,6 +372,20 @@ class Engine::Impl
                                            const Spine::LocationList& locs);
 
   Spine::LocationPtr extract_geoname(const pqxx::result::const_iterator& row) const;
+
+  // Build a Spine::LocationPtr from an OSM Place. Mirrors extract_geoname
+  // but for the OSM source — feature stays as the GeoNames-style code the
+  // OSM library has already mapped (PPLA / PPL / PPLA4 / PPLX), and DEM /
+  // landcover come from the same raster lookups the GeoNames path uses.
+  Spine::LocationPtr extract_osm_place(long id,
+                                       const std::string& name,
+                                       const std::string& iso2,
+                                       const std::string& feature,
+                                       double lon,
+                                       double lat,
+                                       int population,
+                                       const std::string& timezone,
+                                       const std::string& admin1) const;
 
   Spine::LocationList suggest_one_keyword(const std::string& pattern,
                                           const std::string& lang,

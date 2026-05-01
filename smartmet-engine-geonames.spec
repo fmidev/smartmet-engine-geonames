@@ -4,7 +4,7 @@
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
 Version: 26.4.28
-Release: 1%{?dist}.fmi
+Release: 2%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -39,6 +39,7 @@ BuildRequires: smartmet-library-gis-devel >= 26.4.13
 BuildRequires: smartmet-library-locus-devel >= 26.4.13
 BuildRequires: smartmet-library-macgyver-devel >= 26.4.13
 BuildRequires: smartmet-library-newbase-devel >= 26.2.4
+BuildRequires: smartmet-library-osm-devel >= 26.4.28
 BuildRequires: smartmet-library-spine-devel >= 26.4.13
 Requires: %{smartmet_boost}-iostreams
 Requires: %{smartmet_boost}-locale
@@ -52,6 +53,7 @@ Requires: smartmet-library-gis >= 26.4.13
 Requires: smartmet-library-locus >= 26.4.13
 Requires: smartmet-library-macgyver >= 26.4.13
 Requires: smartmet-library-newbase >= 26.2.4
+Requires: smartmet-library-osm >= 26.4.28
 Requires: smartmet-library-spine >= 26.4.13
 Requires: smartmet-server >= 26.4.13
 %if 0%{rhel} >= 8
@@ -127,6 +129,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Tue Apr 28 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.4.28-2.fmi
+- Added optional 'osm' backend reading place data from smartmet-library-osm
+  for foreign deployments where GeoNames data is inaccurate. Default backend
+  is unchanged ('geonames'); existing configurations are not affected.
+
 * Tue Apr 28 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.4.28-1.fmi
 - Link explicitly against smartmet-library-newbase (was relying on transitive linking)
 

@@ -1352,9 +1352,10 @@ std::optional<std::size_t> Engine::Impl::read_database_hash_value(
       throw Fmi::Exception(BCP, "FmiNames: Failed to read database hash value");
     }
 
+    const int column_index = res.column_number("max");
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      auto tmp = row["max"].as<double>();
+      auto tmp = (*row)[column_index].as<double>();
       return std::size_t(std::floor(tmp + 0.5));
     }
 
@@ -1399,10 +1400,12 @@ void Engine::Impl::read_countries(Fmi::Database::PostgreSQLConnection &conn)
       std::cerr << "Warning: FmiNames: Found no country places places from geonames table\n";
     }
 
+    const int name_index = res.column_number("name");
+    const int iso2_index = res.column_number("iso2");
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      auto name = row["name"].as<std::string>();
-      auto iso2 = row["iso2"].as<std::string>();
+      auto name = (*row)[name_index].as<std::string>();
+      auto iso2 = (*row)[iso2_index].as<std::string>();
       itsCountries[iso2] = name;
     }
 
@@ -1447,11 +1450,15 @@ void Engine::Impl::read_alternate_countries(Fmi::Database::PostgreSQLConnection 
       std::cerr << "Warning: Found no country translations\n";
     }
 
+    const int language_index = res.column_number("language");
+    const int gname_index = res.column_number("gname");
+    const int alt_gname_index = res.column_number("alt_gname");
+
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      auto lang = row["language"].as<std::string>();
-      auto name = row["gname"].as<std::string>();
-      auto translation = row["alt_gname"].as<std::string>();
+      auto lang = (*row)[language_index].as<std::string>();
+      auto name = (*row)[gname_index].as<std::string>();
+      auto translation = (*row)[alt_gname_index].as<std::string>();
 
       auto it = itsAlternateCountries.find(name);
       if (it == itsAlternateCountries.end())
@@ -1498,10 +1505,13 @@ void Engine::Impl::read_municipalities(Fmi::Database::PostgreSQLConnection &conn
     // if (res.empty()) throw Fmi::Exception(BCP, "FmiNames: Found nothing from municipalities
     // table");
 
+    const int id_index = res.column_number("id");
+    const int name_index = res.column_number("name");
+
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      int id = row["id"].as<int>();
-      auto name = row["name"].as<std::string>();
+      int id = (*row)[id_index].as<int>();
+      auto name = (*row)[name_index].as<std::string>();
       itsMunicipalities[id] = name;
     }
 
@@ -1523,22 +1533,36 @@ void Engine::Impl::read_municipalities(Fmi::Database::PostgreSQLConnection &conn
 Spine::LocationPtr Engine::Impl::extract_geoname(const pqxx::result::const_iterator &row) const
 {
   // Get location info from database iterator
-  Spine::GeoId geoid = Fmi::stoi(row["id"].as<std::string>());
+  const int id_index = row->column_number("id");
+  const int name_index = row->column_number("name");
+  const int iso2_index = row->column_number("iso2");
+  const int feature_index = row->column_number("feature");
+  const int munip_index = row->column_number("munip");
+  const int lon_index = row->column_number("lon");
+  const int lat_index = row->column_number("lat");
+  const int tz_index = row->column_number("timezone");
+  const int pop_index = row->column_number("population");
+
+  Spine::GeoId geoid = Fmi::stoi((*row)[id_index].as<std::string>());
 
   // clang-format off
-  auto name     = row["name"].as<std::string>();
-  auto iso2     = row["iso2"].is_null() ? "" : row["iso2"].as<std::string>();
-  auto feature  = row["feature"].is_null() ? "" : row["feature"].as<std::string>();
-  auto munip    = row["munip"].as<int>();
-  auto lon      = row["lon"].as<double>();
-  auto lat      = row["lat"].as<double>();
-  auto tz       = row["timezone"].as<std::string>();
-  auto pop      = !row["population"].is_null() ? row["population"].as<int>() : 0;
-  auto ele      = !row["elevation"].is_null() ? row["elevation"].as<double>()
+  auto name     = (*row)[name_index].as<std::string>();
+  auto iso2     = (*row)[iso2_index].is_null() ? "" : (*row)[iso2_index].as<std::string>();
+  auto feature  = (*row)[feature_index].is_null() ? "" : (*row)[feature_index].as<std::string>();
+  auto munip    = (*row)[munip_index].as<int>();
+  auto lon      = (*row)[lon_index].as<double>();
+  auto lat      = (*row)[lat_index].as<double>();
+  auto tz       = (*row)[tz_index].as<std::string>();
+  auto pop      = !(*row)[pop_index].is_null() ? (*row)[pop_index].as<int>() : 0;
+  const int ele_index = row->column_number("elevation");
+  const int dem_index = row->column_number("dem");
+  const int admin1_index = row->column_number("admin1");
+  const int landcover_index = row->column_number("landcover");
+  auto ele      = !(*row)[ele_index].is_null() ? (*row)[ele_index].as<double>()
                   : std::numeric_limits<float>::quiet_NaN();
-  double dem    = !row["dem"].is_null() ? row["dem"].as<int>() : elevation(lon, lat);
-  auto admin1   = !row["admin1"].is_null() ? row["admin1"].as<std::string>() : "";
-  auto covertype = Fmi::LandCover::Type(!row["landcover"].is_null() ? row["landcover"].as<int>() : coverType(lon, lat));
+  double dem    = !(*row)[dem_index].is_null() ? (*row)[dem_index].as<int>() : elevation(lon, lat);
+  auto admin1   = !(*row)[admin1_index].is_null() ? (*row)[admin1_index].as<std::string>() : "";
+  auto covertype = Fmi::LandCover::Type(!(*row)[landcover_index].is_null() ? (*row)[landcover_index].as<int>() : coverType(lon, lat));
   // clang-format on
 
   // Establish country
@@ -1682,12 +1706,15 @@ void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
       std::cerr << "Warning: Found nothing from fminames database\n";
     }
 
+    const int id_index = res.column_number("id");
+    const int name_index = res.column_number("name");
+    const int tz_index = res.column_number("timezone");
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      if (row["timezone"].is_null())
+      if ((*row)[tz_index].is_null())
       {
-        std::cerr << "Warning: " << Fmi::stoi(row["id"].as<std::string>()) << " '"
-                  << row["name"].as<std::string>()
+        std::cerr << "Warning: " << Fmi::stoi((*row)[id_index].as<std::string>()) << " '"
+                  << (*row)[name_index].as<std::string>()
                   << "' timezone is null, discarding the location\n";
       }
       else
@@ -1767,11 +1794,15 @@ void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &
     std::string last_lang;
     auto idinfo = itsGeoIdMap.end();
 
+    const int geoid_index = res.column_number("geonames_id");
+    const int name_index = res.column_number("name");
+    const int lang_index = res.column_number("language");
+
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      Spine::GeoId geoid = Fmi::stoi(row["geonames_id"].as<std::string>());
-      auto name = row["name"].as<std::string>();
-      auto lang = row["language"].as<std::string>();
+      Spine::GeoId geoid = Fmi::stoi((*row)[geoid_index].as<std::string>());
+      auto name = (*row)[name_index].as<std::string>();
+      auto lang = (*row)[lang_index].as<std::string>();
 
       Fmi::ascii_tolower(lang);
 
@@ -1842,11 +1873,14 @@ void Engine::Impl::read_alternate_municipalities(Fmi::Database::PostgreSQLConnec
     if (itsVerbose)
       std::cout << "read_alternate_geonames: " << res.size() << " translations\n";
 
+    const int id_index = res.column_number("id");
+    const int name_index = res.column_number("name");
+    const int lang_index = res.column_number("language");
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      int munip = row["id"].as<int>();
-      auto name = row["name"].as<std::string>();
-      auto lang = row["language"].as<std::string>();
+      int munip = Fmi::stoi((*row)[id_index].as<std::string>());
+      auto name = (*row)[name_index].as<std::string>();
+      auto lang = (*row)[lang_index].as<std::string>();
 
       auto it = itsAlternateMunicipalities.find(munip);
       if (it == itsAlternateMunicipalities.end())
@@ -1947,10 +1981,12 @@ void Engine::Impl::read_keywords(Fmi::Database::PostgreSQLConnection &conn)
 
     bool limited_db = itsConfig.exists("database.where");
 
+    const int keyword_index = res.column_number("keyword");
+    const int id_index = res.column_number("id");
     for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
     {
-      auto key = row["keyword"].as<std::string>();
-      Spine::GeoId geoid = Fmi::stoi(row["id"].as<std::string>());
+      auto key = (*row)[keyword_index].as<std::string>();
+      Spine::GeoId geoid = Fmi::stoi((*row)[id_index].as<std::string>());
 
       auto it = itsGeoIdMap.find(geoid);
       if (it != itsGeoIdMap.end())

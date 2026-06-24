@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.4.28
+Version: 26.6.24
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -34,12 +34,12 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-utils-devel >= 26.2.4
-BuildRequires: smartmet-library-gis-devel >= 26.4.13
+BuildRequires: smartmet-utils-devel >= 26.6.17
+BuildRequires: smartmet-library-gis-devel >= 26.6.15
 BuildRequires: smartmet-library-locus-devel >= 26.4.13
-BuildRequires: smartmet-library-macgyver-devel >= 26.4.13
-BuildRequires: smartmet-library-newbase-devel >= 26.2.4
-BuildRequires: smartmet-library-spine-devel >= 26.4.13
+BuildRequires: smartmet-library-macgyver-devel >= 26.6.15
+BuildRequires: smartmet-library-newbase-devel >= 26.6.24
+BuildRequires: smartmet-library-spine-devel >= 26.6.24
 Requires: %{smartmet_boost}-iostreams
 Requires: %{smartmet_boost}-locale
 Requires: %{smartmet_boost}-system
@@ -48,12 +48,12 @@ Requires: %{smartmet_fmt}
 Requires: gdal312-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 26.4.13
+Requires: smartmet-library-gis >= 26.6.15
 Requires: smartmet-library-locus >= 26.4.13
-Requires: smartmet-library-macgyver >= 26.4.13
-Requires: smartmet-library-newbase >= 26.2.4
-Requires: smartmet-library-spine >= 26.4.13
-Requires: smartmet-server >= 26.4.13
+Requires: smartmet-library-macgyver >= 26.6.15
+Requires: smartmet-library-newbase >= 26.6.24
+Requires: smartmet-library-spine >= 26.6.24
+Requires: smartmet-server >= 26.6.24
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -127,6 +127,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Jun 24 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.6.24-1.fmi
+- Mass rebuild
+
 * Tue Apr 28 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.4.28-1.fmi
 - Link explicitly against smartmet-library-newbase (was relying on transitive linking)
 

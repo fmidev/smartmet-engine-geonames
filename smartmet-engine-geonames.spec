@@ -37,7 +37,7 @@ BuildRequires: rpm-build
 BuildRequires: smartmet-utils-devel >= 26.6.17
 BuildRequires: smartmet-library-gis-devel >= 26.6.15
 BuildRequires: smartmet-library-locus-devel >= 26.4.13
-BuildRequires: smartmet-library-macgyver-devel >= 26.6.15
+BuildRequires: smartmet-library-macgyver-devel >= 26.6.26
 BuildRequires: smartmet-library-newbase-devel >= 26.6.24
 BuildRequires: smartmet-library-spine-devel >= 26.6.24
 Requires: %{smartmet_boost}-iostreams
@@ -50,7 +50,7 @@ Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 26.6.15
 Requires: smartmet-library-locus >= 26.4.13
-Requires: smartmet-library-macgyver >= 26.6.15
+Requires: smartmet-library-macgyver >= 26.6.26
 Requires: smartmet-library-newbase >= 26.6.24
 Requires: smartmet-library-spine >= 26.6.24
 Requires: smartmet-server >= 26.6.24

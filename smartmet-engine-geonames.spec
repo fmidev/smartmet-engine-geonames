@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.6.24
+Version: 26.6.26
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -127,6 +127,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Fri Jun 26 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.6.26-1.fmi
+- Thread naming: Named the IO service thread and the init tasks
+
 * Wed Jun 24 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.6.24-1.fmi
 - Mass rebuild
 

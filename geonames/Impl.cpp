@@ -1011,8 +1011,8 @@ void Engine::Impl::init(bool first_construction)
     tg1.stop_on_error(true);
     tg1.on_task_error([](const std::string &s)
                       { throw Fmi::Exception::Trace(BCP, "Operation failed: " + s); });
-    tg1.add("initDEM", [this]() { initDEM(); });
-    tg1.add("initLandCover", [this]() { initLandCover(); });
+    tg1.add("ini-dem", [this]() { initDEM(); });
+    tg1.add("ini-landcover", [this]() { initLandCover(); });
     tg1.wait();
 
     // If we're doing a reload, we must do full initialization in this thread.
@@ -1020,7 +1020,7 @@ void Engine::Impl::init(bool first_construction)
     if (!first_construction)
       initSuggest(false);
     else
-      tg1.add("initSuggest", [this]() { initSuggest(true); });
+      tg1.add("ini-suggest", [this]() { initSuggest(true); });
 
     itsConfig.lookupValue("autoreload.period", itsAutoReloadInterval);
 

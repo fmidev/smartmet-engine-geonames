@@ -14,6 +14,7 @@
 #include <macgyver/DistanceParser.h>
 #include <macgyver/Exception.h>
 #include <macgyver/StringConversion.h>
+#include <macgyver/ThreadName.h>
 #include <macgyver/TimeZoneFactory.h>
 #include <spine/Convenience.h>
 #include <spine/DebugFormatter.h>
@@ -302,7 +303,12 @@ Engine::Engine(std::string theConfigFile)
       initFailed(false),
       itsWork(itsIoService.get_executor()),
       itsTimer(itsIoService),
-      itsIoServiceThread([this] { runIoService(); })
+      itsIoServiceThread(
+          [this]
+          {
+            Fmi::set_thread_name("geo-io");
+            runIoService();
+          })
 {
 }
 

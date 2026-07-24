@@ -17,10 +17,10 @@
 #include <macgyver/AsyncTaskGroup.h>
 #include <macgyver/Cache.h>
 #include <macgyver/CharsetConverter.h>
+#include "AutoCompleteIndex.h"
 #include <macgyver/Geometry.h>
 #include <macgyver/NearTree.h>
 #include <macgyver/PostgreSQLConnection.h>
-#include <macgyver/TernarySearchTree.h>
 #include <macgyver/WorkerPool.h>
 #include <cmath>
 #include <iconv.h>
@@ -85,8 +85,10 @@ class Engine::Impl
   using GeoTreePtr = std::unique_ptr<GeoTree>;
   using GeoTreeMap = std::map<std::string, GeoTreePtr>;  // nearest point searches
 
-  // default name search trees per keyword
-  using TernaryTree = Fmi::TernarySearchTree<const Spine::Location>;
+  // default name search trees per keyword.
+  // Backed by AutoCompleteIndex (compact, array-based) rather than a ternary
+  // tree; the alias name is kept so the surrounding code is unchanged.
+  using TernaryTree = AutoCompleteIndex<const Spine::Location>;
   using TernaryTreePtr = std::shared_ptr<TernaryTree>;
   using TernaryTreeMap = std::map<std::string, TernaryTreePtr>;
 
@@ -160,6 +162,15 @@ class Engine::Impl
 
   bool prioritySortPtr(Spine::LocationPtr* a, Spine::LocationPtr* b) const;
   bool prioritySort(const Spine::LocationPtr& a, const Spine::LocationPtr& b) const;
+  // Total-order variant of prioritySort (adds iso2/geoid tiebreakers) so the
+  // non-stable std::partial_sort used on the suggest hot path yields a
+  // deterministic ordering matching the previous stable list sort.
+  bool prioritySortTotal(const Spine::LocationPtr& a, const Spine::LocationPtr& b) const;
+  // Order `locs` so the (page+1)*maxresults highest-priority results come first,
+  // discarding the tail that paging would drop. Full sort when maxresults==0.
+  void partial_priority_sort(Spine::LocationList& locs,
+                             unsigned int page,
+                             unsigned int maxresults) const;
 
   Spine::LocationList to_locationlist(const Locus::Query::return_type& theList) const;
 

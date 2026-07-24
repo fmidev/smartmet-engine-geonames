@@ -21,11 +21,13 @@
 #include <spine/Exceptions.h>
 #include <spine/Location.h>
 #include <sys/types.h>
+#include <algorithm>
 #include <cassert>
 #include <cerrno>  // iconv uses errno
 #include <cmath>
 #include <csignal>
 #include <string>
+#include <vector>
 
 namespace SmartMet
 {
@@ -2116,6 +2118,11 @@ void Engine::Impl::build_ternarytrees()
       for (const auto &name : names)
         it->second->insert(name, ptr);
     }
+
+    // Build the compact query representation now, during init, so the first
+    // user suggest after (re)load does not pay the one-time build cost.
+    for (auto &kw_tree : itsTernaryTrees)
+      kw_tree.second->freeze();
   }
   catch (...)
   {
@@ -2138,6 +2145,11 @@ void Engine::Impl::build_lang_ternarytrees()
 
     build_lang_ternarytrees_all();
     build_lang_ternarytrees_keywords();
+
+    // Freeze after all inserts (both "all" and per-keyword) are done.
+    for (auto &lang_map : itsLangTernaryTreeMap)
+      for (auto &kw_tree : *lang_map.second)
+        kw_tree.second->freeze();
   }
   catch (...)
   {
@@ -2530,6 +2542,91 @@ bool Engine::Impl::prioritySort(const Spine::LocationPtr &a, const Spine::Locati
 
 // ----------------------------------------------------------------------
 /*!
+ * \brief Total-order priority sorter
+ *
+ * Same ordering as prioritySort but with iso2/geoid tiebreakers so that ties
+ * are resolved deterministically. This lets the suggest hot path use the
+ * non-stable std::partial_sort while still returning results in the exact same
+ * order the previous stable list sort produced (which broke ties by the
+ * preceding basicSort, i.e. by iso2).
+ */
+// ----------------------------------------------------------------------
+
+bool Engine::Impl::prioritySortTotal(const Spine::LocationPtr &a,
+                                     const Spine::LocationPtr &b) const
+{
+  try
+  {
+    if (a->priority != b->priority)
+      return (a->priority > b->priority);
+
+    std::string aname = to_treeword(a->name);
+    std::string bname = to_treeword(b->name);
+    if (aname != bname)
+      return (aname < bname);
+
+    if (a->area != b->area)
+      return (a->area < b->area);
+
+    if (a->iso2 != b->iso2)
+      return (a->iso2 < b->iso2);
+
+    return (a->geoid < b->geoid);
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Priority sort only the results a paged query will actually return
+ *
+ * Autocomplete returns at most (page+1)*maxresults results, so there is no need
+ * to fully sort the entire candidate list: partial_sort the required prefix and
+ * drop the discarded tail. Falls back to a full sort when maxresults == 0
+ * ("return everything") or when the list is already no longer than the prefix.
+ */
+// ----------------------------------------------------------------------
+
+void Engine::Impl::partial_priority_sort(Spine::LocationList &locs,
+                                         unsigned int page,
+                                         unsigned int maxresults) const
+{
+  try
+  {
+    const auto cmp = [this](const Spine::LocationPtr &a, const Spine::LocationPtr &b)
+    { return prioritySortTotal(a, b); };
+
+    if (maxresults == 0)
+    {
+      locs.sort(cmp);
+      return;
+    }
+
+    const std::size_t need = (static_cast<std::size_t>(page) + 1) * maxresults;
+    if (need >= locs.size())
+    {
+      locs.sort(cmp);
+      return;
+    }
+
+    // Move the top `need` results into sorted order at the front; the remainder
+    // is dropped by the caller's paging, so its order does not matter.
+    std::vector<Spine::LocationPtr> vec(locs.begin(), locs.end());
+    std::partial_sort(vec.begin(), vec.begin() + need, vec.end(), cmp);
+    vec.resize(need);
+    locs.assign(vec.begin(), vec.end());
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
  * \brief Priority sort a list of locations
  */
 // ----------------------------------------------------------------------
@@ -2573,7 +2670,11 @@ Spine::LocationList Engine::Impl::suggest_one_keyword(const std::string &pattern
     // find it
     name = to_treeword(pattern);
 
-    result = tree->findprefix(name);
+    // Collect matches directly into the result list without building an
+    // intermediate list per tree (zero-allocation visitprefix hot path).
+    result.clear();
+    const auto append = [&result](const Spine::LocationPtr &v) { result.push_back(v); };
+    tree->visitprefix(name, append);
 
     // check if there are language specific translations
 
@@ -2584,10 +2685,7 @@ Spine::LocationList Engine::Impl::suggest_one_keyword(const std::string &pattern
     {
       auto tit = lt->second->find(keyword);
       if (tit != lt->second->end())
-      {
-        std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
-        std::copy(tmpx.begin(), tmpx.end(), std::back_inserter(result));
-      }
+        tit->second->visitprefix(name, append);
     }
   };
 
@@ -2680,10 +2778,11 @@ Spine::LocationList Engine::Impl::suggest(
     else
       ret.unique(reallyClose);  // remove duplicate geoids
 
-    // Sort based on priorities
+    // Sort based on priorities. Only the top (page+1)*maxresults results are
+    // ever returned, so partial-sort that prefix instead of fully sorting the
+    // whole candidate list.
 
-    ret.sort([this](const Spine::LocationPtr &a, const Spine::LocationPtr &b)
-             { return prioritySort(a, b); });
+    partial_priority_sort(ret, page, maxresults);
 
     // Keep the desired part. We do this after moving exact matches to the front,
     // otherwise for example "Spa, Belgium" is not very high on the list of
@@ -2759,7 +2858,11 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(
     // transform pattern to collated form and find it from the search tree
 
     std::string name = to_treeword(pattern);
-    auto candidates = it->second->findprefix(name);
+
+    Spine::LocationList candidates;
+    const auto append = [&candidates](const Spine::LocationPtr &v)
+    { candidates.push_back(v); };
+    it->second->visitprefix(name, append);
 
     // check if there are language specific translations
 
@@ -2772,10 +2875,7 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(
       {
         auto tit = lt->second->find(keyword);
         if (tit != lt->second->end())
-        {
-          std::list<Spine::LocationPtr> tmpx = tit->second->findprefix(name);
-          std::copy(tmpx.begin(), tmpx.end(), std::back_inserter(candidates));
-        }
+          tit->second->visitprefix(name, append);
       }
     }
 
@@ -2795,8 +2895,7 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(
     // translating the candidates. This is something that perhaps should be
     // improved later on.
 
-    candidates.sort([this](const Spine::LocationPtr &a, const Spine::LocationPtr &b)
-                    { return prioritySort(a, b); });
+    partial_priority_sort(candidates, page, maxresults);
 
     // Keep the desired part.
 

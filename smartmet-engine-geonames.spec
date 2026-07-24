@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.6.26
+Version: 26.7.24
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -127,6 +127,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Fri Jul 24 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.7.24-1.fmi
+- Autocomplete: Replaced the per-language ternary search trees with a compact array-based AutoCompleteIndex (~16x less memory)
+- Autocomplete: Gather prefix matches via zero-allocation visitprefix on the suggest hot path
+- Autocomplete: Partial-sort only the paged top-N results instead of fully sorting every candidate
+
 * Fri Jun 26 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.6.26-1.fmi
 - Thread naming: Named the IO service thread and the init tasks
 

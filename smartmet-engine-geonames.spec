@@ -34,12 +34,12 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-utils-devel >= 26.6.17
-BuildRequires: smartmet-library-gis-devel >= 26.6.15
+BuildRequires: smartmet-utils-devel >= 26.7.14
+BuildRequires: smartmet-library-gis-devel >= 26.7.16
 BuildRequires: smartmet-library-locus-devel >= 26.4.13
-BuildRequires: smartmet-library-macgyver-devel >= 26.6.26
-BuildRequires: smartmet-library-newbase-devel >= 26.6.24
-BuildRequires: smartmet-library-spine-devel >= 26.6.24
+BuildRequires: smartmet-library-macgyver-devel >= 26.7.9
+BuildRequires: smartmet-library-newbase-devel >= 26.7.14
+BuildRequires: smartmet-library-spine-devel >= 26.7.16
 Requires: %{smartmet_boost}-iostreams
 Requires: %{smartmet_boost}-locale
 Requires: %{smartmet_boost}-system
@@ -48,12 +48,12 @@ Requires: %{smartmet_fmt}
 Requires: gdal312-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 26.6.15
+Requires: smartmet-library-gis >= 26.7.16
 Requires: smartmet-library-locus >= 26.4.13
-Requires: smartmet-library-macgyver >= 26.6.26
-Requires: smartmet-library-newbase >= 26.6.24
-Requires: smartmet-library-spine >= 26.6.24
-Requires: smartmet-server >= 26.6.24
+Requires: smartmet-library-macgyver >= 26.7.9
+Requires: smartmet-library-newbase >= 26.7.14
+Requires: smartmet-library-spine >= 26.7.16
+Requires: smartmet-server >= 26.7.14
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else

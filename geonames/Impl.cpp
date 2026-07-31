@@ -1123,6 +1123,7 @@ void Engine::Impl::read_config()
 
       read_config_priorities();
       read_config_areaspecifiers();
+      read_config_language_scripts();
       read_config_security();
 
       const std::string &name = boost::asio::ip::host_name();
@@ -1197,6 +1198,67 @@ void check_feature(const std::string &feature)
  *   SG = "";                   // Singapore, Singapore is useless information
  * };
  */
+// ----------------------------------------------------------------------
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Read the configuration file section on language writing scripts
+ *
+ * Sample settings:
+ *
+ * language_scripts:
+ * {
+ *    uk = "Cyrillic";
+ * };
+ *
+ * geonames.org stores alternate names under a language code without any
+ * guarantee that the name is written in that language's script, and the name
+ * selection in read_alternate_geonames breaks ties by length and alphabetical
+ * order. Latin therefore beats Cyrillic, and "Lutsk" wins over "Луцьк".
+ *
+ * Only the languages listed here are checked, and the check is off entirely
+ * when the section is absent. Languages written in more than one script must
+ * not be listed: Serbian uses both Cyrillic and Latin, and Japanese and
+ * Chinese mix scripts within a single name.
+ */
+// ----------------------------------------------------------------------
+
+void Engine::Impl::read_config_language_scripts()
+{
+  try
+  {
+    if (!itsConfig.exists("language_scripts"))
+      return;
+
+    const auto &scripts = itsConfig.lookup("language_scripts");
+
+    if (!scripts.isGroup())
+      throw Fmi::Exception(BCP, "Configured value of 'language_scripts' must be a group!");
+
+    for (int i = 0; i < scripts.getLength(); ++i)
+    {
+      const auto &value = scripts[i];
+
+      if (!value.isString())
+        throw Fmi::Exception(BCP,
+                             "Configured value of 'language_scripts." +
+                                 std::string(value.getName()) + "' must be a script name string");
+
+      std::string language = value.getName();
+      Fmi::ascii_tolower(language);
+
+      const std::string script = value;
+
+      // Throws for unknown script names, so typos are caught at startup
+      itsLanguageScripts[language] = parse_script_name(script);
+    }
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
 // ----------------------------------------------------------------------
 
 void Engine::Impl::read_config_areaspecifiers()
@@ -1750,17 +1812,28 @@ void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &
         "length(a.name) as "
         "length "
         "FROM alternate_geonames a INNER JOIN keywords_has_geonames k ON "
-        "a.geonames_id=k.geonames_id";
+        "a.geonames_id=k.geonames_id "
+        // Historic (former) and colloquial names must never be selected as the
+        // translation of a place. Without this filter the length/alphabetical
+        // tiebreakers below happily pick Bombay over Mumbai, Madras over
+        // Chennai or Perovsk over Kyzylorda, since a former name is often the
+        // shorter one. Locus applies the same filter when resolving names
+        // straight from the database, so both name lookup paths now agree.
+        "WHERE a.historic=false AND a.colloquial=false";
 
     if (itsConfig.exists("database.where.alternate_geonames"))
     {
       const auto &where_clause = itsConfig.lookup("database.where.alternate_geonames");
-      sql.append(" WHERE ").append(static_cast<const char *>(where_clause));
+      sql.append(" AND (").append(static_cast<const char *>(where_clause)).append(")");
     }
 
     // This makes sure preferred names come first, and longest names last.
     // Note that this leaves cases like Montreal vs Montr�al, hence we do a final
     // name sort to guarantee a fixed order. Using ASC prefers non-accented letters.
+    //
+    // These are heuristics only: they carry no notion of which name is current,
+    // hence the historic/colloquial filter in the WHERE clause above. Do not
+    // rely on length/name ordering to pick the right name for a place.
 
 #if 0
     // Works only in MySQL
@@ -1807,6 +1880,18 @@ void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &
       auto lang = (*row)[lang_index].as<std::string>();
 
       Fmi::ascii_tolower(lang);
+
+      // Discard names not written in the language's own script, for example
+      // "Lutsk" for uk. This must happen before the duplicate check below, so
+      // that a rejected name does not consume the slot of the place and the
+      // next candidate ("Луцьк") gets a chance.
+
+      if (!itsLanguageScripts.empty())
+      {
+        auto script = itsLanguageScripts.find(lang);
+        if (script != itsLanguageScripts.end() && !name_matches_script(name, script->second))
+          continue;
+      }
 
       // Handle only the first translation for each place
       if (geoid == last_handled_geoid && lang == last_lang)

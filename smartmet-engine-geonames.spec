@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.7.24
+Version: 26.7.31
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -99,6 +99,7 @@ Summary: SmartMet %{SPECNAME} development headers
 Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
+Requires: libicu-devel
 Requires: smartmet-library-locus-devel >= 26.4.13
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
@@ -127,6 +128,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Fri Jul 31 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.7.31-1.fmi
+- Never translate a place to a historic (former) or colloquial name
+- New optional setting 'language_scripts' for discarding alternate names not written in the language's own script
+
 * Fri Jul 24 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.7.24-1.fmi
 - Autocomplete: Replaced the per-language ternary search trees with a compact array-based AutoCompleteIndex (~16x less memory)
 - Autocomplete: Gather prefix matches via zero-allocation visitprefix on the suggest hot path

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Engine.h"
+#include "LanguageScript.h"
 #include "LocationPriorities.h"
 #include <boost/atomic.hpp>
 #include <boost/locale.hpp>
@@ -265,6 +266,11 @@ class Engine::Impl
   using AreaSpecifiers = std::map<std::string, std::vector<std::string>>;  // US --> [ADM1,ISO2] etc
   AreaSpecifiers itsAreaSpecifiers;
 
+  // Expected writing script per language, from 'language_scripts' in the
+  // configuration file. Alternate names not written in the expected script are
+  // discarded. Empty by default, so the check is off unless configured.
+  std::map<std::string, UScriptCode> itsLanguageScripts;
+
   boost::atomic<bool> itsSuggestReadyFlag{false};
 
   // security
@@ -319,6 +325,7 @@ class Engine::Impl
   void read_config_areaspecifiers();
   void read_config_priorities();
   void read_config_prioritymap(const std::string& partname, Priorities& priomap);
+  void read_config_language_scripts();
   void setup_fallback_encodings();
 
   void read_config_security();

@@ -78,6 +78,31 @@ autoreload:
 Default 0 means - autoreload is disabled
 
 
+* Language writing scripts
+
+geonames.org stores alternate names under a language code without guaranteeing
+that the name is actually written in that language's script. Ukrainian places
+for example carry `uk` names written in Latin, and since name selection breaks
+ties by length and alphabetical order, a romanized form such as `Lutsk` wins
+over `Луцьк`. Listing a language here discards its names that are not written in
+the expected script.
+
+<pre><code>
+language_scripts:
+{
+      uk = "Cyrillic";
+};
+</code></pre>
+
+The check is off entirely when the section is absent. Both long and short ICU
+script names are accepted, for example `Cyrillic` and `Cyrl`, and an unknown
+name is an error at startup. Only list languages written in a single script:
+Serbian uses both Cyrillic and Latin, and Japanese and Chinese mix scripts
+within a single name.
+
+Note that a place whose only name in a language is rejected gets no translation
+at all, and is then shown under its primary name.
+
 * Priorities
 
 

@@ -99,6 +99,19 @@ autoreload:
 	period = 5;
 }
 
+# Expected writing script per language. Alternate names not written in the
+# language's own script are discarded, so that romanized forms like "Lutsk"
+# cannot win over "Луцьк". Off entirely when this section is absent.
+#
+# Only list languages written in a single script. Serbian (both Cyrillic and
+# Latin) and Japanese and Chinese (mixed scripts within one name) must not be
+# listed here.
+
+language_scripts:
+{
+	uk = "Cyrillic";
+};
+
 # Location specifiers for autocomplete as in "Kallio, Finland" or "Bonn, Germany."
 
 areas:

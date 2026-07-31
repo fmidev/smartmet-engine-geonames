@@ -998,6 +998,80 @@ void featureSearch()
 }
 
 // ----------------------------------------------------------------------
+/*
+ * A place must never be presented under a former (historic) name.
+ *
+ * read_alternate_geonames() picks one name per language per place, and its
+ * tiebreakers are length and alphabetical order. A former name is very often
+ * the shorter one, so without filtering historic names out the engine would
+ * translate Mumbai to Bombay, Chennai to Madras and Kyzylorda to Perovsk.
+ * Locus filters historic and colloquial names when it resolves names directly
+ * from the database, so both name lookup paths must agree here.
+ */
+// ----------------------------------------------------------------------
+
+void suggest_historic_names()
+{
+  while (!names->isSuggestReady())
+  {
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+  }
+
+  // pattern, language, expected name, name that must not be returned
+  struct Case
+  {
+    const char *pattern;
+    const char *lang;
+    const char *expected;
+    const char *historic;
+  };
+
+  const std::vector<Case> cases{
+      // Renamed cities. The historic name is the shorter or alphabetically
+      // first candidate, so the tiebreakers alone would select it.
+      {"Mumbai", "sv", "Mumbai", "Bombay"},
+      {"Chennai", "sv", "Chennai", "Madras"},
+      {"Haapsalu", "sv", "Haapsalu", "Hapsal"},
+      // Imperial and colonial era names.
+      {"Kyzylorda", "en", "Kyzylorda", "Perovsk"},
+      {"Essaouira", "en", "Essaouira", "Mogador"},
+      // Controls: these are already correct because the current name carries
+      // the 'preferred' flag. The filter must not disturb them.
+      {"Mumbai", "en", "Mumbai", "Bombay"},
+      {"Chennai", "en", "Chennai", "Madras"}};
+
+  // Report every mismatch rather than stopping at the first, so that a partial
+  // regression is visible in full.
+
+  std::string errors;
+
+  for (const auto &c : cases)
+  {
+    auto ptrs = names->suggest(c.pattern, accept_all, c.lang);
+
+    if (ptrs.empty())
+    {
+      errors += std::string("\n\t  no match for '") + c.pattern + "' in '" + c.lang + "'";
+      continue;
+    }
+
+    const auto &name = ptrs.front()->name;
+
+    if (name == c.historic)
+      errors += std::string("\n\t  '") + c.pattern + "' in '" + c.lang +
+                "' returned the historic name '" + c.historic + "', expected '" + c.expected + "'";
+    else if (name != c.expected)
+      errors += std::string("\n\t  '") + c.pattern + "' in '" + c.lang + "' returned '" + name +
+                "', expected '" + c.expected + "'";
+  }
+
+  if (!errors.empty())
+    TEST_FAILED("Historic names leaked into translations:" + errors);
+
+  TEST_PASSED();
+}
+
+// ----------------------------------------------------------------------
 
 void security()
 {
@@ -1052,6 +1126,7 @@ class tests : public tframe::tests
     TEST(suggest);
     TEST(suggest_duplicates);
     TEST(suggest_languages);
+    TEST(suggest_historic_names);
 
     TEST(security);
 

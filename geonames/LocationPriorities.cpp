@@ -132,15 +132,14 @@ int LocationPriorities::populationPriority(const Location& loc) const
 {
   try
   {
-    auto it = itsPopulationPriorities.find(loc.iso2);
-    if (it != itsPopulationPriorities.end())
-      return lround(1.0 * priority_scale * loc.population / it->second);
-
-    it = itsPopulationPriorities.find("default");
-    if (it != itsPopulationPriorities.end())
-      return lround(1.0 * priority_scale * loc.population / it->second);
-
-    return 0;
+    if (loc.population > 0)
+    {
+      return priority_scale * (1 + std::log10(loc.population));
+    }
+    else
+    {
+      return 0;
+    }
   }
   catch (...)
   {

@@ -35,6 +35,9 @@ class LocationPriorities
    * @brief Get priority for a location
    */
   int getPriority(const SmartMet::Spine::Location& loc) const;
+  int getProximityBonus(const SmartMet::Spine::Location& loc,
+                        float longitude,
+                        float latitude) const;
 
   void setPopulationPriorities(const std::string& iso2, int div);
   void setAreaPriorities(const std::string& area, int prty);
@@ -52,6 +55,9 @@ class LocationPriorities
   std::map<std::string, int> itsAreaPriorities;
   std::map<std::string, int> itsCountryPriorities;
   std::map<std::string, std::map<std::string, int>> itsFeaturePriorities;
+
+  int itsProximityPriority{3};
+  int itsMaxDistance{1000};
 };
 
 }  // namespace Geonames

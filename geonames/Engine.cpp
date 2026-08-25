@@ -843,7 +843,9 @@ Spine::LocationList Engine::suggest(
     const std::string& theLang,
     const std::string& theKeyword,
     unsigned int thePage,
-    unsigned int theMaxResults) const
+    unsigned int theMaxResults,
+    float theLongitude,
+    float theLatitude) const
 {
   try
   {
@@ -852,8 +854,15 @@ Spine::LocationList Engine::suggest(
     ++itsSuggestCount;
 
     auto mycopy = impl.load();
-    return mycopy->suggest(
-        thePattern, thePredicate, theLang, theKeyword, thePage, theMaxResults, false);
+    return mycopy->suggest(thePattern,
+                           thePredicate,
+                           theLang,
+                           theKeyword,
+                           thePage,
+                           theMaxResults,
+                           false,
+                           theLongitude,
+                           theLatitude);
   }
   catch (...)
   {
@@ -873,7 +882,9 @@ Spine::LocationList Engine::suggestDuplicates(
     const std::string& theLang,
     const std::string& theKeyword,
     unsigned int thePage,
-    unsigned int theMaxResults) const
+    unsigned int theMaxResults,
+    float theLongitude,
+    float theLatitude) const
 {
   try
   {
@@ -882,8 +893,15 @@ Spine::LocationList Engine::suggestDuplicates(
     ++itsSuggestCount;
 
     auto mycopy = impl.load();
-    return mycopy->suggest(
-        thePattern, thePredicate, theLang, theKeyword, thePage, theMaxResults, true);
+    return mycopy->suggest(thePattern,
+                           thePredicate,
+                           theLang,
+                           theKeyword,
+                           thePage,
+                           theMaxResults,
+                           true,
+                           theLongitude,
+                           theLatitude);
   }
   catch (...)
   {
@@ -903,7 +921,9 @@ std::vector<Spine::LocationList> Engine::suggest(
     const std::vector<std::string>& theLanguages,
     const std::string& theKeyword,
     unsigned int thePage,
-    unsigned int theMaxResults) const
+    unsigned int theMaxResults,
+    float theLongitude,
+    float theLatitude) const
 {
   try
   {
@@ -914,8 +934,15 @@ std::vector<Spine::LocationList> Engine::suggest(
     bool duplicates = false;
 
     auto mycopy = impl.load();
-    return mycopy->suggest(
-        thePattern, thePredicate, theLanguages, theKeyword, thePage, theMaxResults, duplicates);
+    return mycopy->suggest(thePattern,
+                           thePredicate,
+                           theLanguages,
+                           theKeyword,
+                           thePage,
+                           theMaxResults,
+                           duplicates,
+                           theLongitude,
+                           theLatitude);
   }
   catch (...)
   {

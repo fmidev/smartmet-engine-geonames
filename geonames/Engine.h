@@ -147,7 +147,9 @@ class Engine : public Spine::SmartMetEngine
                               const std::string& theLang = "fi",
                               const std::string& theKeyword = FMINAMES_DEFAULT_KEYWORD,
                               unsigned int thePage = 0,
-                              unsigned int theMaxResults = fminames_default_maxresults) const;
+                              unsigned int theMaxResults = fminames_default_maxresults,
+                              float theLongitude = kFloatMissing,
+                              float theLatitude = kFloatMissing) const;
 
   Spine::LocationList suggestDuplicates(
       const std::string& thePattern,
@@ -155,7 +157,9 @@ class Engine : public Spine::SmartMetEngine
       const std::string& theLang = "fi",
       const std::string& theKeyword = FMINAMES_DEFAULT_KEYWORD,
       unsigned int thePage = 0,
-      unsigned int theMaxResults = fminames_default_maxresults) const;
+      unsigned int theMaxResults = fminames_default_maxresults,
+      float theLongitude = kFloatMissing,
+      float theLatitude = kFloatMissing) const;
 
   std::vector<Spine::LocationList> suggest(
       const std::string& thePattern,
@@ -163,7 +167,9 @@ class Engine : public Spine::SmartMetEngine
       const std::vector<std::string>& theLanguages,
       const std::string& theKeyword = FMINAMES_DEFAULT_KEYWORD,
       unsigned int thePage = 0,
-      unsigned int theMaxResults = fminames_default_maxresults) const;
+      unsigned int theMaxResults = fminames_default_maxresults,
+      float theLongitude = kFloatMissing,
+      float theLatitude = kFloatMissing) const;
 
   // find name of country
 

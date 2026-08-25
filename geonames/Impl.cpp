@@ -2743,7 +2743,9 @@ void Engine::Impl::sort(Spine::LocationList &theLocations) const
 Spine::LocationList Engine::Impl::suggest_one_keyword(const std::string &pattern,
                                                       const std::string &lang,
                                                       const std::string &keyword,
-                                                      const TernaryTreePtr &tree) const
+                                                      const TernaryTreePtr &tree,
+                                                      float longitude,
+                                                      float latitude) const
 {
   Spine::LocationList result;
 
@@ -2801,8 +2803,9 @@ Spine::LocationList Engine::Impl::suggest_one_keyword(const std::string &pattern
     }
   }
 
-  // Give an extra bonus for exact matches
+  // Give bonuses for exact matches and query location proximity
   add_exact_match_bonus(result, name, itsNameMatchPriority * priority_scale);
+  add_proximity_bonus(result, longitude, latitude);
 
   return result;
 }
@@ -2814,7 +2817,9 @@ Spine::LocationList Engine::Impl::suggest(
     const std::string &keyword,
     unsigned int page,
     unsigned int maxresults,
-    bool duplicates) const
+    bool duplicates,
+    float longitude,
+    float latitude) const
 {
   if (!itsSuggestReadyFlag)
     throw Fmi::Exception(BCP, "Attempt to use geonames suggest before it is ready!");
@@ -2840,7 +2845,7 @@ Spine::LocationList Engine::Impl::suggest(
       if (it == itsTernaryTrees.end())
         continue;
 
-      auto result = suggest_one_keyword(pattern, lang, key, it->second);
+      auto result = suggest_one_keyword(pattern, lang, key, it->second, longitude, latitude);
 
       // Append to result for all keywords (speed optimized for first keyword)
       if (ret.empty())
@@ -2908,18 +2913,44 @@ void Engine::Impl::add_exact_match_bonus(Spine::LocationList &locs,
 
 // ----------------------------------------------------------------------
 /*!
+ * \brief Add bonus points for proximity to the given location.
+ */
+// ----------------------------------------------------------------------
+
+void Engine::Impl::add_proximity_bonus(Spine::LocationList &locs,
+                                       float longitude,
+                                       float latitude) const
+{
+  if (longitude == kFloatMissing || latitude == kFloatMissing)
+    return;
+  for (auto &loc : locs)
+  {
+    const auto bonus{itsLocationPriorities.getProximityBonus(*loc, longitude, latitude)};
+    if (bonus > 0)
+    {
+      std::unique_ptr<Spine::Location> newloc(new Spine::Location(*loc));
+      newloc->priority += bonus;
+      loc.reset(newloc.release());
+    }
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
  * \brief Suggest translations for several languages
  */
 // ----------------------------------------------------------------------
 
 std::vector<Spine::LocationList> Engine::Impl::suggest(
-    const std::string &pattern,
-    const std::function<bool(const Spine::LocationPtr &)> &predicate,
-    const std::vector<std::string> &languages,
-    const std::string &keyword,
+    const std::string& pattern,
+    const std::function<bool(const Spine::LocationPtr&)>& predicate,
+    const std::vector<std::string>& languages,
+    const std::string& keyword,
     unsigned int page,
     unsigned int maxresults,
-    bool duplicates) const
+    bool duplicates,
+    float longitude,
+    float latitude) const
 {
   try
   {
@@ -2974,6 +3005,8 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(
       candidates.unique(closeEnough);  // remove duplicate name,area matches
     else
       candidates.unique(reallyClose);  // remove duplicate geoids
+
+    add_proximity_bonus(candidates, longitude, latitude);
 
     // Sort based on priorities. Note that the multilanguage version does not
     // give extra scores to exact matches since the used algorithm sorts before

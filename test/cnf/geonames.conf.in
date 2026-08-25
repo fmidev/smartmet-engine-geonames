@@ -129,6 +129,12 @@ priorities:
    # Score for an exact name match
    match = 100;
 
+   # Maximum score for proximity to a query location.
+   proximity = 3;
+   # Maximum distance from a query location in km.  Locations closer
+   # than this will get a proximity bonus.
+   max_distance = 1000;
+
    # Divide population to get score
 
    populations:

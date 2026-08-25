@@ -128,7 +128,9 @@ class Engine::Impl
                               const std::string& keyword,
                               unsigned int page,
                               unsigned int maxresults,
-                              bool duplicates) const;
+                              bool duplicates,
+                              float longitude,
+                              float latitude) const;
 
   std::vector<Spine::LocationList> suggest(
       const std::string& pattern,
@@ -137,7 +139,9 @@ class Engine::Impl
       const std::string& keyword,
       unsigned int page,
       unsigned int maxresults,
-      bool duplicates) const;
+      bool duplicates,
+      float longitude,
+      float latitude) const;
 
   Spine::LocationList name_search(const Locus::QueryOptions& theOptions,
                                   const std::string& theName);
@@ -356,11 +360,16 @@ class Engine::Impl
   Spine::LocationList suggest_one_keyword(const std::string& pattern,
                                           const std::string& lang,
                                           const std::string& keyword,
-                                          const TernaryTreePtr& tree) const;
+                                          const TernaryTreePtr& tree,
+                                          float longitude,
+                                          float latitude) const;
 
   void add_exact_match_bonus(SmartMet::Spine::LocationList& locs,
                              const std::string& name,
                              int bonus) const;
+  void add_proximity_bonus(SmartMet::Spine::LocationList& locs,
+                           float longitude,
+                           float latitude) const;
 
   /**
    *  @brief Autoreload check interval in minutes (0 = disabled)

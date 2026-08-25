@@ -1,5 +1,6 @@
 #include "LocationPriorities.h"
 #include <macgyver/Exception.h>
+#include <macgyver/Geometry.h>
 #include <cmath>
 
 using namespace SmartMet::Engine::Geonames;
@@ -63,6 +64,16 @@ int LocationPriorities::getPriority(const Location& loc) const
   {
     throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
+}
+
+int LocationPriorities::getProximityBonus(const SmartMet::Spine::Location& loc,
+                                          float longitude,
+                                          float latitude) const
+{
+  const auto dist{Fmi::Geometry::GeoDistance(longitude, latitude, loc.longitude, loc.latitude) /
+                  1000};
+  const auto bonus{itsProximityPriority * (1 - std::sqrt(dist / itsMaxDistance))};
+  return priority_scale * bonus;
 }
 
 void LocationPriorities::setPopulationPriorities(const std::string& iso2, int div)
@@ -222,6 +233,9 @@ try
 {
   if (!config.exists("priorities"))
     return;
+
+  config.lookupValue("priorities.proximity", itsProximityPriority);
+  config.lookupValue("priorities.max_distance", itsMaxDistance);
 
   readPriorityMap("populations", config, itsPopulationPriorities);
   readPriorityMap("areas", config, itsAreaPriorities);

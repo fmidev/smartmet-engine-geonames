@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.7.31
+Version: 26.8.29
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -128,6 +128,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Fri Aug 29 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.8.29-1.fmi
+- Fixed suggest result paging to clamp page/maxresults and never advance an iterator past the end of the list (H-22)
+
 * Fri Jul 31 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.7.31-1.fmi
 - Never translate a place to a historic (former) or colloquial name
 - New optional setting 'language_scripts' for discarding alternate names not written in the language's own script

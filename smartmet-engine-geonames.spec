@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.7.31
+Version: 26.9.16
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -37,7 +37,7 @@ BuildRequires: rpm-build
 BuildRequires: smartmet-utils-devel >= 26.7.14
 BuildRequires: smartmet-library-gis-devel >= 26.7.16
 BuildRequires: smartmet-library-locus-devel >= 26.4.13
-BuildRequires: smartmet-library-macgyver-devel >= 26.7.9
+BuildRequires: smartmet-library-macgyver-devel >= 26.9.16
 BuildRequires: smartmet-library-newbase-devel >= 26.7.14
 BuildRequires: smartmet-library-spine-devel >= 26.7.16
 Requires: %{smartmet_boost}-iostreams
@@ -50,7 +50,7 @@ Requires: libatomic
 Requires: libicu
 Requires: smartmet-library-gis >= 26.7.16
 Requires: smartmet-library-locus >= 26.4.13
-Requires: smartmet-library-macgyver >= 26.7.9
+Requires: smartmet-library-macgyver >= 26.9.16
 Requires: smartmet-library-newbase >= 26.7.14
 Requires: smartmet-library-spine >= 26.7.16
 Requires: smartmet-server >= 26.7.14
@@ -128,6 +128,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Sep 16 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.9.16-1.fmi
+- Repackaged due to Fmi::Cache::Cache locking changes
+
 * Fri Jul 31 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.7.31-1.fmi
 - Never translate a place to a historic (former) or colloquial name
 - New optional setting 'language_scripts' for discarding alternate names not written in the language's own script

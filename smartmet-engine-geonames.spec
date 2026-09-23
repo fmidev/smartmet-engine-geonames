@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.9.16
+Version: 26.9.23
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -34,12 +34,12 @@ BuildRequires: libicu-devel
 BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
-BuildRequires: smartmet-utils-devel >= 26.7.14
-BuildRequires: smartmet-library-gis-devel >= 26.7.16
+BuildRequires: smartmet-utils-devel >= 26.9.3
+BuildRequires: smartmet-library-gis-devel >= 26.9.23
 BuildRequires: smartmet-library-locus-devel >= 26.4.13
-BuildRequires: smartmet-library-macgyver-devel >= 26.9.16
-BuildRequires: smartmet-library-newbase-devel >= 26.7.14
-BuildRequires: smartmet-library-spine-devel >= 26.7.16
+BuildRequires: smartmet-library-macgyver-devel >= 26.9.23
+BuildRequires: smartmet-library-newbase-devel >= 26.9.23
+BuildRequires: smartmet-library-spine-devel >= 26.9.23
 Requires: %{smartmet_boost}-iostreams
 Requires: %{smartmet_boost}-locale
 Requires: %{smartmet_boost}-system
@@ -48,12 +48,12 @@ Requires: %{smartmet_fmt}
 Requires: gdal312-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 26.7.16
+Requires: smartmet-library-gis >= 26.9.23
 Requires: smartmet-library-locus >= 26.4.13
-Requires: smartmet-library-macgyver >= 26.9.16
-Requires: smartmet-library-newbase >= 26.7.14
-Requires: smartmet-library-spine >= 26.7.16
-Requires: smartmet-server >= 26.7.14
+Requires: smartmet-library-macgyver >= 26.9.23
+Requires: smartmet-library-newbase >= 26.9.23
+Requires: smartmet-library-spine >= 26.9.23
+Requires: smartmet-server >= 26.9.2
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -128,6 +128,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Wed Sep 23 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.9.23-1.fmi
+- Repackaged due to base library ABI changes
+
 * Wed Sep 16 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.9.16-1.fmi
 - Repackaged due to Fmi::Cache::Cache locking changes
 

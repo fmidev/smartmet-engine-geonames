@@ -6,6 +6,7 @@
 
 #include "Impl.h"
 #include "Engine.h"
+#include "PageFilter.h"
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/asio/ip/host_name.hpp>
 #include <boost/bind/bind.hpp>
@@ -126,33 +127,6 @@ void filter_features(SmartMet::Spine::LocationList &locs,
 
 // ----------------------------------------------------------------------
 /*!
- * \brief Keep only the desired page of suggest results
- */
-// ----------------------------------------------------------------------
-
-void keep_wanted_page(SmartMet::Spine::LocationList &locs,
-                      unsigned int maxresults,
-                      unsigned int page)
-{
-  if (maxresults == 0)
-    return;
-
-  // Erase the pages before the desired one
-  unsigned int first = page * maxresults;
-  auto pos1 = locs.begin();
-  auto pos2 = pos1;
-  std::advance(pos2, first);
-  locs.erase(pos1, pos2);
-
-  // Erase the remaining elements after the size of 'maxelements'.
-  pos1 = locs.begin();
-  auto npos2 = std::min(locs.size(), static_cast<std::size_t>(maxresults));
-  std::advance(pos1, npos2);
-  locs.erase(pos1, locs.end());
-}
-
-// ----------------------------------------------------------------------
-/*!
  * \brief Throw for disallowed name searches
  */
 // ----------------------------------------------------------------------
@@ -234,6 +208,50 @@ bool reallyClose(const Spine::LocationPtr &a, const Spine::LocationPtr &b)
 }
 
 }  // namespace
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Keep only the desired page of suggest results
+ *
+ * Robust for any page/maxresults, including values far exceeding the list
+ * size and page==0: never advances an iterator past end() and returns an
+ * empty list when the requested page starts beyond the available data.
+ */
+// ----------------------------------------------------------------------
+
+void keep_wanted_page(SmartMet::Spine::LocationList &locs,
+                      unsigned int maxresults,
+                      unsigned int page)
+{
+  if (maxresults == 0)
+    return;
+
+  const std::size_t size = locs.size();
+
+  // Compute the start offset of the desired page using wide (size_t) arithmetic
+  // to avoid unsigned overflow, then clamp it to the container size so that we
+  // never advance an iterator past end() (which would be undefined behaviour).
+  const std::size_t first =
+      std::min(static_cast<std::size_t>(page) * static_cast<std::size_t>(maxresults), size);
+
+  // If the requested page starts beyond the available data, the result is empty.
+  if (first >= size)
+  {
+    locs.clear();
+    return;
+  }
+
+  // Erase the pages before the desired one
+  auto pos = locs.begin();
+  std::advance(pos, first);
+  locs.erase(locs.begin(), pos);
+
+  // Erase the remaining elements after the size of 'maxresults'.
+  const std::size_t keep = std::min(locs.size(), static_cast<std::size_t>(maxresults));
+  pos = locs.begin();
+  std::advance(pos, keep);
+  locs.erase(pos, locs.end());
+}
 
 // ----------------------------------------------------------------------
 /*!

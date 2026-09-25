@@ -127,7 +127,7 @@ timeseries plugin passes `dem()` and `landCover()` on to the grid engine.
 | `areas` | Display formats for area names. |
 | `autoreload.period` | Reload check interval in minutes. |
 | `demdir`, `landcoverdir`, `maxdemresolution` | DEM and land cover. |
-| `security` (`disable`, `names.deny`) | Regex patterns of names that are rejected (for example to stop SQL-like input). `security.disable` defaults to true. |
+| `security` (`disable`, `names.deny`) | Regex patterns of names that are rejected. Set `security.disable = false` to use them. |
 | `disable_autocomplete`, `ascii_autocomplete`, `remove_underscores`, `language_scripts` | Autocomplete. |
 | `strict`, `verbose` | Error handling and logging. |
 
@@ -140,11 +140,6 @@ with an unresolved symbol. Changing the layout of `Spine::Location`, `LocationOp
 
 ## 10. Known pitfalls
 
-* **Security patterns are off by default.** `security.disable` defaults to true, so
-  `security.names.deny` has no effect unless security is explicitly enabled.
-* **Each deny pattern is stored once per pattern in the list.** The loader loops over the
-  list inside a loop over the list, so N patterns are stored N times each. The effect is
-  only extra matching work.
 * **Reload doubles memory use** while the new `Impl` is built next to the old one.
 * **Suggest is not ready at start.** Autocomplete returns nothing useful until
   `isSuggestReady()`.

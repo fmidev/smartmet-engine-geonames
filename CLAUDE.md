@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The GeoNames engine (`smartmet-engine-geonames`) provides shared location services for SmartMet Server. It resolves place names to coordinates and vice versa using a PostGIS database of 11+ million place names from the GeoNames geographical database. Other engines and plugins access it at runtime for geocoding, autocomplete suggestions, and spatial queries.
 
+Full developer documentation: `docs/developer-guide.md`.
+
 ## Build commands
 
 ```bash
@@ -33,7 +35,7 @@ The engine has a pimpl (pointer-to-implementation) design with two main layers:
 - **`Impl`** (`Impl.h/cpp`) — the core data store, rebuilt atomically on reload. Contains:
   - **GeoIdMap** — hash map for O(1) GeoID lookups
   - **KeywordMap** — maps keyword strings to location lists
-  - **TernaryTrees / LangTernaryTreeMap** — autocomplete indexes, one per language
+  - **AutoCompleteIndex** (per language and keyword) — array-backed prefix indexes over ICU collation keys, replacing the former ternary search trees
   - **GeoTreeMap** — KD-trees for nearest-neighbor spatial queries (one per keyword)
   - **NameSearchCache** — LRU cache for name searches
 
@@ -53,7 +55,7 @@ Supporting classes:
 ### Key design decisions
 
 - The `AtomicSharedPtr<Impl>` swap pattern means all data structures are immutable once published — readers never block, and reload builds a complete new `Impl` before swapping
-- Autocomplete uses ternary search trees (one per language per keyword) for prefix matching
+- Autocomplete uses `AutoCompleteIndex` (one per language per keyword): sorted collation keys, prefix = two binary searches
 - Spatial search uses separate KD-trees per keyword to avoid filtering overhead
 - The engine resolves `SmartMet::Engine::` symbols at runtime when loaded by the server, so unresolved reference checks in the Makefile explicitly exclude these
 

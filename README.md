@@ -178,6 +178,10 @@ Priorities of areas within a country
    };
 </code></pre>
 
+## Documentation
+
+- [Developer guide](docs/developer-guide.md) — structure, reload, searching, request parsing, autocomplete, configuration
+
 ## Docker
 
 SmartMet Server can be dockerized. This [tutorial](docs/docker.md)

@@ -10,12 +10,12 @@
 #include <fmt/printf.h>
 #include <gis/DEM.h>
 #include <gis/LandCover.h>
+#include <gis/TimeZoneFinder.h>
 #include <locus/Query.h>
 #include <macgyver/DistanceParser.h>
 #include <macgyver/Exception.h>
 #include <macgyver/StringConversion.h>
 #include <macgyver/ThreadName.h>
-#include <macgyver/TimeZoneFactory.h>
 #include <spine/Convenience.h>
 #include <spine/DebugFormatter.h>
 #include <spine/Location.h>
@@ -23,6 +23,7 @@
 #include <spine/TableFormatterOptions.h>
 #include <algorithm>
 #include <atomic>
+#include <future>
 #include <ogr_geometry.h>
 #include <sstream>
 #include <string>
@@ -351,8 +352,15 @@ void Engine::init()
     }
 
     tmpImpl = std::make_shared<Impl>(itsConfigFile, false);
+
+    // The timezone polygons do not depend on the database, hence they are
+    // read only once and in parallel with the database. Reloads keep them.
+    auto timezones =
+        std::async(std::launch::async, [this]() { return tmpImpl->createTimeZoneFinder(); });
+
     bool first_construction = true;
     tmpImpl->init(first_construction);
+    itsTimeZoneFinder = timezones.get();
     impl.store(tmpImpl);
 
     maybeScheduleAutoReloadCheck();
@@ -597,10 +605,12 @@ Spine::LocationPtr Engine::featureSearch(double theLongitude,
 
       if (!result.empty())
       {
-        // Keep original coordinates, dem and landcover for the named location we found
+        // Keep original coordinates, dem, landcover and timezone for the named location we
+        // found. The timezone of the named location may differ near borders.
         Spine::Location newloc(*result.front());
         newloc.longitude = theLongitude;
         newloc.latitude = theLatitude;
+        newloc.timezone = getTimeZoneName(theLongitude, theLatitude);
         newloc.dem = demheight(dem(), theLongitude, theLatitude, maxDemResolution());
         newloc.covertype = covertype(landCover(), theLongitude, theLatitude);
 
@@ -609,8 +619,7 @@ Spine::LocationPtr Engine::featureSearch(double theLongitude,
     }
 
     std::string name = Fmi::to_string(theLongitude) + "," + Fmi::to_string(theLatitude);
-    std::string timezone = Fmi::TimeZoneFactory::instance().zone_name_from_coordinate(
-        boost::numeric_cast<float>(theLongitude), boost::numeric_cast<float>(theLatitude));
+    const std::string& timezone = getTimeZoneName(theLongitude, theLatitude);
 
     return Spine::LocationPtr(
         new Spine::Location(0,
@@ -627,6 +636,50 @@ Spine::LocationPtr Engine::featureSearch(double theLongitude,
                             -1,
                             demheight(dem(), theLongitude, theLatitude, maxDemResolution()),
                             covertype(landCover(), theLongitude, theLatitude)));
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Timezone name of a coordinate
+ */
+// ----------------------------------------------------------------------
+
+const std::string& Engine::getTimeZoneName(double theLongitude, double theLatitude) const
+{
+  try
+  {
+    if (!itsTimeZoneFinder)
+      throw Fmi::Exception(BCP, "Timezone polygons have not been initialized");
+    return itsTimeZoneFinder->zoneName(theLongitude, theLatitude);
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!")
+        .addParameter("Longitude", Fmi::to_string(theLongitude))
+        .addParameter("Latitude", Fmi::to_string(theLatitude));
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Timezone of a coordinate
+ */
+// ----------------------------------------------------------------------
+
+Fmi::TimeZonePtr Engine::getTimeZone(double theLongitude, double theLatitude) const
+{
+  try
+  {
+    const auto& name = getTimeZoneName(theLongitude, theLatitude);
+    auto tz = itsTimeZones.time_zone_from_string(name);
+    if (!tz)
+      throw Fmi::Exception(BCP, "Unknown timezone").addParameter("Timezone", name);
+    return tz;
   }
   catch (...)
   {

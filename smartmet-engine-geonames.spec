@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.9.24
+Version: 26.9.26
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -35,7 +35,7 @@ BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-utils-devel >= 26.9.3
-BuildRequires: smartmet-library-gis-devel >= 26.9.23
+BuildRequires: smartmet-library-gis-devel >= 26.9.26
 BuildRequires: smartmet-library-locus-devel >= 26.4.13
 BuildRequires: smartmet-library-macgyver-devel >= 26.9.23
 BuildRequires: smartmet-library-newbase-devel >= 26.9.23
@@ -48,7 +48,8 @@ Requires: %{smartmet_fmt}
 Requires: gdal312-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 26.9.23
+Requires: smartmet-library-gis >= 26.9.26
+Requires: smartmet-timezones >= 26.9.26
 Requires: smartmet-library-locus >= 26.4.13
 Requires: smartmet-library-macgyver >= 26.9.23
 Requires: smartmet-library-newbase >= 26.9.23
@@ -86,6 +87,7 @@ Obsoletes: smartmet-brainstorm-geoengine-debuginfo < 16.11.1
 #TestRequires: smartmet-library-newbase
 #TestRequires: smartmet-library-regression
 #TestRequires: smartmet-test-data
+#TestRequires: smartmet-timezones >= 26.9.26
 #TestRequires: smartmet-test-db
 #TestRequires: zlib-devel
 #TestRequires: gdal312-devel
@@ -128,6 +130,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Sat Sep 26 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.9.26-1.fmi
+- Resolve coordinate timezones from timezone polygons with Fmi::TimeZoneFinder instead of the 1 km timezone.shz raster
+- Locations built from coordinates keep the timezone of the coordinate, not that of the nearest named place
+- New optional timezones setting for a shapefile or PostGIS source, default is the smartmet-timezones shapefile
+- New methods getTimeZoneName(lon,lat) and getTimeZone(lon,lat)
+
 * Thu Sep 24 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.9.24-1.fmi
 - Fixed suggest result paging to clamp page/maxresults and never advance an iterator past the end of the list (H-22)
 

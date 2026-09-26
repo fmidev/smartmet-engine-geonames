@@ -999,6 +999,56 @@ void featureSearch()
 
 // ----------------------------------------------------------------------
 /*
+ * The timezone of a coordinate comes from the timezone polygons, also when
+ * the nearest named place is on the other side of a border.
+ */
+// ----------------------------------------------------------------------
+
+void coordinateTimeZone()
+{
+  // Tornio (FI) and Haparanda (SE) are twin towns
+  std::string tz = names->getTimeZoneName(24.1440, 65.8481);
+  if (tz != "Europe/Helsinki")
+    TEST_FAILED("Tornio: expected Europe/Helsinki, got " + tz);
+
+  tz = names->getTimeZoneName(24.1370, 65.8355);
+  if (tz != "Europe/Stockholm")
+    TEST_FAILED("Haparanda: expected Europe/Stockholm, got " + tz);
+
+  auto zone = names->getTimeZone(24.1370, 65.8355);
+  if (!zone || zone->name() != "Europe/Stockholm")
+    TEST_FAILED("Haparanda: getTimeZone failed");
+
+  // No search radius: a location built from the coordinate alone
+  auto ptr = names->lonlatSearch(24.1370, 65.8355, "fi", 0);
+  if (ptr->timezone != "Europe/Stockholm")
+    TEST_FAILED("Haparanda without a named place: expected Europe/Stockholm, got " + ptr->timezone);
+
+  // The nearest named place may be in Finland, the coordinate is in Sweden
+  ptr = names->lonlatSearch(24.1370, 65.8355, "fi", 50);
+  if (ptr->timezone != "Europe/Stockholm")
+    TEST_FAILED("Haparanda near " + ptr->name + ": expected Europe/Stockholm, got " +
+                ptr->timezone);
+
+  // Open sea
+  tz = names->getTimeZoneName(19.8, 61.8);
+  if (tz != "Etc/GMT-1")
+    TEST_FAILED("Mid Bothnian Sea: expected Etc/GMT-1, got " + tz);
+
+  // The Gulf of Guinea, the old timezone.shz raster claimed Europe/Lisbon here
+  tz = names->getTimeZoneName(0, 0);
+  if (tz != "Etc/GMT")
+    TEST_FAILED("0,0: expected Etc/GMT, got " + tz);
+
+  ptr = names->lonlatSearch(0, 0, "fi", 0);
+  if (ptr->timezone != "Etc/GMT")
+    TEST_FAILED("0,0 location: expected Etc/GMT, got " + ptr->timezone);
+
+  TEST_PASSED();
+}
+
+// ----------------------------------------------------------------------
+/*
  * A place must never be presented under a former (historic) name.
  *
  * read_alternate_geonames() picks one name per language per place, and its
@@ -1120,6 +1170,7 @@ class tests : public tframe::tests
     TEST(nearestplaces);
     TEST(countryName);
     TEST(featureSearch);
+    TEST(coordinateTimeZone);
 
     // Test the next last since they require autocomplete to be initialized
     TEST(keywordSearch);

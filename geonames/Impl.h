@@ -199,6 +199,9 @@ class Engine::Impl
    */
   std::optional<Fmi::DateTime> nextAutoreloadCheckTime(unsigned incr = 5) const;
 
+  // Build the coordinate to timezone search structure from the timezones settings
+  std::unique_ptr<Fmi::TimeZoneFinder> createTimeZoneFinder() const;
+
   bool is_autoreload_enabled() const { return itsAutoReloadInterval > 0; }
 
   bool itsReady = false;

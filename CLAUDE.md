@@ -37,6 +37,8 @@ The engine has a pimpl (pointer-to-implementation) design with two main layers:
   - **GeoTreeMap** — KD-trees for nearest-neighbor spatial queries (one per keyword)
   - **NameSearchCache** — LRU cache for name searches
 
+- **`itsTimeZoneFinder`** (`Fmi::TimeZoneFinder` from smartmet-library-gis) — coordinate to timezone polygons, held by `Engine` rather than `Impl` because they do not depend on the database: built once in `init()` in parallel with the database load, kept over reloads. Mandatory, `init()` fails if the polygons cannot be read (default: `/usr/share/smartmet/timezones/timezones-with-oceans.shp` from smartmet-timezones; config section `timezones`, parsed by `Impl::createTimeZoneFinder()`).
+
 Supporting classes:
 - **`LocationPriorities`** — composite scoring (population, feature type, area, country) used to rank autocomplete results
 - **`WktGeometry`** — parses WKT geometry strings from URL parameters into OGR geometries and SVG paths
@@ -65,6 +67,6 @@ SmartMet libraries: `smartmet-locus` (query options/types), `smartmet-macgyver` 
 
 ## Configuration
 
-Uses libconfig++ (`.conf` files). Key sections: `database` (PostgreSQL connection), `cache` (LRU sizes), `locale`, `priorities` (population/feature/area/country weights for autocomplete ranking), `areas` (display format like "City, Country"), `autoreload` (period in minutes), `demdir`/`landcoverdir`, `security` (deny patterns).
+Uses libconfig++ (`.conf` files). Key sections: `database` (PostgreSQL connection), `cache` (LRU sizes), `locale`, `priorities` (population/feature/area/country weights for autocomplete ranking), `areas` (display format like "City, Country"), `autoreload` (period in minutes), `demdir`/`landcoverdir`, `security` (deny patterns), `timezones` (optional source of the timezone polygons, see README).
 
 Test configuration template: `test/cnf/geonames.conf.in` — in CI the host is rewritten to point at a local test database.

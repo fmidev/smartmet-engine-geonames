@@ -178,6 +178,71 @@ Priorities of areas within a country
    };
 </code></pre>
 
+* Timezones
+
+The timezone of a coordinate is resolved from timezone polygons with
+`Fmi::TimeZoneFinder` from
+[smartmet-library-gis](https://github.com/fmidev/smartmet-library-gis).
+This is used for locations given as coordinates, including the case where
+a named place is found near the coordinate: the location keeps the
+timezone of the coordinate itself, which matters near borders such as
+Tornio (Europe/Helsinki) and Haparanda (Europe/Stockholm).
+
+The recommended data is the "with-oceans" release of
+[timezone-boundary-builder](https://github.com/evansiroky/timezone-boundary-builder),
+which post-processes OpenStreetMap boundary data into polygons for every
+IANA timezone and covers the entire globe. **By default the polygons are
+read from the shapefile installed by the smartmet-timezones RPM,
+`/usr/share/smartmet/timezones/timezones-with-oceans.shp`,** so no
+configuration is needed. The `timezones` setting can name another source:
+
+<pre><code>
+timezones:
+{
+    // Any GDAL/OGR vector source. A relative path is relative to this file.
+    source = "/usr/share/smartmet/timezones/timezones-with-oceans.shp";
+    layer  = "";              // optional layer name for multi-layer sources
+
+    // Or a PostGIS table instead of source:
+    // database:
+    // {
+    //     host     = "localhost";
+    //     port     = 5432;
+    //     database = "gis";
+    //     user     = "gis_user";
+    //     pass     = "secret";
+    // };
+    // table = "public.timezones";
+
+    field        = "tzid";    // attribute holding the IANA timezone name
+    max_vertices = 256;       // polygon piece size, affects speed and memory only
+    preferred    = [];        // winners in disputed areas, e.g. ["Asia/Shanghai"]
+    make_valid   = true;      // repair invalid geometries
+    threads      = 0;         // build threads, 0 = all cores
+};
+</code></pre>
+
+The polygons are mandatory: the engine fails to start if they cannot be
+read. There is no fallback, since answers without polygons would be wrong
+without anyone noticing. Building the search structure takes about a
+second and about 90 MB of memory, and it is done in parallel with loading
+the database. Database reloads keep the polygons, a change of the
+`timezones` setting requires a restart.
+
+To load the data into PostGIS, keep it as `geometry(MultiPolygon, 4326)`
+(never `geography`) and do not simplify it:
+
+<pre><code>
+ogr2ogr -f PostgreSQL PG:"host=... dbname=... user=..." \
+    /usr/share/smartmet/timezones/timezones-with-oceans.shp -nln public.timezones \
+    -nlt PROMOTE_TO_MULTI -lco GEOMETRY_NAME=geom -lco FID=gid -lco PRECISION=NO
+</code></pre>
+
+Plugins can resolve coordinates with `getTimeZoneName(lon, lat)` and
+`getTimeZone(lon, lat)`. See the
+[timezone documentation](https://github.com/fmidev/smartmet-library-gis/blob/master/docs/gis-timezones.md)
+of smartmet-library-gis for the data, overlapping zones and semantics at sea.
+
 ## Docker
 
 SmartMet Server can be dockerized. This [tutorial](docs/docker.md)

@@ -13,7 +13,9 @@
 #include <boost/locale.hpp>
 #include <boost/thread.hpp>
 #include <gis/DEM.h>
+#include <gis/Host.h>
 #include <gis/LandCover.h>
+#include <gis/TimeZoneFinder.h>
 #include <macgyver/CharsetTools.h>
 #include <macgyver/Exception.h>
 #include <macgyver/Hash.h>
@@ -27,6 +29,8 @@
 #include <cerrno>  // iconv uses errno
 #include <cmath>
 #include <csignal>
+#include <filesystem>
+#include <ogrsf_frmts.h>
 #include <string>
 #include <vector>
 
@@ -3335,6 +3339,133 @@ Fmi::Cache::CacheStatistics Engine::Impl::getCacheStats() const
   ret["Geonames::name_search_cache"] = itsNameSearchCache.statistics();
 
   return ret;
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Build the coordinate to timezone search structure
+ *
+ * The polygons are read from the shapefile installed by the
+ * smartmet-timezones RPM unless the timezones setting names another
+ * GDAL/OGR source or a PostGIS table:
+ *
+ * \code
+ * timezones:
+ * {
+ *     source   = "/path/to/timezones.shp";  // any GDAL/OGR vector source
+ *     layer    = "";                        // optional layer name
+ *
+ *     // or a PostGIS table:
+ *     // database: { host = "..."; port = 5432; database = "..."; user = "..."; pass = "..."; };
+ *     // table = "public.timezones";
+ *
+ *     field        = "tzid";
+ *     max_vertices = 256;
+ *     preferred    = [];                    // e.g. ["Asia/Shanghai"]
+ *     make_valid   = true;
+ *     threads      = 0;                     // 0 = all cores
+ * };
+ * \endcode
+ *
+ * Failure to read the polygons is an error, there is no fallback.
+ */
+// ----------------------------------------------------------------------
+
+std::unique_ptr<Fmi::TimeZoneFinder> Engine::Impl::createTimeZoneFinder() const
+{
+  try
+  {
+    Fmi::TimeZoneFinder::Options options;
+    options.verbose = itsVerbose;
+
+    if (!itsConfig.exists("timezones"))
+      return std::make_unique<Fmi::TimeZoneFinder>(Fmi::TimeZoneFinder::default_source, options);
+
+    const libconfig::Setting& settings = itsConfig.lookup("timezones");
+    if (!settings.isGroup())
+      throw Fmi::Exception(BCP, "Configured value of 'timezones' must be a group")
+          .addParameter("Configuration file", itsConfigFile);
+
+    settings.lookupValue("field", options.field);
+    settings.lookupValue("make_valid", options.make_valid);
+
+    int max_vertices = static_cast<int>(options.max_vertices);
+    settings.lookupValue("max_vertices", max_vertices);
+    if (max_vertices < 16)
+      throw Fmi::Exception(BCP, "timezones.max_vertices must be at least 16")
+          .addParameter("Configuration file", itsConfigFile);
+    options.max_vertices = static_cast<std::size_t>(max_vertices);
+
+    int threads = 0;
+    settings.lookupValue("threads", threads);
+    options.threads = static_cast<unsigned int>(std::max(0, threads));
+
+    if (settings.exists("preferred"))
+    {
+      const libconfig::Setting& preferred = settings["preferred"];
+      if (!preferred.isArray())
+        throw Fmi::Exception(BCP, "timezones.preferred must be an array of timezone names")
+            .addParameter("Configuration file", itsConfigFile);
+      for (int i = 0; i < preferred.getLength(); i++)
+        options.preferred.emplace_back(preferred[i].c_str());
+    }
+
+    std::string source;
+    std::string layer;
+    std::string table;
+    settings.lookupValue("source", source);
+    settings.lookupValue("layer", layer);
+    settings.lookupValue("table", table);
+
+    const bool postgis = settings.exists("database");
+    if (postgis && !source.empty())
+      throw Fmi::Exception(BCP, "Set either timezones.source or timezones.database, not both")
+          .addParameter("Configuration file", itsConfigFile);
+
+    if (postgis)
+    {
+      const libconfig::Setting& db = settings["database"];
+      std::string host;
+      std::string database;
+      std::string user;
+      std::string pass;
+      int port = 5432;
+      if (!db.lookupValue("host", host) || !db.lookupValue("database", database) ||
+          !db.lookupValue("user", user) || !db.lookupValue("pass", pass))
+        throw Fmi::Exception(BCP, "timezones.database must define host, database, user and pass")
+            .addParameter("Configuration file", itsConfigFile);
+      db.lookupValue("port", port);
+      if (table.empty())
+        throw Fmi::Exception(BCP, "timezones.table must be set when reading from PostGIS")
+            .addParameter("Configuration file", itsConfigFile);
+
+      GDALAllRegister();
+      auto connection = Fmi::Host(host, database, user, pass, port).connect();
+      OGRLayer* pglayer = connection->GetLayerByName(table.c_str());
+      if (pglayer == nullptr)
+        throw Fmi::Exception(BCP, "Timezone table not found")
+            .addParameter("Table", table)
+            .addParameter("Database", database)
+            .addParameter("Host", host);
+      return std::make_unique<Fmi::TimeZoneFinder>(*pglayer, options);
+    }
+
+    if (source.empty())
+      source = Fmi::TimeZoneFinder::default_source;
+    else if (source[0] != '/' && source.find(':') == std::string::npos)
+    {
+      // Relative paths are relative to the configuration file
+      std::filesystem::path p(itsConfigFile);
+      source = p.parent_path().string() + "/" + source;
+    }
+
+    return std::make_unique<Fmi::TimeZoneFinder>(source, layer, options);
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Failed to read the timezone polygons")
+        .addParameter("Configuration file", itsConfigFile);
+  }
 }
 
 // ----------------------------------------------------------------------

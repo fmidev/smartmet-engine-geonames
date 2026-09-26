@@ -32,6 +32,7 @@ namespace Fmi
 {
 class DEM;
 class LandCover;
+class TimeZoneFinder;
 }  // namespace Fmi
 
 namespace SmartMet
@@ -67,6 +68,7 @@ class Engine : public Spine::SmartMetEngine
   Fmi::AtomicSharedPtr<Impl> impl;
   std::shared_ptr<Impl> tmpImpl;
   Fmi::TimeZones itsTimeZones;
+  std::unique_ptr<Fmi::TimeZoneFinder> itsTimeZoneFinder;  // immutable after init
   Fmi::DateTime itsStartTime;
   Fmi::DateTime itsLastReload;
   std::atomic<bool> itsReloading;
@@ -93,6 +95,12 @@ class Engine : public Spine::SmartMetEngine
 
   // Get timezone information
   const Fmi::TimeZones& getTimeZones() const { return itsTimeZones; }
+
+  // IANA timezone name of a coordinate, resolved from the timezone polygons
+  const std::string& getTimeZoneName(double theLongitude, double theLatitude) const;
+
+  // Timezone of a coordinate, resolved from the timezone polygons
+  Fmi::TimeZonePtr getTimeZone(double theLongitude, double theLatitude) const;
   // Find location with default options
 
   Spine::LocationPtr nameSearch(const std::string& theName, const std::string& theLang) const;

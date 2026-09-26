@@ -29,6 +29,11 @@ Single-result lookups via `Engine`:
   predefined keyword set.
 - **`wktSearch(wkt, …)`** — resolve a WKT geometry to a representative
   location.
+- **`getTimeZoneName(lon, lat)`** / **`getTimeZone(lon, lat)`** — IANA
+  timezone of a coordinate from timezone polygons (by default the
+  timezone-boundary-builder shapefile of the smartmet-timezones RPM).
+  Locations built from coordinates always carry the timezone of the
+  coordinate, not that of the nearest named place.
 
 List-result lookups (multi-result `LocationList`):
 

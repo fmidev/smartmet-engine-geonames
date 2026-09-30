@@ -3481,7 +3481,8 @@ void Engine::Impl::read_config_security()
     if (!itsConfig.exists("security"))
       return;
 
-    bool disabled = true;
+    // A configured security block is in effect unless explicitly disabled
+    bool disabled = false;
     itsConfig.lookupValue("security.disable", disabled);
     if (disabled)
     {

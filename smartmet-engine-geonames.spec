@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.9.26
+Version: 26.10.2
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -37,7 +37,7 @@ BuildRequires: rpm-build
 BuildRequires: smartmet-utils-devel >= 26.9.3
 BuildRequires: smartmet-library-gis-devel >= 26.9.26
 BuildRequires: smartmet-library-locus-devel >= 26.4.13
-BuildRequires: smartmet-library-macgyver-devel >= 26.9.23
+BuildRequires: smartmet-library-macgyver-devel >= 26.10.2
 BuildRequires: smartmet-library-newbase-devel >= 26.9.23
 BuildRequires: smartmet-library-spine-devel >= 26.9.23
 Requires: %{smartmet_boost}-iostreams
@@ -51,7 +51,7 @@ Requires: libicu
 Requires: smartmet-library-gis >= 26.9.26
 Requires: smartmet-timezones >= 26.9.26
 Requires: smartmet-library-locus >= 26.4.13
-Requires: smartmet-library-macgyver >= 26.9.23
+Requires: smartmet-library-macgyver >= 26.10.2
 Requires: smartmet-library-newbase >= 26.9.23
 Requires: smartmet-library-spine >= 26.9.23
 Requires: smartmet-server >= 26.9.2
@@ -130,6 +130,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Fri Oct 02 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.10.2-1.fmi
+- Rebuilt against macgyver 26.10.2 where Fmi::Cache::Cache uses CLOCK eviction instead of LRU.
+  CLOCK is faster than LRU since a cache hit only takes a shared lock (ABI change)
+
 * Sat Sep 26 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> 26.9.26-1.fmi
 - Resolve coordinate timezones from timezone polygons with Fmi::TimeZoneFinder instead of the 1 km timezone.shz raster
 - Locations built from coordinates keep the timezone of the coordinate, not that of the nearest named place

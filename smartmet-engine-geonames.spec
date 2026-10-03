@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.10.2
+Version: 26.10.3
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -35,11 +35,11 @@ BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-utils-devel >= 26.9.3
-BuildRequires: smartmet-library-gis-devel >= 26.9.26
-BuildRequires: smartmet-library-locus-devel >= 26.4.13
-BuildRequires: smartmet-library-macgyver-devel >= 26.10.2
-BuildRequires: smartmet-library-newbase-devel >= 26.9.23
-BuildRequires: smartmet-library-spine-devel >= 26.9.23
+BuildRequires: smartmet-library-gis-devel >= 26.10.3
+BuildRequires: smartmet-library-locus-devel >= 26.10.3
+BuildRequires: smartmet-library-macgyver-devel >= 26.10.3
+BuildRequires: smartmet-library-newbase-devel >= 26.10.3
+BuildRequires: smartmet-library-spine-devel >= 26.10.3
 Requires: %{smartmet_boost}-iostreams
 Requires: %{smartmet_boost}-locale
 Requires: %{smartmet_boost}-system
@@ -48,12 +48,12 @@ Requires: %{smartmet_fmt}
 Requires: gdal312-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 26.9.26
+Requires: smartmet-library-gis >= 26.10.3
 Requires: smartmet-timezones >= 26.9.26
-Requires: smartmet-library-locus >= 26.4.13
-Requires: smartmet-library-macgyver >= 26.10.2
-Requires: smartmet-library-newbase >= 26.9.23
-Requires: smartmet-library-spine >= 26.9.23
+Requires: smartmet-library-locus >= 26.10.3
+Requires: smartmet-library-macgyver >= 26.10.3
+Requires: smartmet-library-newbase >= 26.10.3
+Requires: smartmet-library-spine >= 26.10.3
 Requires: smartmet-server >= 26.9.2
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
@@ -102,7 +102,7 @@ Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
 Requires: libicu-devel
-Requires: smartmet-library-locus-devel >= 26.4.13
+Requires: smartmet-library-locus-devel >= 26.10.3
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.
@@ -130,6 +130,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Sat Oct 03 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.10.3-1.fmi
+- Read each geonames deny pattern once
+- Apply configured geonames security settings by default
+
 * Fri Oct 02 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.10.2-1.fmi
 - Rebuilt against macgyver 26.10.2 where Fmi::Cache::Cache uses CLOCK eviction instead of LRU.
   CLOCK is faster than LRU since a cache hit only takes a shared lock (ABI change)

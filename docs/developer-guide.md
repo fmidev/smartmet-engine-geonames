@@ -127,7 +127,7 @@ timeseries plugin passes `dem()` and `landCover()` on to the grid engine.
 | `areas` | Display formats for area names. |
 | `autoreload.period` | Reload check interval in minutes. |
 | `demdir`, `landcoverdir`, `maxdemresolution` | DEM and land cover. |
-| `security` (`disable`, `names.deny`) | Regex patterns of names that are rejected. Set `security.disable = false` to use them. |
+| `security` (`disable`, `names.deny`) | Regex patterns of names that are rejected. A configured `security` block is in effect unless `disable = true`. |
 | `disable_autocomplete`, `ascii_autocomplete`, `remove_underscores`, `language_scripts` | Autocomplete. |
 | `strict`, `verbose` | Error handling and logging. |
 

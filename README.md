@@ -243,6 +243,10 @@ Plugins can resolve coordinates with `getTimeZoneName(lon, lat)` and
 [timezone documentation](https://github.com/fmidev/smartmet-library-gis/blob/master/docs/gis-timezones.md)
 of smartmet-library-gis for the data, overlapping zones and semantics at sea.
 
+## Documentation
+
+- [Developer guide](docs/developer-guide.md) — structure, reload, searching, request parsing, autocomplete, configuration
+
 ## Docker
 
 SmartMet Server can be dockerized. This [tutorial](docs/docker.md)

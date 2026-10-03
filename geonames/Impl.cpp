@@ -3481,7 +3481,8 @@ void Engine::Impl::read_config_security()
     if (!itsConfig.exists("security"))
       return;
 
-    bool disabled = true;
+    // A configured security block is in effect unless explicitly disabled
+    bool disabled = false;
     itsConfig.lookupValue("security.disable", disabled);
     if (disabled)
     {
@@ -3496,15 +3497,12 @@ void Engine::Impl::read_config_security()
       const auto &deny = itsConfig.lookup(name);
       if (!deny.isArray())
         throw Fmi::Exception(BCP, "Configured value of '" + name + "' must be an array");
-      for (int i = 0; i < deny.getLength(); ++i)
+      for (const auto &rule : deny)
       {
-        for (const auto &rule : deny)
-        {
-          if (rule.getType() != libconfig::Setting::TypeString)
-            throw Fmi::Exception(
-                BCP, "Configured value of '" + name + "' must be an array of pattern strings");
-          itsForbiddenNamePatterns.emplace_back(rule.c_str());
-        }
+        if (rule.getType() != libconfig::Setting::TypeString)
+          throw Fmi::Exception(
+              BCP, "Configured value of '" + name + "' must be an array of pattern strings");
+        itsForbiddenNamePatterns.emplace_back(rule.c_str());
       }
     }
   }

@@ -48,8 +48,10 @@ clean:
 
 test: $(TEST_PREPARE_TARGETS) $(PROG)
 	@echo Running tests:
-	@for prog in $(PROG); do $(TEST_RUNNER) ./$$prog; done
-	-$(MAKE) $(TEST_FINISH_TARGETS)
+	@ok=true; \
+	for prog in $(PROG); do $(TEST_RUNNER) ./$$prog || ok=false; done; \
+	$(MAKE) $(TEST_FINISH_TARGETS); \
+	$$ok
 
 geonames-database:
 	@-$(MAKE) stop-test-db

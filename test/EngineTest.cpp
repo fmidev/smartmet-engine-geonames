@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "WktGeometry.h"
 #include <locus/Query.h>
 #include <macgyver/StringConversion.h>
 #include <regression/tframe.h>
@@ -1197,6 +1198,37 @@ void security()
 }
 
 // ----------------------------------------------------------------------
+/*
+ * A WKT location must carry the DEM height and land cover of its coordinate
+ * just like a coordinate search, the querydata engine needs them to handle
+ * land and water points (BRAINSTORM-3483).
+ */
+// ----------------------------------------------------------------------
+
+void wktLocation()
+{
+  auto expected = names->lonlatSearch(24.5, 61.5, "fi", 0);
+  if (std::isnan(expected->dem) || expected->covertype == Fmi::LandCover::NoData)
+    TEST_FAILED("Expected the test configuration to provide DEM and land cover data");
+
+  auto point = std::make_unique<SmartMet::Spine::Location>(24.5, 61.5, "", "Europe/Helsinki");
+  point->type = SmartMet::Spine::Location::Wkt;
+  point->name = "POINT(24.5 61.5)";
+  SmartMet::Spine::LocationPtr wkt(std::move(point));
+  SmartMet::Engine::Geonames::WktGeometry geometry(wkt, "fi", *names);
+  auto loc = geometry.getLocation();
+
+  if (loc->dem != expected->dem)
+    TEST_FAILED("WKT location dem " + Fmi::to_string(loc->dem) + ", expected " +
+                Fmi::to_string(expected->dem));
+  if (loc->covertype != expected->covertype)
+    TEST_FAILED("WKT location covertype " + Fmi::to_string(static_cast<int>(loc->covertype)) +
+                ", expected " + Fmi::to_string(static_cast<int>(expected->covertype)));
+
+  TEST_PASSED();
+}
+
+// ----------------------------------------------------------------------
 
 // The actual test driver
 class tests : public tframe::tests
@@ -1215,6 +1247,7 @@ class tests : public tframe::tests
     TEST(countryName);
     TEST(featureSearch);
     TEST(coordinateTimeZone);
+    TEST(wktLocation);
 
     // Test the next last since they require autocomplete to be initialized
     TEST(keywordSearch);

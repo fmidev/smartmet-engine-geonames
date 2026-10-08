@@ -271,7 +271,9 @@ Spine::LocationPtr WktGeometry::locationFromGeometry(
                                                            geoloc->latitude,
                                                            geoloc->timezone,
                                                            geoloc->population,
-                                                           geoloc->elevation));
+                                                           geoloc->elevation,
+                                                           geoloc->dem,
+                                                           geoloc->covertype));
 
   tmp->radius = loc->radius;
   tmp->type = loc->type;

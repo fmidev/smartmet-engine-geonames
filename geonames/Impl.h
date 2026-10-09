@@ -100,6 +100,16 @@ class Engine::Impl
   // From search hash key to result
   using NameSearchCache = Fmi::Cache::Cache<std::size_t, Spine::LocationList>;
 
+  // DEM elevation and land cover of a coordinate. Looking these up touches a
+  // different file for practically every location of a large keyword, hence
+  // the values are cached by coordinate. Keywords may change, coordinates do not.
+  struct Terrain
+  {
+    float dem;
+    Fmi::LandCover::Type covertype;
+  };
+  using TerrainCache = Fmi::Cache::Cache<std::pair<float, float>, Terrain>;
+
   ~Impl();
   Impl(std::string configfile, bool reloading);
 
@@ -121,6 +131,12 @@ class Engine::Impl
   double elevation(double lon, double lat, unsigned int maxdemresolution) const;
   unsigned int maxDemResolution() const { return itsMaxDemResolution; }
   Fmi::LandCover::Type coverType(double lon, double lat) const;
+
+  // Cached elevation and cover type for a location coordinate
+  Terrain terrain(float lon, float lat) const;
+
+  // Reuse the terrain cache of the previous instance if the DEM settings are unchanged
+  void inheritTerrainCache(const Impl& theOther);
 
   Spine::LocationList suggest(const std::string& pattern,
                               const std::function<bool(const Spine::LocationPtr&)>& predicate,
@@ -306,6 +322,11 @@ class Engine::Impl
 
   // LandCover data
   std::shared_ptr<Fmi::LandCover> itsLandCover;
+
+  // Terrain values by coordinate, shared with the next instance on reload.
+  // The settings identify the data the cached values were computed from.
+  std::shared_ptr<TerrainCache> itsTerrainCache = std::make_shared<TerrainCache>();
+  std::string itsTerrainSettings;
 
   // Hash value
   std::size_t itsHashValue = 0;

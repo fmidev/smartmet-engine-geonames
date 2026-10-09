@@ -1573,6 +1573,8 @@ std::pair<bool, std::string> Engine::reload()
     std::cout << m1 << '\n';
 
     auto p = std::make_shared<Impl>(itsConfigFile, true);  // reload=true
+    if (auto old = impl.load())
+      p->inheritTerrainCache(*old);
     bool first_construction = false;
     p->init(first_construction);
 

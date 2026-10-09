@@ -12,6 +12,7 @@
 #include <boost/bind/bind.hpp>
 #include <boost/locale.hpp>
 #include <boost/thread.hpp>
+#include <fmt/format.h>
 #include <gis/DEM.h>
 #include <gis/Host.h>
 #include <gis/LandCover.h>
@@ -315,6 +316,20 @@ Engine::Impl::Impl(std::string configfile, bool reloading)
       itsConfig.lookupValue("cache.max_size", cacheMaxSize);
       itsNameSearchCache.resize(cacheMaxSize);
 
+      // Terrain cache settings. The resolution must be known before any searches are made,
+      // otherwise values with the wrong resolution might be cached.
+      itsConfig.lookupValue("maxdemresolution", itsMaxDemResolution);
+
+      unsigned int terrainCacheSize = 500000;
+      itsConfig.lookupValue("cache.terrain_max_size", terrainCacheSize);
+      itsTerrainCache->resize(terrainCacheSize);
+
+      std::string demdir;
+      std::string landcoverdir;
+      itsConfig.lookupValue("demdir", demdir);
+      itsConfig.lookupValue("landcoverdir", landcoverdir);
+      itsTerrainSettings = fmt::format("{}\n{}\n{}", demdir, landcoverdir, itsMaxDemResolution);
+
       // Suggest cache settings
       unsigned int suggestCacheSize = 666;
       itsConfig.lookupValue("cache.suggest_max_size", suggestCacheSize);
@@ -460,6 +475,52 @@ Fmi::LandCover::Type Engine::Impl::coverType(double lon, double lat) const
   {
     throw Fmi::Exception::Trace(BCP, "Operation failed!");
   }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Return the cached elevation and cover type at the given coordinate
+ *
+ * The elevation is stored as a float, which is exact since the DEM
+ * values are 16-bit integers.
+ */
+// ----------------------------------------------------------------------
+
+Engine::Impl::Terrain Engine::Impl::terrain(float lon, float lat) const
+{
+  try
+  {
+    const auto key = std::make_pair(lon, lat);
+    if (auto pos = itsTerrainCache->find(key))
+      return *pos;
+
+    Terrain ret{static_cast<float>(elevation(lon, lat)), coverType(lon, lat)};
+    itsTerrainCache->insert(key, ret);
+    return ret;
+  }
+  catch (...)
+  {
+    throw Fmi::Exception::Trace(BCP, "Operation failed!");
+  }
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Take over the terrain cache of the previous instance during a reload
+ *
+ * The cached values remain valid unless the DEM settings change.
+ */
+// ----------------------------------------------------------------------
+
+void Engine::Impl::inheritTerrainCache(const Impl &theOther)
+{
+  if (theOther.itsTerrainSettings != itsTerrainSettings)
+    return;
+
+  // Apply the size setting of the new configuration
+  const auto newsize = itsTerrainCache->statistics().maxsize;
+  itsTerrainCache = theOther.itsTerrainCache;
+  itsTerrainCache->resize(newsize);
 }
 
 // ----------------------------------------------------------------------
@@ -804,8 +865,6 @@ void Engine::Impl::initSuggest(bool threaded)
   {
     try
     {
-      itsConfig.lookupValue("maxdemresolution", itsMaxDemResolution);
-
       if (itsDatabaseDisabled)
         std::cerr << "Warning: Geonames database is disabled\n";
       else
@@ -3052,8 +3111,7 @@ Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_typ
     Spine::LocationList ret;
     for (const auto &loc : theList)
     {
-      double dem = elevation(loc.lon, loc.lat);
-      auto covertype = coverType(loc.lon, loc.lat);
+      const auto values = terrain(loc.lon, loc.lat);
 
       // Select administrative area. In particular, if the location is the
       // administrative area itself, select the country instead.
@@ -3074,8 +3132,8 @@ Spine::LocationList Engine::Impl::to_locationlist(const Locus::Query::return_typ
                              loc.timezone,
                              boost::numeric_cast<int>(loc.population),
                              loc.elevation,
-                             dem,
-                             covertype);
+                             values.dem,
+                             values.covertype);
       newloc.fmisid = loc.fmisid;
 
       ret.push_back(Spine::LocationPtr(new Spine::Location(newloc)));
@@ -3337,6 +3395,7 @@ Fmi::Cache::CacheStatistics Engine::Impl::getCacheStats() const
   Fmi::Cache::CacheStatistics ret;
 
   ret["Geonames::name_search_cache"] = itsNameSearchCache.statistics();
+  ret["Geonames::terrain_cache"] = itsTerrainCache->statistics();
 
   return ret;
 }

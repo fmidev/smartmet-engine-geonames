@@ -76,6 +76,8 @@ cache:
 	max_size	= 10000000;
 	# Suggest cache size
 	suggest_max_size = 10000;
+	# Cached elevations and cover types of coordinates
+	terrain_max_size = 500000;
 };
 
 security:

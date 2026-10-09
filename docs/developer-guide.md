@@ -117,12 +117,20 @@ serve autocomplete. `cache.suggest_max_size` sizes the suggest cache.
 timeseries plugin passes `dem()` and `landCover()` on to the grid engine.
 `maxdemresolution` limits the DEM resolution used.
 
+The locations returned by database searches (name, coordinate, id and keyword
+searches) get their elevation and cover type from a cache keyed by the coordinate
+(`cache.terrain_max_size` entries, default 500000, roughly 130 bytes each). A large
+keyword touches a different DEM tile for nearly every location, so computing the
+values is slow when the tiles are not in the page cache. Coordinates do not change
+when keywords do, so the cache needs no invalidation; a reload takes it over unless
+`demdir`, `landcoverdir` or `maxdemresolution` changed.
+
 ## 8. Configuration
 
 | Key | Meaning |
 |-----|---------|
 | `database` (`host`, `port`, `user`, `pass`, `database`, `where.geonames`, `where.alternate_geonames`, `overrides`) | The PostGIS database and filters on what is read. `database.disable` runs without a database. |
-| `cache.max_size`, `cache.suggest_max_size` | Cache sizes. |
+| `cache.max_size`, `cache.suggest_max_size`, `cache.terrain_max_size` | Cache sizes (number of entries). |
 | `priorities` (`match`, population, feature and country weights) | Ranking. |
 | `areas` | Display formats for area names. |
 | `autoreload.period` | Reload check interval in minutes. |

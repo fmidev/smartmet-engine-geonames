@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.10.3
+Version: 26.10.9
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -130,6 +130,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Fri Oct 09 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.10.9-1.fmi
+- Cache DEM elevations and land cover types of search results by coordinate (cache.terrain_max_size)
+- Read maxdemresolution before any searches can be made
+
 * Sat Oct 03 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.10.3-1.fmi
 - Read each geonames deny pattern once
 - Apply configured geonames security settings by default

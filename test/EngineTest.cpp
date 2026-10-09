@@ -5,6 +5,7 @@
 #include <spine/Location.h>
 #include <spine/Options.h>
 #include <spine/Reactor.h>
+#include <cmath>
 #include <iterator>
 #include <libconfig.h++>
 #include <unistd.h>
@@ -952,6 +953,49 @@ void keywordSearch()
 
 // ----------------------------------------------------------------------
 
+void terrainCache()
+{
+  // getCacheStats is public only in the base class
+  const auto terrain_hits = []()
+  {
+    const SmartMet::Spine::SmartMetEngine *engine = names.get();
+    return engine->getCacheStats().at("Geonames::terrain_cache").hits;
+  };
+
+  Locus::QueryOptions opts;
+  opts.SetCountries("all");
+  opts.SetSearchVariants(true);
+  opts.SetLanguage("fi");
+
+  auto ptrs = names->keywordSearch(opts, "mareografit");
+  const auto hits_before = terrain_hits();
+
+  // A different language misses the name search cache but not the terrain cache
+  opts.SetLanguage("sv");
+  auto svptrs = names->keywordSearch(opts, "mareografit");
+  if (svptrs.size() != ptrs.size())
+    TEST_FAILED("mareografit should have the same number of locations in Finnish and Swedish");
+
+  const auto hits_after = terrain_hits();
+  if (hits_after - hits_before < svptrs.size())
+    TEST_FAILED("Expected at least " + Fmi::to_string(svptrs.size()) +
+                " terrain cache hits, got " + Fmi::to_string(hits_after - hits_before));
+
+  for (const auto &loc : svptrs)
+  {
+    const double dem = names->demHeight(loc->longitude, loc->latitude);
+    if (!(loc->dem == dem || (std::isnan(loc->dem) && std::isnan(dem))))
+      TEST_FAILED("Cached DEM value " + Fmi::to_string(loc->dem) + " for " + loc->name +
+                  " differs from " + Fmi::to_string(dem));
+    if (loc->covertype != names->coverType(loc->longitude, loc->latitude))
+      TEST_FAILED("Cached cover type for " + loc->name + " is incorrect");
+  }
+
+  TEST_PASSED();
+}
+
+// ----------------------------------------------------------------------
+
 void reload()
 {
   SmartMet::Spine::LocationList ptrs;
@@ -1174,6 +1218,7 @@ class tests : public tframe::tests
 
     // Test the next last since they require autocomplete to be initialized
     TEST(keywordSearch);
+    TEST(terrainCache);
     TEST(suggest);
     TEST(suggest_duplicates);
     TEST(suggest_languages);

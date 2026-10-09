@@ -60,7 +60,8 @@ database:
 <pre><code>
 cache:
 {
-       max_size        = cache size in bytes;
+       max_size         = maximum number of cached search results;
+       terrain_max_size = maximum number of cached coordinate elevations and cover types (default 500000);
 };
 
 </code></pre>

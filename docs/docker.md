@@ -98,7 +98,8 @@ database:
 ```
 
 ### cache
-This attribute is used to define the maximum cache size in bytes.
+This attribute is used to define the maximum number of cached search results (`max_size`) and
+the maximum number of cached coordinate elevations and cover types (`terrain_max_size`, default 500000).
 ```
 cache:
 {

@@ -1229,6 +1229,57 @@ void wktLocation()
 }
 
 // ----------------------------------------------------------------------
+/*!
+ * \brief The points of a WKT MULTIPOINT are resolved without a place search
+ *
+ * A nearest place search is a database query, which for a large MULTIPOINT
+ * dominated the query cost although only the coordinates, timezone, dem and
+ * covertype of the points are used (BRAINSTORM-3483).
+ */
+// ----------------------------------------------------------------------
+
+void wktMultiPointLocations()
+{
+  const std::vector<std::pair<double, double>> points{{24.5, 61.5}, {25.0, 60.3}};
+
+  auto multipoint = std::make_unique<SmartMet::Spine::Location>(24.75, 60.9, "", "Europe/Helsinki");
+  multipoint->type = SmartMet::Spine::Location::Wkt;
+  multipoint->name = "MULTIPOINT((24.5 61.5),(25.0 60.3))";
+  SmartMet::Spine::LocationPtr wkt(std::move(multipoint));
+  SmartMet::Engine::Geonames::WktGeometry geometry(wkt, "fi", *names);
+
+  if (geometry.getLocation()->geoid == 0)
+    TEST_FAILED("Expected the MULTIPOINT itself to be resolved to the nearest place");
+
+  auto locations = geometry.getLocations();
+  if (locations.size() != points.size())
+    TEST_FAILED("Expected " + Fmi::to_string(points.size()) + " locations, got " +
+                Fmi::to_string(locations.size()));
+
+  std::size_t i = 0;
+  for (const auto& loc : locations)
+  {
+    const auto [lon, lat] = points[i++];
+    auto expected = names->lonlatSearch(lon, lat, "fi", 0);
+
+    if (loc->geoid != 0)
+      TEST_FAILED("MULTIPOINT point " + Fmi::to_string(i) + " was resolved to geoid " +
+                  Fmi::to_string(loc->geoid) + ", expected no place search");
+    if (loc->longitude != lon || loc->latitude != lat)
+      TEST_FAILED("MULTIPOINT point " + Fmi::to_string(i) + " coordinates changed");
+    if (loc->type != SmartMet::Spine::Location::CoordinatePoint)
+      TEST_FAILED("MULTIPOINT point " + Fmi::to_string(i) + " is not a CoordinatePoint");
+    if (loc->timezone != expected->timezone)
+      TEST_FAILED("MULTIPOINT point " + Fmi::to_string(i) + " timezone " + loc->timezone +
+                  ", expected " + expected->timezone);
+    if (loc->dem != expected->dem || loc->covertype != expected->covertype)
+      TEST_FAILED("MULTIPOINT point " + Fmi::to_string(i) + " lost its dem or covertype");
+  }
+
+  TEST_PASSED();
+}
+
+// ----------------------------------------------------------------------
 
 // The actual test driver
 class tests : public tframe::tests
@@ -1248,6 +1299,7 @@ class tests : public tframe::tests
     TEST(featureSearch);
     TEST(coordinateTimeZone);
     TEST(wktLocation);
+    TEST(wktMultiPointLocations);
 
     // Test the next last since they require autocomplete to be initialized
     TEST(keywordSearch);

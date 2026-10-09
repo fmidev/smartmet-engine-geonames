@@ -132,6 +132,7 @@ rm -rf $RPM_BUILD_ROOT
 %changelog
 * Fri Oct 09 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.10.9-2.fmi
 - WKT locations keep the DEM height and land cover of their coordinate (BRAINSTORM-3483)
+- The points of a WKT MULTIPOINT are no longer each resolved by a database search for the nearest place (BRAINSTORM-3483)
 
 * Fri Oct 09 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.10.9-1.fmi
 - Cache DEM elevations and land cover types of search results by coordinate (cache.terrain_max_size)

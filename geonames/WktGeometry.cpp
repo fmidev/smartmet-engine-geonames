@@ -259,7 +259,15 @@ Spine::LocationPtr WktGeometry::locationFromGeometry(
 
   double lon = (right + left) / 2.0;
   double lat = (top + bottom) / 2.0;
-  Spine::LocationPtr geoloc = geoengine.lonlatSearch(lon, lat, language);
+
+  // The points of a MULTIPOINT are only coordinates: a nearest place search for each of them
+  // would be a database query per point, and the results are discarded anyway since the
+  // coordinates are kept and the name is replaced below. A zero search radius skips the search
+  // but still gives the timezone, DEM height and land cover type of the point itself.
+
+  const bool is_subpoint = (geom != itsGeom && geom->getGeometryType() == wkbPoint);
+  Spine::LocationPtr geoloc = (is_subpoint ? geoengine.lonlatSearch(lon, lat, language, 0)
+                                           : geoengine.lonlatSearch(lon, lat, language));
   std::unique_ptr<Spine::Location> tmp(new Spine::Location(geoloc->geoid,
                                                            "",  // tloc.tag,
                                                            geoloc->iso2,

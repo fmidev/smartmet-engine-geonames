@@ -608,9 +608,9 @@ void Engine::Impl::add_treewords(std::set<std::string> &words,
           {
             // Count UTF-8 code points (glyphs) in the segment
             int glyph_count = 0;
-            for (auto it = seg.cbegin(); it != seg.cend(); ++it)
+            for (char it : seg)
             {
-              if ((*it & 0xC0) != 0x80)  // skip UTF-8 continuation bytes
+              if ((it & 0xC0) != 0x80)  // skip UTF-8 continuation bytes
               {
                 ++glyph_count;
                 if (glyph_count > max_glyph_count)  // early exit, no need to count more

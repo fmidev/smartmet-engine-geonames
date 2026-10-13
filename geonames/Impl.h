@@ -355,17 +355,17 @@ class Engine::Impl
   void read_config_security();
 
   std::optional<std::size_t> read_database_hash_value(
-      Fmi::Database::PostgreSQLConnection& conn) const;
+      const Fmi::Database::PostgreSQLConnection& conn) const;
 
-  void read_countries(Fmi::Database::PostgreSQLConnection& conn);
-  void read_alternate_countries(Fmi::Database::PostgreSQLConnection& conn);
-  void read_municipalities(Fmi::Database::PostgreSQLConnection& conn);
-  void read_alternate_geonames(Fmi::Database::PostgreSQLConnection& conn);
-  void read_alternate_municipalities(Fmi::Database::PostgreSQLConnection& conn);
-  void read_geonames(Fmi::Database::PostgreSQLConnection& conn);
+  void read_countries(const Fmi::Database::PostgreSQLConnection& conn);
+  void read_alternate_countries(const Fmi::Database::PostgreSQLConnection& conn);
+  void read_municipalities(const Fmi::Database::PostgreSQLConnection& conn);
+  void read_alternate_geonames(const Fmi::Database::PostgreSQLConnection& conn);
+  void read_alternate_municipalities(const Fmi::Database::PostgreSQLConnection& conn);
+  void read_geonames(const Fmi::Database::PostgreSQLConnection& conn);
 
   void build_geoid_map();
-  void read_keywords(Fmi::Database::PostgreSQLConnection& conn);
+  void read_keywords(const Fmi::Database::PostgreSQLConnection& conn);
 
   void build_geotrees();
   void build_ternarytrees();

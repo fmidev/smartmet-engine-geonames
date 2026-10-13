@@ -1474,7 +1474,7 @@ void Engine::Impl::read_config_prioritymap(const std::string &partname, Prioriti
 // ----------------------------------------------------------------------
 
 std::optional<std::size_t> Engine::Impl::read_database_hash_value(
-    Fmi::Database::PostgreSQLConnection &conn) const
+    const Fmi::Database::PostgreSQLConnection& conn) const
 {
   try
   {
@@ -1520,7 +1520,7 @@ std::optional<std::size_t> Engine::Impl::read_database_hash_value(
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_countries(Fmi::Database::PostgreSQLConnection &conn)
+void Engine::Impl::read_countries(const Fmi::Database::PostgreSQLConnection& conn)
 {
   try
   {
@@ -1569,7 +1569,7 @@ void Engine::Impl::read_countries(Fmi::Database::PostgreSQLConnection &conn)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_alternate_countries(Fmi::Database::PostgreSQLConnection &conn)
+void Engine::Impl::read_alternate_countries(const Fmi::Database::PostgreSQLConnection& conn)
 {
   try
   {
@@ -1635,7 +1635,7 @@ void Engine::Impl::read_alternate_countries(Fmi::Database::PostgreSQLConnection 
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_municipalities(Fmi::Database::PostgreSQLConnection &conn)
+void Engine::Impl::read_municipalities(const Fmi::Database::PostgreSQLConnection& conn)
 {
   try
   {
@@ -1815,7 +1815,7 @@ Spine::LocationPtr Engine::Impl::extract_geoname(const pqxx::result::const_itera
   return loc;
 }
 
-void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
+void Engine::Impl::read_geonames(const Fmi::Database::PostgreSQLConnection& conn)
 {
   try
   {
@@ -1884,7 +1884,7 @@ void Engine::Impl::read_geonames(Fmi::Database::PostgreSQLConnection &conn)
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &conn)
+void Engine::Impl::read_alternate_geonames(const Fmi::Database::PostgreSQLConnection& conn)
 {
   try
   {
@@ -2021,7 +2021,7 @@ void Engine::Impl::read_alternate_geonames(Fmi::Database::PostgreSQLConnection &
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_alternate_municipalities(Fmi::Database::PostgreSQLConnection &conn)
+void Engine::Impl::read_alternate_municipalities(const Fmi::Database::PostgreSQLConnection& conn)
 {
   try
   {
@@ -2126,7 +2126,7 @@ void Engine::Impl::assign_priorities(Spine::LocationList &locs) const
  */
 // ----------------------------------------------------------------------
 
-void Engine::Impl::read_keywords(Fmi::Database::PostgreSQLConnection &conn)
+void Engine::Impl::read_keywords(const Fmi::Database::PostgreSQLConnection& conn)
 {
   try
   {

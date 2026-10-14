@@ -1711,7 +1711,7 @@ Spine::LocationPtr Engine::Impl::extract_geoname(const pqxx::result::const_itera
   // clang-format on
 
   // Establish country
-  std::string country = "";
+  std::string country;
   {
     auto it = itsCountries.find(iso2);
     if (it != itsCountries.end())

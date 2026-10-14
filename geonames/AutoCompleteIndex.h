@@ -251,7 +251,8 @@ class AutoCompleteIndex
   {
     if (itsMode == Mode::Plain)
     {
-      std::size_t lo = 0, hi = itsCount;
+      std::size_t lo = 0;
+      std::size_t hi = itsCount;
       while (lo < hi)
       {
         std::size_t mid = lo + (hi - lo) / 2;
@@ -267,7 +268,8 @@ class AutoCompleteIndex
 
     // FrontCoded: binary search on restart keys, then scan one block.
     std::size_t numBlocks = itsBlockFCOff.size();
-    std::size_t lo = 0, hi = numBlocks;
+    std::size_t lo = 0;
+    std::size_t hi = numBlocks;
     while (lo < hi)
     {
       std::size_t mid = lo + (hi - lo) / 2;

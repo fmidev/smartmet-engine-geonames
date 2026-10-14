@@ -134,6 +134,7 @@ rm -rf $RPM_BUILD_ROOT
 - Declare member functions and parameters const where nothing is modified (const correctness), no functional changes
 - Requires 26.10.13 versions of newbase, spine due to their ABI changes
 - Fixed mechanical clang-tidy findings (internal linkage, unused parameters, initialization, redundant code), no functional changes
+- Fixed clang-tidy style findings (loops, nested conditionals, dead code)
 
 * Sun Oct 11 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.10.11-1.fmi
 - Use range-based for loops where clang-tidy suggests it, no functional changes

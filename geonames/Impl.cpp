@@ -1498,9 +1498,9 @@ std::optional<std::size_t> Engine::Impl::read_database_hash_value(
     }
 
     const int column_index = res.column_number("max");
-    for (pqxx::result::const_iterator row = res.begin(); row != res.end(); ++row)
+    if (!res.empty())
     {
-      auto tmp = (*row)[column_index].as<double>();
+      auto tmp = res[0][column_index].as<double>();
       return std::size_t(std::floor(tmp + 0.5));
     }
 

@@ -322,82 +322,13 @@ class AutoCompleteIndex
     // Deduplicate values by pointer identity.
     std::unordered_map<const T*, std::uint32_t> valueIds;
     valueIds.reserve(itsBuild.size());
-    auto value_id = [&](const element_type& v) -> std::uint32_t {
-      const T* raw = v.get();
-      auto it = valueIds.find(raw);
-      if (it != valueIds.end())
-        return it->second;
-      auto id = static_cast<std::uint32_t>(itsValues.size());
-      itsValues.push_back(v);
-      valueIds.emplace(raw, id);
-      return id;
-    };
 
     itsValueId.reserve(itsBuild.size());
 
     if (itsMode == Mode::Plain)
-    {
-      itsOffset.reserve(itsBuild.size() + 1);
-      itsOffset.push_back(0);
-      const std::string* prev = nullptr;
-      for (auto& kv : itsBuild)
-      {
-        if (prev != nullptr && *prev == kv.first)
-          continue;  // drop duplicate key (first wins)
-        itsBlob += kv.first;
-        itsOffset.push_back(static_cast<std::uint32_t>(itsBlob.size()));
-        itsValueId.push_back(value_id(kv.second));
-        prev = &kv.first;
-      }
-      itsCount = itsValueId.size();
-    }
+      buildPlain(valueIds);
     else
-    {
-      // Deduplicate keys first into a compact ordered list of indices.
-      std::vector<std::size_t> keep;
-      keep.reserve(itsBuild.size());
-      const std::string* prev = nullptr;
-      for (std::size_t i = 0; i < itsBuild.size(); ++i)
-      {
-        if (prev != nullptr && *prev == itsBuild[i].first)
-          continue;
-        keep.push_back(i);
-        prev = &itsBuild[i].first;
-      }
-
-      itsCount = keep.size();
-      std::size_t numBlocks = (itsCount + itsBlockSize - 1) / itsBlockSize;
-      itsOffset.reserve(numBlocks + 1);
-      itsBlockFCOff.reserve(numBlocks);
-      itsOffset.push_back(0);
-
-      std::string prevkey;
-      for (std::size_t i = 0; i < itsCount; ++i)
-      {
-        const std::string& key = itsBuild[keep[i]].first;
-        itsValueId.push_back(value_id(itsBuild[keep[i]].second));
-
-        if (i % itsBlockSize == 0)
-        {
-          // restart key: stored in full in the blob
-          itsBlockFCOff.push_back(static_cast<std::uint32_t>(itsFC.size()));
-          itsBlob += key;
-          itsOffset.push_back(static_cast<std::uint32_t>(itsBlob.size()));
-        }
-        else
-        {
-          // front-code against previous key
-          std::size_t lcp = 0;
-          std::size_t maxl = std::min(prevkey.size(), key.size());
-          while (lcp < maxl && prevkey[lcp] == key[lcp])
-            ++lcp;
-          put_varint(itsFC, static_cast<std::uint32_t>(lcp));
-          put_varint(itsFC, static_cast<std::uint32_t>(key.size() - lcp));
-          itsFC.append(key, lcp, key.size() - lcp);
-        }
-        prevkey = key;
-      }
-    }
+      buildFrontCoded(valueIds);
 
     // Release the build buffer and tighten storage.
     std::vector<std::pair<std::string, element_type>>().swap(itsBuild);
@@ -408,6 +339,100 @@ class AutoCompleteIndex
     itsValueId.shrink_to_fit();
     itsValues.shrink_to_fit();
     itsFrozen = true;
+  }
+
+  // The id of a value, deduplicated by pointer identity
+  std::uint32_t valueId(std::unordered_map<const T*, std::uint32_t>& valueIds,
+                        const element_type& v) const
+  {
+    const T* raw = v.get();
+    auto it = valueIds.find(raw);
+    if (it != valueIds.end())
+      return it->second;
+    auto id = static_cast<std::uint32_t>(itsValues.size());
+    itsValues.push_back(v);
+    valueIds.emplace(raw, id);
+    return id;
+  }
+
+  // Build the plain representation: all keys stored in full
+  void buildPlain(std::unordered_map<const T*, std::uint32_t>& valueIds) const
+  {
+    itsOffset.reserve(itsBuild.size() + 1);
+    itsOffset.push_back(0);
+    const std::string* prev = nullptr;
+    for (auto& kv : itsBuild)
+    {
+      if (prev != nullptr && *prev == kv.first)
+        continue;  // drop duplicate key (first wins)
+      itsBlob += kv.first;
+      itsOffset.push_back(static_cast<std::uint32_t>(itsBlob.size()));
+      itsValueId.push_back(valueId(valueIds, kv.second));
+      prev = &kv.first;
+    }
+    itsCount = itsValueId.size();
+  }
+
+  // Indices of the build entries with distinct keys, first of each duplicate key
+  std::vector<std::size_t> distinctKeyIndices() const
+  {
+    std::vector<std::size_t> keep;
+    keep.reserve(itsBuild.size());
+    const std::string* prev = nullptr;
+    for (std::size_t i = 0; i < itsBuild.size(); ++i)
+    {
+      if (prev != nullptr && *prev == itsBuild[i].first)
+        continue;
+      keep.push_back(i);
+      prev = &itsBuild[i].first;
+    }
+    return keep;
+  }
+
+  // Append the key front-coded against the previous key
+  void appendFrontCoded(const std::string& prevkey, const std::string& key) const
+  {
+    std::size_t lcp = 0;
+    std::size_t maxl = std::min(prevkey.size(), key.size());
+    while (lcp < maxl && prevkey[lcp] == key[lcp])
+      ++lcp;
+    put_varint(itsFC, static_cast<std::uint32_t>(lcp));
+    put_varint(itsFC, static_cast<std::uint32_t>(key.size() - lcp));
+    itsFC.append(key, lcp, key.size() - lcp);
+  }
+
+  // Build the front-coded representation: restart keys in full, others front-coded
+  void buildFrontCoded(std::unordered_map<const T*, std::uint32_t>& valueIds) const
+  {
+    // Deduplicate keys first into a compact ordered list of indices.
+    const std::vector<std::size_t> keep = distinctKeyIndices();
+
+    itsCount = keep.size();
+    std::size_t numBlocks = (itsCount + itsBlockSize - 1) / itsBlockSize;
+    itsOffset.reserve(numBlocks + 1);
+    itsBlockFCOff.reserve(numBlocks);
+    itsOffset.push_back(0);
+
+    std::string prevkey;
+    for (std::size_t i = 0; i < itsCount; ++i)
+    {
+      const std::string& key = itsBuild[keep[i]].first;
+      itsValueId.push_back(valueId(valueIds, itsBuild[keep[i]].second));
+
+      if (i % itsBlockSize == 0)
+      {
+        // restart key: stored in full in the blob
+        itsBlockFCOff.push_back(static_cast<std::uint32_t>(itsFC.size()));
+        itsBlob += key;
+        itsOffset.push_back(static_cast<std::uint32_t>(itsBlob.size()));
+      }
+      else
+      {
+        // front-code against previous key
+        appendFrontCoded(prevkey, key);
+      }
+      prevkey = key;
+    }
   }
 
   Mode itsMode;

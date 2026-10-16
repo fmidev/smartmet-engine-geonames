@@ -3,7 +3,7 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.10.15
+Version: 26.10.16
 Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
@@ -35,11 +35,11 @@ BuildRequires: make
 BuildRequires: mariadb-devel
 BuildRequires: rpm-build
 BuildRequires: smartmet-utils-devel >= 26.9.3
-BuildRequires: smartmet-library-gis-devel >= 26.10.15
-BuildRequires: smartmet-library-locus-devel >= 26.10.15
-BuildRequires: smartmet-library-macgyver-devel >= 26.10.15
-BuildRequires: smartmet-library-newbase-devel >= 26.10.15
-BuildRequires: smartmet-library-spine-devel >= 26.10.15
+BuildRequires: smartmet-library-gis-devel >= 26.10.16
+BuildRequires: smartmet-library-locus-devel >= 26.10.16
+BuildRequires: smartmet-library-macgyver-devel >= 26.10.16
+BuildRequires: smartmet-library-newbase-devel >= 26.10.16
+BuildRequires: smartmet-library-spine-devel >= 26.10.16
 Requires: %{smartmet_boost}-iostreams
 Requires: %{smartmet_boost}-locale
 Requires: %{smartmet_boost}-system
@@ -48,13 +48,13 @@ Requires: %{smartmet_fmt}
 Requires: gdal312-libs
 Requires: libatomic
 Requires: libicu
-Requires: smartmet-library-gis >= 26.10.15
+Requires: smartmet-library-gis >= 26.10.16
 Requires: smartmet-timezones >= 26.9.26
-Requires: smartmet-library-locus >= 26.10.15
-Requires: smartmet-library-macgyver >= 26.10.15
-Requires: smartmet-library-newbase >= 26.10.15
-Requires: smartmet-library-spine >= 26.10.15
-Requires: smartmet-server >= 26.10.15
+Requires: smartmet-library-locus >= 26.10.16
+Requires: smartmet-library-macgyver >= 26.10.16
+Requires: smartmet-library-newbase >= 26.10.16
+Requires: smartmet-library-spine >= 26.10.16
+Requires: smartmet-server >= 26.10.16
 %if 0%{rhel} >= 8
 Requires: mariadb-connector-c
 %else
@@ -102,7 +102,7 @@ Group: SmartMet/Development
 Provides: %{SPECNAME}-devel
 Requires: %{SPECNAME} = %{version}-%{release}
 Requires: libicu-devel
-Requires: smartmet-library-locus-devel >= 26.10.15
+Requires: smartmet-library-locus-devel >= 26.10.16
 Obsoletes: smartmet-brainstorm-geoengine-devel < 16.11.1
 %description -n %{SPECNAME}-devel
 Smartmet %{SPECNAME} development headers.
@@ -130,6 +130,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Fri Oct 16 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.10.16-1.fmi
+- Fixed compiler warnings and clang-tidy findings (unused code, unreachable code, empty statements, member initialization, parameter passing, noexcept), no functional changes
+
 * Thu Oct 15 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.10.15-1.fmi
 - Declare member functions and parameters const where nothing is modified (const correctness), no functional changes
 - Requires 26.10.15 versions of newbase, spine due to their ABI changes

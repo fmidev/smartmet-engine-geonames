@@ -361,6 +361,8 @@ class Engine::Impl
   void read_alternate_countries(const Fmi::Database::PostgreSQLConnection& conn);
   void read_municipalities(const Fmi::Database::PostgreSQLConnection& conn);
   void read_alternate_geonames(const Fmi::Database::PostgreSQLConnection& conn);
+  std::string alternate_geonames_sql() const;
+  bool wrong_script_for_language(const std::string& lang, const std::string& name) const;
   void read_alternate_municipalities(const Fmi::Database::PostgreSQLConnection& conn);
   void read_geonames(const Fmi::Database::PostgreSQLConnection& conn);
 

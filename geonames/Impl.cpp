@@ -1880,6 +1880,73 @@ void Engine::Impl::read_geonames(const Fmi::Database::PostgreSQLConnection& conn
 
 // ----------------------------------------------------------------------
 /*!
+ * \brief The SQL for reading the alternate_geonames table
+ */
+// ----------------------------------------------------------------------
+
+std::string Engine::Impl::alternate_geonames_sql() const
+{
+  std::string sql =
+      "SELECT a.geonames_id, a.name, a.language, a.priority, a.preferred, "
+      "length(a.name) as "
+      "length "
+      "FROM alternate_geonames a INNER JOIN keywords_has_geonames k ON "
+      "a.geonames_id=k.geonames_id "
+      // Historic (former) and colloquial names must never be selected as the
+      // translation of a place. Without this filter the length/alphabetical
+      // tiebreakers below happily pick Bombay over Mumbai, Madras over
+      // Chennai or Perovsk over Kyzylorda, since a former name is often the
+      // shorter one. Locus applies the same filter when resolving names
+      // straight from the database, so both name lookup paths now agree.
+      "WHERE a.historic=false AND a.colloquial=false";
+
+  if (itsConfig.exists("database.where.alternate_geonames"))
+  {
+    const auto &where_clause = itsConfig.lookup("database.where.alternate_geonames");
+    sql.append(" AND (").append(static_cast<const char *>(where_clause)).append(")");
+  }
+
+  // This makes sure preferred names come first, and longest names last.
+  // Note that this leaves cases like Montreal vs Montr�al, hence we do a final
+  // name sort to guarantee a fixed order. Using ASC prefers non-accented letters.
+  //
+  // These are heuristics only: they carry no notion of which name is current,
+  // hence the historic/colloquial filter in the WHERE clause above. Do not
+  // rely on length/name ordering to pick the right name for a place.
+
+#if 0
+  // Works only in MySQL
+  sql.append(" GROUP BY a.id HAVING count(*) > 1 ORDER BY a.geonames_id, a.language, a.priority ASC, a.preferred DESC, length ASC, name ASC");
+#else
+  // PostGreSQL requires all the names to be mentioned
+  sql.append(
+      " GROUP BY "
+      "a.id,a.geonames_id,a.name,a.language,a.priority,a.preferred "
+      "HAVING count(*) > 0 "
+      "ORDER BY a.geonames_id, a.language, a.priority ASC, a.preferred DESC, "
+      "length ASC, name ASC");
+#endif
+
+  return sql;
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Test whether the name is not written in the script of the language
+ */
+// ----------------------------------------------------------------------
+
+bool Engine::Impl::wrong_script_for_language(const std::string& lang,
+                                             const std::string& name) const
+{
+  if (itsLanguageScripts.empty())
+    return false;
+  auto script = itsLanguageScripts.find(lang);
+  return (script != itsLanguageScripts.end() && !name_matches_script(name, script->second));
+}
+
+// ----------------------------------------------------------------------
+/*!
  * \brief Read the alternate_geonames table
  */
 // ----------------------------------------------------------------------
@@ -1888,46 +1955,7 @@ void Engine::Impl::read_alternate_geonames(const Fmi::Database::PostgreSQLConnec
 {
   try
   {
-    std::string sql =
-        "SELECT a.geonames_id, a.name, a.language, a.priority, a.preferred, "
-        "length(a.name) as "
-        "length "
-        "FROM alternate_geonames a INNER JOIN keywords_has_geonames k ON "
-        "a.geonames_id=k.geonames_id "
-        // Historic (former) and colloquial names must never be selected as the
-        // translation of a place. Without this filter the length/alphabetical
-        // tiebreakers below happily pick Bombay over Mumbai, Madras over
-        // Chennai or Perovsk over Kyzylorda, since a former name is often the
-        // shorter one. Locus applies the same filter when resolving names
-        // straight from the database, so both name lookup paths now agree.
-        "WHERE a.historic=false AND a.colloquial=false";
-
-    if (itsConfig.exists("database.where.alternate_geonames"))
-    {
-      const auto &where_clause = itsConfig.lookup("database.where.alternate_geonames");
-      sql.append(" AND (").append(static_cast<const char *>(where_clause)).append(")");
-    }
-
-    // This makes sure preferred names come first, and longest names last.
-    // Note that this leaves cases like Montreal vs Montr�al, hence we do a final
-    // name sort to guarantee a fixed order. Using ASC prefers non-accented letters.
-    //
-    // These are heuristics only: they carry no notion of which name is current,
-    // hence the historic/colloquial filter in the WHERE clause above. Do not
-    // rely on length/name ordering to pick the right name for a place.
-
-#if 0
-    // Works only in MySQL
-    sql.append(" GROUP BY a.id HAVING count(*) > 1 ORDER BY a.geonames_id, a.language, a.priority ASC, a.preferred DESC, length ASC, name ASC");
-#else
-    // PostGreSQL requires all the names to be mentioned
-    sql.append(
-        " GROUP BY "
-        "a.id,a.geonames_id,a.name,a.language,a.priority,a.preferred "
-        "HAVING count(*) > 0 "
-        "ORDER BY a.geonames_id, a.language, a.priority ASC, a.preferred DESC, "
-        "length ASC, name ASC");
-#endif
+    const std::string sql = alternate_geonames_sql();
 
     if (itsVerbose)
       std::cout << "read_alternate_geonames: " << sql << '\n';
@@ -1967,12 +1995,8 @@ void Engine::Impl::read_alternate_geonames(const Fmi::Database::PostgreSQLConnec
       // that a rejected name does not consume the slot of the place and the
       // next candidate ("Луцьк") gets a chance.
 
-      if (!itsLanguageScripts.empty())
-      {
-        auto script = itsLanguageScripts.find(lang);
-        if (script != itsLanguageScripts.end() && !name_matches_script(name, script->second))
-          continue;
-      }
+      if (wrong_script_for_language(lang, name))
+        continue;
 
       // Handle only the first translation for each place
       if (geoid == last_handled_geoid && lang == last_lang)

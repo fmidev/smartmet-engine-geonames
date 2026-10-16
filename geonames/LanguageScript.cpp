@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <map>
+#include <optional>
 #include <unicode/utf8.h>
 
 namespace SmartMet
@@ -57,6 +58,30 @@ UScriptCode parse_script_name(const std::string &theName)
 
 namespace
 {
+// Decode the next UTF-8 code point, returning a negative value for invalid UTF-8
+UChar32 next_code_point(const uint8_t *bytes, int32_t &i, int32_t length)
+{
+  UChar32 c = 0;
+  U8_NEXT(bytes, i, length, c);
+  return c;
+}
+
+// The writing script of a code point, or nothing if it carries no script of its own
+std::optional<UScriptCode> character_script(UChar32 c)
+{
+  if (c < 0)
+    return {};  // invalid UTF-8, nothing to judge
+
+  UErrorCode status = U_ZERO_ERROR;
+  const auto script = uscript_getScript(c, &status);
+
+  if (U_FAILURE(status) || script == USCRIPT_COMMON || script == USCRIPT_INHERITED ||
+      script == USCRIPT_UNKNOWN || script == USCRIPT_INVALID_CODE)
+    return {};
+
+  return script;
+}
+
 /*!
  * \brief Count the characters of each writing script in a UTF-8 string
  *
@@ -75,20 +100,9 @@ std::map<UScriptCode, int> count_scripts(const std::string &theName)
   int32_t i = 0;
   while (i < length)
   {
-    UChar32 c = 0;
-    U8_NEXT(bytes, i, length, c);
-
-    if (c < 0)
-      continue;  // invalid UTF-8, nothing to judge
-
-    UErrorCode status = U_ZERO_ERROR;
-    const auto script = uscript_getScript(c, &status);
-
-    if (U_FAILURE(status) || script == USCRIPT_COMMON || script == USCRIPT_INHERITED ||
-        script == USCRIPT_UNKNOWN || script == USCRIPT_INVALID_CODE)
-      continue;
-
-    ++counts[script];
+    const auto script = character_script(next_code_point(bytes, i, length));
+    if (script)
+      ++counts[*script];
   }
 
   return counts;

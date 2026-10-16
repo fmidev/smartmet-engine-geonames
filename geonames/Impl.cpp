@@ -120,6 +120,40 @@ std::string to_language(const std::string &lang)
 
 // ----------------------------------------------------------------------
 /*!
+ * \brief Test whether a word segment in the middle of a name is likely a conjunction
+ *
+ * If the segment is short and its first character is lowercase, this is a connector
+ * word like "de", "von", "sur", "am" etc. instead of a word like "airport", "harbour".
+ */
+// ----------------------------------------------------------------------
+
+bool is_likely_conjunction(const std::string &seg, const std::locale &locale)
+{
+  if (seg.empty())
+    return false;
+
+  const int max_glyph_count = 4;
+
+  // Count UTF-8 code points (glyphs) in the segment
+  int glyph_count = 0;
+  for (char it : seg)
+  {
+    if ((it & 0xC0) != 0x80)  // skip UTF-8 continuation bytes
+    {
+      ++glyph_count;
+      if (glyph_count > max_glyph_count)  // early exit, no need to count more
+        return false;
+    }
+  }
+
+  // We check glyph count first since this is likely to be slower:
+  const std::string upper_seg = boost::locale::to_upper(seg, locale);
+
+  return (upper_seg[0] != seg[0]);
+}
+
+// ----------------------------------------------------------------------
+/*!
  * \brief Keep only desired features
  */
 // ----------------------------------------------------------------------
@@ -587,7 +621,6 @@ void Engine::Impl::add_treewords(std::set<std::string> &words,
 
     // Extract the remaining name starting from all word boundaries in upper case
 
-    const int max_glyph_count = 4;
     bool is_first = true;
     for (const auto &p : map)
     {
@@ -604,35 +637,11 @@ void Engine::Impl::add_treewords(std::set<std::string> &words,
 
           const std::string seg(p.begin(), p.end());
 
-          if (!seg.empty())
+          if (is_likely_conjunction(seg, itsLocale))
           {
-            // Count UTF-8 code points (glyphs) in the segment
-            int glyph_count = 0;
-            for (char it : seg)
-            {
-              if ((it & 0xC0) != 0x80)  // skip UTF-8 continuation bytes
-              {
-                ++glyph_count;
-                if (glyph_count > max_glyph_count)  // early exit, no need to count more
-                  break;
-              }
-            }
-
-            // If the segment is short, it might be a conjunction instead
-            // of a word like "airport, "harbour" etc
-
-            if (glyph_count <= max_glyph_count)
-            {
-              // We check glyph count first since this is likely to be slower:
-              const std::string upper_seg = boost::locale::to_upper(seg, itsLocale);
-
-              if (upper_seg[0] != seg[0])
-              {
-                // std::cout << "Skipped likely conjunction in the middle: '" << seg << "' from " <<
-                // name << "\n";
-                continue;
-              }
-            }
+            // std::cout << "Skipped likely conjunction in the middle: '" << seg << "' from " <<
+            // name << "\n";
+            continue;
           }
         }
 
@@ -1671,6 +1680,92 @@ void Engine::Impl::read_municipalities(const Fmi::Database::PostgreSQLConnection
 
 // ----------------------------------------------------------------------
 /*!
+ * \brief Find the name of a municipality, nullptr if munip is 0 or unknown
+ */
+// ----------------------------------------------------------------------
+
+const std::string *Engine::Impl::find_municipality(int munip) const
+{
+  if (munip == 0)
+    return nullptr;
+  auto it = itsMunicipalities.find(munip);
+  if (it == itsMunicipalities.end())
+    return nullptr;
+  return &it->second;
+}
+
+// ----------------------------------------------------------------------
+/*!
+ * \brief Build the area name of a location using the configured area specifiers
+ */
+// ----------------------------------------------------------------------
+
+std::string Engine::Impl::extract_area(const std::string &iso2,
+                                       const std::string &country,
+                                       int munip,
+                                       const std::string &admin1) const
+{
+  std::string area;
+
+  // To make code clearer by avoiding multiple if statements
+
+  auto area_append = [&area](const std::string &s)
+  {
+    if (!area.empty())
+      area += ", ";
+    area += s;
+  };
+
+  auto pos = itsAreaSpecifiers.find(iso2);
+  if (pos == itsAreaSpecifiers.end())
+    pos = itsAreaSpecifiers.find("default");
+
+  if (pos == itsAreaSpecifiers.end())
+    return country;  // fallback is name, country
+
+  for (const auto &spec : pos->second)
+  {
+    if (spec.empty())
+      return "";  // we do not want area at all into autocomplete
+
+    if (spec == "COUNTRY")
+    {
+      if (!country.empty())
+        area_append(country);
+    }
+
+    else if (spec == "MUNICIPALITY")
+    {
+      const auto *municipality = find_municipality(munip);
+      if (municipality != nullptr)
+        area_append(*municipality);
+    }
+
+    else if (spec == "MUNICIPALITY|COUNTRY")
+    {
+      const auto *municipality = find_municipality(munip);
+      if (municipality != nullptr)
+        area_append(*municipality);
+      else if (!country.empty())
+        area_append(country);
+    }
+
+    else if (spec == "ADMIN1")
+      area_append(admin1);
+
+    else
+    {
+      // Should not happen, config reader should have verified input
+      throw Fmi::Exception(
+          BCP, "Internal error: Unknown area specifier '" + spec + "' in geonames areas");
+    }
+  }
+
+  return area;
+}
+
+// ----------------------------------------------------------------------
+/*!
  * \brief Read the base geonames table
  */
 // ----------------------------------------------------------------------
@@ -1725,74 +1820,7 @@ Spine::LocationPtr Engine::Impl::extract_geoname(const pqxx::result::const_itera
   // If the municipality has been set, it will be used instead of admin1, since
   // it is a geonames extension to fix inaccuracies. Currently only known use is in Finland.
 
-  std::string area;
-
-  // To make code clearer by avoiding multiple if statements
-
-  auto area_append = [&area](const std::string &s)
-  {
-    if (!area.empty())
-      area += ", ";
-    area += s;
-  };
-
-  auto pos = itsAreaSpecifiers.find(iso2);
-  if (pos == itsAreaSpecifiers.end())
-    pos = itsAreaSpecifiers.find("default");
-
-  if (pos == itsAreaSpecifiers.end())
-    area += country;  // fallback is name, country
-  else
-  {
-    for (const auto &spec : pos->second)
-    {
-      if (spec.empty())
-      {
-        area = "";  // we do not want area at all into autocomplete
-        break;
-      }
-
-      if (spec == "COUNTRY")
-      {
-        if (!country.empty())
-          area_append(country);
-      }
-
-      else if (spec == "MUNICIPALITY")
-      {
-        if (munip != 0)
-        {
-          auto it = itsMunicipalities.find(munip);
-          if (it != itsMunicipalities.end())
-            area_append(it->second);
-        }
-      }
-
-      else if (spec == "MUNICIPALITY|COUNTRY")
-      {
-        if (munip != 0)
-        {
-          auto it = itsMunicipalities.find(munip);
-          if (it != itsMunicipalities.end())
-            area_append(it->second);
-          else if (!country.empty())
-            area_append(country);
-        }
-        else if (!country.empty())
-          area_append(country);
-      }
-
-      else if (spec == "ADMIN1")
-        area_append(admin1);
-
-      else
-      {
-        // Should not happen, config reader should have verified input
-        throw Fmi::Exception(
-            BCP, "Internal error: Unknown area specifier '" + spec + "' in geonames areas");
-      }
-    }
-  }
+  std::string area = extract_area(iso2, country, munip, admin1);
 
   // country will be translated from iso2 upon request
   country = "";

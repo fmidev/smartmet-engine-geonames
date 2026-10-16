@@ -378,6 +378,11 @@ class Engine::Impl
                                            const Spine::LocationList& locs);
 
   Spine::LocationPtr extract_geoname(const pqxx::result::const_iterator& row) const;
+  std::string extract_area(const std::string& iso2,
+                           const std::string& country,
+                           int munip,
+                           const std::string& admin1) const;
+  const std::string* find_municipality(int munip) const;
 
   Spine::LocationList suggest_one_keyword(const std::string& pattern,
                                           const std::string& lang,

@@ -50,14 +50,14 @@ Supporting classes:
 1. Constructor reads libconfig configuration, sets up locale and DB connection pool
 2. `init()` loads DEM and LandCover data in parallel
 3. Database reads happen concurrently: countries, municipalities, geonames, alternate names, keywords
-4. Index structures built: geoid map, geo-trees, ternary trees, priorities
+4. Index structures built: geoid map, geo-trees, autocomplete indexes, priorities
 5. `itsReady = true` once base data is loaded; autocomplete indexes may still be building
 6. Auto-reload timer periodically checks database hash and swaps in a new `Impl` if changed
 
 ### Key design decisions
 
 - The `AtomicSharedPtr<Impl>` swap pattern means all data structures are immutable once published — readers never block, and reload builds a complete new `Impl` before swapping
-- Autocomplete uses `AutoCompleteIndex` (one per language per keyword): sorted collation keys, prefix = two binary searches
+- Autocomplete uses `AutoCompleteIndex` (one per language per keyword): sorted collation keys front-coded in blocks of 16, prefix = two binary searches over the block restart keys plus a scan of one block each
 - Spatial search uses separate KD-trees per keyword to avoid filtering overhead
 - The engine resolves `SmartMet::Engine::` symbols at runtime when loaded by the server, so unresolved reference checks in the Makefile explicitly exclude these
 

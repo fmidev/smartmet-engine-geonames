@@ -42,8 +42,10 @@ test configuration. The autocomplete and timeseries plugin tests exercise the en
   lists, per-keyword k-d trees for nearest searches, the autocomplete indexes per
   language, the name-search cache, countries and municipalities, and the priorities.
 * **`AutoCompleteIndex`** is the array-backed prefix index used for `suggest()` (it
-  replaced the ternary search trees): keys are ICU collation keys, a prefix query is two
-  binary searches over a sorted array, and many keys may share a value.
+  replaced the ternary search trees): keys are ICU collation keys in a sorted array,
+  front-coded in blocks of 16 by default. A prefix query finds both ends of the matching
+  range, each with a binary search over the block restart keys and a scan of one block.
+  Many keys may share a value.
 * **`LocationPriorities`** scores locations for ranking (population, feature code, area,
   country, exact-match bonus).
 * **`WktGeometry`** parses `wkt=` values into OGR geometries and SVG paths.
@@ -108,7 +110,8 @@ candidates with the predicate, rank them with `LocationPriorities`, and return o
 Patterns are normalised with ICU collation, so case and accents do not matter
 (`ascii_autocomplete` also folds to ASCII). `disable_autocomplete` (formerly `mock`)
 skips building the indexes, which makes start-up much faster for servers that do not
-serve autocomplete. `cache.suggest_max_size` sizes the suggest cache.
+serve autocomplete. `cache.suggest_max_size` is deprecated: there is no suggest cache,
+and setting it only prints a warning.
 
 ## 7. DEM and land cover
 
@@ -130,13 +133,14 @@ when keywords do, so the cache needs no invalidation; a reload takes it over unl
 | Key | Meaning |
 |-----|---------|
 | `database` (`host`, `port`, `user`, `pass`, `database`, `where.geonames`, `where.alternate_geonames`, `overrides`) | The PostGIS database and filters on what is read. `database.disable` runs without a database. |
-| `cache.max_size`, `cache.suggest_max_size`, `cache.terrain_max_size` | Cache sizes (number of entries). |
+| `cache.max_size`, `cache.terrain_max_size` | Cache sizes (number of entries, defaults 1000 and 500000). `cache.suggest_max_size` is deprecated. |
 | `priorities` (`match`, population, feature and country weights) | Ranking. |
 | `areas` | Display formats for area names. |
 | `autoreload.period` | Reload check interval in minutes. |
 | `demdir`, `landcoverdir`, `maxdemresolution` | DEM and land cover. |
 | `security` (`disable`, `names.deny`) | Regex patterns of names that are rejected. A configured `security` block is in effect unless `disable = true`. |
 | `disable_autocomplete`, `ascii_autocomplete`, `remove_underscores`, `language_scripts` | Autocomplete. |
+| `timezones` (`source`, `layer`, `database`, `table`, `field`, `max_vertices`, `preferred`, `make_valid`, `threads`) | Timezone polygons, see the README. By default the smartmet-timezones shapefile. |
 | `strict`, `verbose` | Error handling and logging. |
 
 ## 9. Compatibility

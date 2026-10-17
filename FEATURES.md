@@ -47,9 +47,10 @@ List-result lookups (multi-result `LocationList`):
 
 ## 2. Autocomplete / suggestion
 
-- **`suggest(pattern, predicate, lang, keyword, maxResults, page)`**
-  — prefix-matched autocomplete using a ternary search tree (one per
-  language).
+- **`suggest(pattern, predicate, lang, keyword, page, maxResults)`**
+  — prefix-matched autocomplete using an `AutoCompleteIndex` (one per
+  language and keyword): sorted ICU collation keys, front-coded in
+  blocks, searched with binary searches.
 - **`suggestDuplicates(...)`** — returns name collisions explicitly.
 - **Multi-language suggest** — `vector<LocationList>` overload that
   returns matches across multiple languages.
@@ -74,7 +75,7 @@ List-result lookups (multi-result `LocationList`):
 
 - **Named location sets** loaded from the database table.
 - **Per-keyword in-memory indexes** — separate KD-tree (for spatial
-  search) and ternary search trees (for autocomplete) per keyword.
+  search) and `AutoCompleteIndex`es (for autocomplete) per keyword.
 - **`add(tag, location)`** — extension hook for plugin-supplied
   in-memory keywords.
 
@@ -113,8 +114,9 @@ Built once at init / reload, immutable thereafter:
 - **`KeywordMap`** — keyword → `LocationList`.
 - **`GeoTreeMap`** — one KD-tree (`Fmi::NearTree`) per keyword for
   nearest-neighbour spatial search.
-- **`LangTernaryTreeMap`** — per-language, per-keyword ternary
-  search trees for autocomplete.
+- **`LangTernaryTreeMap`** — per-language, per-keyword
+  `AutoCompleteIndex`es for autocomplete (the type names still say
+  ternary tree, which the array-based index replaced).
 - **`NameSearchCache`** — LRU cache of recent name searches
   (`Fmi::Cache::Cache`).
 
@@ -147,7 +149,9 @@ libconfig file with these sections:
 
 - **`database`** — PostgreSQL/PostGIS connection (host, port, user,
   password, dbname).
-- **`cache`** — LRU sizes (name-search cache, etc.).
+- **`cache`** — `max_size` (name-search cache) and `terrain_max_size`
+  (elevations and cover types of coordinates, default 500000).
+  `suggest_max_size` is deprecated and only warned about.
 - **`locale`** — e.g. `fi_FI.UTF-8`.
 - **`remove_underscores`** — control name normalisation.
 - **`priorities`** — population / feature / area / country weights.
@@ -157,6 +161,11 @@ libconfig file with these sections:
   files.
 - **`maxdemresolution`** — max DEM resolution for requests.
 - **`security`** — patterns for denying suspicious queries.
+- **`language_scripts`** — scripts the alternate names of a language
+  must be written in.
+- **`timezones`** — optional source of the timezone polygons (any
+  GDAL/OGR source or a PostGIS table); by default the shapefile of the
+  smartmet-timezones RPM.
 - **SmartMet config extensions** — `@include`, `@ifdef`, `$(VAR)`,
   `%(DIR)`.
 

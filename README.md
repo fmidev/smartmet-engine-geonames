@@ -66,7 +66,7 @@ cache:
 
 </code></pre>
 
-* Automatic enginen reload tietokannan muutosten case
+* Automatic engine reload when the database changes
 
 <pre><code>
 autoreload:

@@ -3,8 +3,8 @@
 %define SPECNAME smartmet-engine-%{DIRNAME}
 Summary: Smartmet geonames engine
 Name: %{SPECNAME}
-Version: 26.10.17
-Release: 2%{?dist}.fmi
+Version: 26.10.23
+Release: 1%{?dist}.fmi
 License: MIT
 Group: SmartMet/Engines
 URL: https://github.com/fmidev/smartmet-engine-geonames
@@ -37,7 +37,7 @@ BuildRequires: rpm-build
 BuildRequires: smartmet-utils-devel >= 26.9.3
 BuildRequires: smartmet-library-gis-devel >= 26.10.16
 BuildRequires: smartmet-library-locus-devel >= 26.10.16
-BuildRequires: smartmet-library-macgyver-devel >= 26.10.16
+BuildRequires: smartmet-library-macgyver-devel >= 26.10.23
 BuildRequires: smartmet-library-newbase-devel >= 26.10.16
 BuildRequires: smartmet-library-spine-devel >= 26.10.16
 Requires: %{smartmet_boost}-iostreams
@@ -51,7 +51,7 @@ Requires: libicu
 Requires: smartmet-library-gis >= 26.10.17
 Requires: smartmet-timezones >= 26.9.26
 Requires: smartmet-library-locus >= 26.10.16
-Requires: smartmet-library-macgyver >= 26.10.17
+Requires: smartmet-library-macgyver >= 26.10.23
 Requires: smartmet-library-newbase >= 26.10.17
 Requires: smartmet-library-spine >= 26.10.17
 Requires: smartmet-server >= 26.10.17
@@ -130,6 +130,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/smartmet/engines/%{DIRNAME}
 
 %changelog
+* Fri Oct 23 2026 Pertti Kinnia <pertti.kinnia@fmi.fi> - 26.10.23-1.fmi
+- Repackage due to macgyver ABI changes (PostgreSQLConnectionOptions)
+
 * Mon Oct 19 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.10.17-2.fmi
 - Repackaged: simultaneous CI runs corrupted the 26.10.17-1 RPMs
 * Sat Oct 17 2026 Mika Heiskanen <mika.heiskanen@fmi.fi> - 26.10.17-1.fmi

@@ -870,6 +870,13 @@ Spine::LocationPtr Engine::wktSearch(const std::string& theWktString,
 WktGeometries Engine::getWktGeometries(const LocationOptions& loptions,
                                        const std::string& language) const
 {
+  return getWktGeometries(loptions, language, false);
+}
+
+WktGeometries Engine::getWktGeometries(const LocationOptions& loptions,
+                                       const std::string& language,
+                                       bool theCoordinatesOnly) const
+{
   WktGeometries ret;
 
   // Store WKT-geometries
@@ -877,7 +884,7 @@ WktGeometries Engine::getWktGeometries(const LocationOptions& loptions,
   {
     if (tloc.loc->type == Spine::Location::Wkt)
     {
-      WktGeometryPtr wktGeometry(new WktGeometry(tloc.loc, language, *this));
+      WktGeometryPtr wktGeometry(new WktGeometry(tloc.loc, language, *this, theCoordinatesOnly));
       ret.addWktGeometry(tloc.loc->name, wktGeometry);
     }
   }
@@ -1389,6 +1396,12 @@ void Engine::parse_wkt(LocationOptions& theOptions,
 
 LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
 {
+  return parseLocations(theReq, false);
+}
+
+LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq,
+                                       bool theCoordinatesOnly) const
+{
   try
   {
     // Language selection (default -> config -> querystring order)
@@ -1404,6 +1417,10 @@ LocationOptions Engine::parseLocations(const Spine::HTTP::Request& theReq) const
     std::string maxdistance_str =
         Spine::optional_string(theReq.getParameter("maxdistance"), default_maxdistance);
     double maxdistance = Fmi::DistanceParser::parse_kilometer(maxdistance_str);
+
+    // A zero search distance disables the search for the nearest named location
+    if (theCoordinatesOnly)
+      maxdistance = 0;
 
     // Scan all options for location references
 

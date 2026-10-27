@@ -36,6 +36,11 @@ class WktGeometry
  public:
   ~WktGeometry();
   WktGeometry(const Spine::LocationPtr& loc, const std::string& language, const Engine& geoengine);
+  // With coordinatesOnly the locations are not named after the nearest named location
+  WktGeometry(const Spine::LocationPtr& loc,
+              const std::string& language,
+              const Engine& geoengine,
+              bool coordinatesOnly);
 
   WktGeometry() = delete;
   WktGeometry(const WktGeometry& other) = delete;
@@ -53,16 +58,19 @@ class WktGeometry
  private:
   void init(const Spine::LocationPtr& loc,
             const std::string& language,
-            const SmartMet::Engine::Geonames::Engine& geoengine);
+            const SmartMet::Engine::Geonames::Engine& geoengine,
+            bool coordinatesOnly);
   void geometryFromWkt(const std::string& wktString, double radius);
   void svgPathsFromGeometry();
   void locationsFromGeometry(const Spine::LocationPtr& loc,
                              const std::string& language,
-                             const SmartMet::Engine::Geonames::Engine& geoengine);
+                             const SmartMet::Engine::Geonames::Engine& geoengine,
+                             bool coordinatesOnly);
   Spine::LocationPtr locationFromGeometry(const OGRGeometry* geom,
                                           const Spine::LocationPtr& loc,
                                           const std::string& language,
-                                          const SmartMet::Engine::Geonames::Engine& geoengine);
+                                          const SmartMet::Engine::Geonames::Engine& geoengine,
+                                          bool coordinatesOnly);
 
   std::string itsName;                 // Name of geometry
   OGRGeometry* itsGeom = nullptr;      // Geometry created from wkt

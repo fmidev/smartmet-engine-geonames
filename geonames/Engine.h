@@ -186,9 +186,18 @@ class Engine : public Spine::SmartMetEngine
   // Parse location-related HTTP options
   LocationOptions parseLocations(const Spine::HTTP::Request& theReq) const;
 
+  // Parse location-related HTTP options. With theCoordinatesOnly coordinates are not
+  // searched for the nearest named location (no database search), the locations
+  // carry only the coordinates, timezone, DEM height and land cover type.
+  LocationOptions parseLocations(const Spine::HTTP::Request& theReq, bool theCoordinatesOnly) const;
+
   // Get WKT geometries
   WktGeometries getWktGeometries(const LocationOptions& loptions,
                                  const std::string& language) const;
+  // With theCoordinatesOnly the locations are not named after the nearest named location
+  WktGeometries getWktGeometries(const LocationOptions& loptions,
+                                 const std::string& language,
+                                 bool theCoordinatesOnly) const;
 
   // Reload all data
 

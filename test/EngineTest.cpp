@@ -3,6 +3,7 @@
 #include <locus/Query.h>
 #include <macgyver/StringConversion.h>
 #include <regression/tframe.h>
+#include <spine/HTTP.h>
 #include <spine/Location.h>
 #include <spine/Options.h>
 #include <spine/Reactor.h>
@@ -925,6 +926,64 @@ void lonlatSearch()
 
 // ----------------------------------------------------------------------
 
+void coordinatesOnly()
+{
+  // Kumpula, Helsinki
+
+  SmartMet::Spine::HTTP::Request req;
+  req.addParameter("latlon", "60.2089,24.9642");
+  req.addParameter("lang", "fi");
+
+  auto named = names->parseLocations(req).locations();
+  if (named.size() != 1)
+    TEST_FAILED("Expected 1 named location, got " + Fmi::to_string(named.size()));
+  if (named.front().loc->name != "Kumpula")
+    TEST_FAILED("Expected Kumpula, got " + named.front().loc->name);
+
+  auto coords = names->parseLocations(req, true).locations();
+  if (coords.size() != 1)
+    TEST_FAILED("Expected 1 coordinate location, got " + Fmi::to_string(coords.size()));
+
+  const auto &loc = *coords.front().loc;
+  if (coords.front().tag != "60.2089,24.9642")
+    TEST_FAILED("Expected tag 60.2089,24.9642, got " + coords.front().tag);
+  if (loc.geoid != 0)
+    TEST_FAILED("Coordinate location should have no geoid, got " + Fmi::to_string(loc.geoid));
+  if (loc.name == "Kumpula")
+    TEST_FAILED("Coordinate location should not be named after the nearest place");
+  if (loc.longitude != 24.9642 || loc.latitude != 60.2089)
+    TEST_FAILED("Coordinate location has wrong coordinates");
+  if (loc.timezone != "Europe/Helsinki")
+    TEST_FAILED("Expected timezone Europe/Helsinki, got " + loc.timezone);
+  if (loc.dem != 24)
+    TEST_FAILED("DEM for Kumpula should be 24, not " + Fmi::to_string(loc.dem));
+  if (loc.type != SmartMet::Spine::Location::CoordinatePoint)
+    TEST_FAILED("Expected a coordinate point");
+
+  // WKT geometries
+
+  SmartMet::Spine::HTTP::Request wktreq;
+  const std::string wkt = "POINT(24.9642 60.2089)";
+  wktreq.addParameter("wkt", wkt);
+
+  auto wktopts = names->parseLocations(wktreq, true);
+  auto wktloc = names->getWktGeometries(wktopts, "fi", true).getLocation(wkt);
+  if (!wktloc)
+    TEST_FAILED("Expected a WKT location");
+  if (wktloc->geoid != 0)
+    TEST_FAILED("WKT location should have no geoid, got " + Fmi::to_string(wktloc->geoid));
+  if (wktloc->timezone != "Europe/Helsinki")
+    TEST_FAILED("Expected WKT timezone Europe/Helsinki, got " + wktloc->timezone);
+
+  wktloc = names->getWktGeometries(names->parseLocations(wktreq), "fi").getLocation(wkt);
+  if (!wktloc || wktloc->geoid == 0)
+    TEST_FAILED("WKT location should have the geoid of Kumpula");
+
+  TEST_PASSED();
+}
+
+// ----------------------------------------------------------------------
+
 void keywordSearch()
 {
   SmartMet::Spine::LocationList ptrs;
@@ -1298,6 +1357,7 @@ class tests : public tframe::tests
     TEST(countryName);
     TEST(featureSearch);
     TEST(coordinateTimeZone);
+    TEST(coordinatesOnly);
     TEST(wktLocation);
     TEST(wktMultiPointLocations);
 

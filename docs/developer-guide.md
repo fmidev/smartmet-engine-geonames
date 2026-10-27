@@ -99,7 +99,15 @@ priority (`sort()`, `assign_priorities()`).
 
 A `:radius` suffix gives a radius, for example `area=Helsinki:10`. Each location is
 tagged with the original request string, so results can be labelled as the user wrote
-them. `parseLocations(fmisids, …)` resolves observation station ids the same way, and
+them.
+
+Coordinates (`lonlat`, `latlon` and the first point of `wkt`) are named after the nearest
+named location within `maxdistance` (default 15 km), which is a database search.
+`parseLocations(request, true)` skips the search: the locations then carry only the
+coordinates, timezone, DEM height and land cover type. Use it when the caller does not need
+the name, geoid, country or other geonames information of the coordinates.
+
+`parseLocations(fmisids, …)` resolves observation station ids the same way, and
 `getWktGeometries()` returns the geometries for area queries.
 
 ## 6. Autocomplete

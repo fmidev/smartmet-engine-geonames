@@ -158,7 +158,8 @@ bool is_multi_geometry(const OGRGeometry& geom)
 
 void WktGeometry::init(const Spine::LocationPtr& loc,
                        const std::string& language,
-                       const SmartMet::Engine::Geonames::Engine& geoengine)
+                       const SmartMet::Engine::Geonames::Engine& geoengine,
+                       bool coordinatesOnly)
 {
   try
   {
@@ -169,7 +170,7 @@ void WktGeometry::init(const Spine::LocationPtr& loc,
     svgPathsFromGeometry();
 
     // Get locations from OGRGeometry; OGRMulti* geometries may contain many locations
-    locationsFromGeometry(loc, language, geoengine);
+    locationsFromGeometry(loc, language, geoengine, coordinatesOnly);
   }
   catch (...)
   {
@@ -226,15 +227,16 @@ void WktGeometry::svgPathsFromGeometry()
 
 void WktGeometry::locationsFromGeometry(const Spine::LocationPtr& loc,
                                         const std::string& language,
-                                        const SmartMet::Engine::Geonames::Engine& geoengine)
+                                        const SmartMet::Engine::Geonames::Engine& geoengine,
+                                        bool coordinatesOnly)
 {
-  itsLocation = locationFromGeometry(itsGeom, loc, language, geoengine);
+  itsLocation = locationFromGeometry(itsGeom, loc, language, geoengine, coordinatesOnly);
 
   if (is_multi_geometry(*itsGeom))
   {
     std::list<const OGRGeometry*> glist = get_geometry_list(itsGeom);
     for (const auto* g : glist)
-      itsLocations.push_back(locationFromGeometry(g, loc, language, geoengine));
+      itsLocations.push_back(locationFromGeometry(g, loc, language, geoengine, coordinatesOnly));
   }
 }
 
@@ -248,7 +250,8 @@ Spine::LocationPtr WktGeometry::locationFromGeometry(
     const OGRGeometry* geom,
     const Spine::LocationPtr& loc,
     const std::string& language,
-    const SmartMet::Engine::Geonames::Engine& geoengine)
+    const SmartMet::Engine::Geonames::Engine& geoengine,
+    bool coordinatesOnly)
 {
   OGREnvelope envelope;
   geom->getEnvelope(&envelope);
@@ -264,10 +267,12 @@ Spine::LocationPtr WktGeometry::locationFromGeometry(
   // would be a database query per point, and the results are discarded anyway since the
   // coordinates are kept and the name is replaced below. A zero search radius skips the search
   // but still gives the timezone, DEM height and land cover type of the point itself.
+  // The search is skipped for all locations if the caller needs only the coordinates.
 
   const bool is_subpoint = (geom != itsGeom && geom->getGeometryType() == wkbPoint);
-  Spine::LocationPtr geoloc = (is_subpoint ? geoengine.lonlatSearch(lon, lat, language, 0)
-                                           : geoengine.lonlatSearch(lon, lat, language));
+  Spine::LocationPtr geoloc =
+      ((coordinatesOnly || is_subpoint) ? geoengine.lonlatSearch(lon, lat, language, 0)
+                                        : geoengine.lonlatSearch(lon, lat, language));
   std::unique_ptr<Spine::Location> tmp(new Spine::Location(geoloc->geoid,
                                                            "",  // tloc.tag,
                                                            geoloc->iso2,
@@ -328,7 +333,15 @@ WktGeometry::WktGeometry(const Spine::LocationPtr& loc,
                          const std::string& language,
                          const SmartMet::Engine::Geonames::Engine& geoengine)
 {
-  init(loc, language, geoengine);
+  init(loc, language, geoengine, false);
+}
+
+WktGeometry::WktGeometry(const Spine::LocationPtr& loc,
+                         const std::string& language,
+                         const SmartMet::Engine::Geonames::Engine& geoengine,
+                         bool coordinatesOnly)
+{
+  init(loc, language, geoengine, coordinatesOnly);
 }
 
 // ----------------------------------------------------------------------

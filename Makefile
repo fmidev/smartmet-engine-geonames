@@ -3,7 +3,8 @@ SPEC = smartmet-engine-$(SUBNAME)
 INCDIR = smartmet/engines/$(SUBNAME)
 
 REQUIRES = fmt gdal icu-i18n configpp libpqxx
-include $(shell echo $${PREFIX-/usr})/share/smartmet/devel/makefile.inc
+
+include $(or $(PREFIX),$(shell smartbuildcfg --prefix))/share/smartmet/devel/makefile.inc
 
 DEFINES = -DUNIX -D_REENTRANT
 

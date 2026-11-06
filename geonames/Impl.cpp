@@ -7,6 +7,8 @@
 #include "Impl.h"
 #include "Engine.h"
 #include "PageFilter.h"
+#include <spine/TableFormatter.h>
+#include <macgyver/AsyncTask.h>
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/asio/ip/host_name.hpp>
 #include <boost/bind/bind.hpp>

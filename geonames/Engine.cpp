@@ -6,6 +6,7 @@
 
 #include "Engine.h"
 #include "Impl.h"
+#include <boost/algorithm/string.hpp>
 #include <fmt/format.h>
 #include <fmt/printf.h>
 #include <gis/DEM.h>
@@ -21,7 +22,12 @@
 #include <spine/Location.h>
 #include <spine/Reactor.h>
 #include <spine/TableFormatterOptions.h>
+#include <boost/asio/basic_waitable_timer.hpp>
+#include <boost/asio/executor_work_guard.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/thread/thread_only.hpp>
 #include <algorithm>
+#include <chrono>
 #include <atomic>
 #include <future>
 #include <ogr_geometry.h>
@@ -35,6 +41,15 @@ namespace Engine
 {
 namespace Geonames
 {
+struct Engine::IoService
+{
+  boost::asio::io_context context;
+  boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work{
+      context.get_executor()};
+  boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer{context};
+  boost::thread thread;
+};
+
 
 namespace
 {
@@ -302,15 +317,14 @@ Engine::Engine(std::string theConfigFile)
       itsSuggestCount(0),
       itsConfigFile(std::move(theConfigFile)),
       initFailed(false),
-      itsWork(itsIoService.get_executor()),
-      itsTimer(itsIoService),
-      itsIoServiceThread(
-          [this]
-          {
-            Fmi::set_thread_name("geo-io");
-            runIoService();
-          })
+      itsIo(std::make_unique<IoService>())
 {
+  itsIo->thread = boost::thread(
+      [this]
+      {
+        Fmi::set_thread_name("geo-io");
+        runIoService();
+      });
 }
 
 // ----------------------------------------------------------------------
@@ -384,14 +398,14 @@ void Engine::shutdown()
   {
     std::cout << "  -- Shutdown requested (geoengine)\n";
 
-    itsIoService.stop();
-    if (itsIoServiceThread.joinable())
+    itsIo->context.stop();
+    if (itsIo->thread.joinable())
     {
       // Actual reload process my be running and in this case try to interrupt it. Otherwise
       // this call would not be needed.
-      itsIoServiceThread.interrupt();
+      itsIo->thread.interrupt();
       // Wait for the thread to finish
-      itsIoServiceThread.join();
+      itsIo->thread.join();
     }
 
     while (true)
@@ -431,7 +445,7 @@ void Engine::shutdown()
 void Engine::runIoService()
 try
 {
-  itsIoService.run();
+  itsIo->context.run();
 }
 catch (...)
 {
@@ -454,8 +468,8 @@ try
   {
     long expires_from_now =
         (nextCheck->get_impl() - Fmi::SecondClock::local_time()).total_seconds();
-    itsTimer.expires_after(std::chrono::seconds(expires_from_now));
-    itsTimer.async_wait(
+    itsIo->timer.expires_after(std::chrono::seconds(expires_from_now));
+    itsIo->timer.async_wait(
         [this](const boost::system::error_code& ec)
         {
           if (!ec)
@@ -1605,7 +1619,7 @@ std::pair<bool, std::string> Engine::reload()
 
     // Cancel the auto-reload timer if it was enabled and possibly schedule again.
     // Period may have changed during reload.
-    itsTimer.cancel();
+    itsIo->timer.cancel();
     maybeScheduleAutoReloadCheck();
 
     return {true, output.str()};

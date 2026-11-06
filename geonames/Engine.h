@@ -7,20 +7,15 @@
 #pragma once
 
 #include "WktGeometry.h"
-#include <boost/asio.hpp>
-#include <boost/utility.hpp>
-#include <gis/OGR.h>
+#include <gis/LandCover.h>
 #include <locus/Query.h>
 #include <macgyver/AtomicSharedPtr.h>
 #include <macgyver/CacheStats.h>
 #include <macgyver/DateTime.h>
 #include <macgyver/TimeZones.h>
-#include <spine/HTTP.h>
 #include <spine/Location.h>
 #include <spine/SmartMetEngine.h>
 #include <spine/Table.h>
-#include <spine/TableFormatter.h>
-#include <spine/Thread.h>
 #include <atomic>
 #include <functional>
 #include <memory>
@@ -31,12 +26,20 @@
 namespace Fmi
 {
 class DEM;
-class LandCover;
 class TimeZoneFinder;
 }  // namespace Fmi
 
 namespace SmartMet
 {
+namespace Spine
+{
+namespace HTTP
+{
+class Request;
+class Response;
+}  // namespace HTTP
+}  // namespace Spine
+
 namespace Engine
 {
 namespace Geonames
@@ -277,9 +280,6 @@ class Engine : public Spine::SmartMetEngine
   std::unique_ptr<Spine::Table> requestInfo(const SmartMet::Spine::HTTP::Request& request) const;
 
   // Autoreload functionality related members
-  boost::asio::io_context itsIoService;
-  boost::asio::executor_work_guard<boost::asio::io_context::executor_type> itsWork;
-  boost::asio::basic_waitable_timer<std::chrono::steady_clock> itsTimer;
 
   void runIoService();  // Run the io_service event loop (separate method to see it in GDB backtrace
                         // when needed)
@@ -288,7 +288,9 @@ class Engine : public Spine::SmartMetEngine
 
   void autoReloadCheck();
 
-  boost::thread itsIoServiceThread;
+  // Auto-reload timer and the thread running its event loop
+  struct IoService;
+  std::unique_ptr<IoService> itsIo;
 };  // class Geo
 
 }  // namespace Geonames

@@ -3099,8 +3099,7 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(
       }
     }
 
-    for (auto &loc_list : ret)
-      filter_features(loc_list, predicate);
+    filter_features(candidates, predicate);
 
     // Remove duplicates
 
@@ -3119,21 +3118,7 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(
 
     // Keep the desired part.
 
-    if (maxresults > 0)
-    {
-      // Erase the pages before the desired one
-      unsigned int first = page * maxresults;
-      auto pos1 = candidates.begin();
-      auto pos2 = pos1;
-      std::advance(pos2, first);
-      candidates.erase(pos1, pos2);
-
-      // Erase the remaining elements after the size of 'maxelements'.
-      pos1 = candidates.begin();
-      auto npos2 = std::min(candidates.size(), static_cast<std::size_t>(maxresults));
-      std::advance(pos1, npos2);
-      candidates.erase(pos1, candidates.end());
-    }
+    keep_wanted_page(candidates, maxresults, page);
 
     // Build translated results
 

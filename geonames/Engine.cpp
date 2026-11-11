@@ -1566,7 +1566,7 @@ void Engine::sort(Spine::LocationList& theLocations) const
  * \brief Reload the data from database
  *
  * Returns pair of values: first is true if reload was successful, second is output string
- * (potentialy an eror message)
+ * (potentially an error message)
  */
 // ----------------------------------------------------------------------
 

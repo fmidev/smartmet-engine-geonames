@@ -109,7 +109,7 @@ cache:
 ```
 
 ### priorities
-This attribute is used to define how each place name is scored for the autocomplete plugin when using serach location. The higher the score, the higher the name will be raised when the first letters of the name are written to the autocomplete. Priorities are defined for:
+This attribute is used to define how each place name is scored for the autocomplete plugin when using search location. The higher the score, the higher the name will be raised when the first letters of the name are written to the autocomplete. Priorities are defined for:
 
 * populations 
 * features 

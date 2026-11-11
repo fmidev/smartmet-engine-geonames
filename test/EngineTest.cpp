@@ -92,7 +92,7 @@ void nearestplaces()
   Locus::QueryOptions opts;
   opts.SetCountries("fi");
   opts.SetResultLimit(300);
-  opts.SetFeatures("PPLX");  // polulated places
+  opts.SetFeatures("PPLX");  // populated places
   opts.SetLanguage("fi");
 
   try

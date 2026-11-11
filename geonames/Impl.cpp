@@ -672,7 +672,7 @@ void Engine::Impl::add_treewords(std::set<std::string> &words,
 /*!
  * \brief Transform pattern to partial normal forms
  *
- * 1. Tranform to normal form
+ * 1. Transform to normal form
  * 2. Build partial matches by splitting from potential
  * word boundaries For example: Ho Chi Minh City ==> Ho
  * Chi Minh City, Chi Minh City, Minh City and City
@@ -2227,7 +2227,7 @@ void Engine::Impl::read_keywords(const Fmi::Database::PostgreSQLConnection& conn
     }
 
     if (itsVerbose)
-      std::cout << "read_keywords: attached " << count_ok << " keywords to locations succesfully\n"
+      std::cout << "read_keywords: attached " << count_ok << " keywords to locations successfully\n"
                 << "read_keywords: found " << count_bad << " unknown locations\n";
   }
   catch (...)
@@ -3062,7 +3062,7 @@ std::vector<Spine::LocationList> Engine::Impl::suggest(
       throw Fmi::Exception(BCP, "Attempt to use geonames suggest before it is ready!");
 
     if (languages.empty())
-      throw Fmi::Exception(BCP, "Must provide atleast one language for autocomplete");
+      throw Fmi::Exception(BCP, "Must provide at least one language for autocomplete");
 
     if (languages.size() < 2)
       throw Fmi::Exception(BCP, "Called autocomplete for N languages with less than 2 languages");

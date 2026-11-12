@@ -1,5 +1,3 @@
-#include "../geonames/Engine.h"
-#include "../geonames/WktGeometry.h"
 #include "Engine.h"
 #include "WktGeometry.h"
 #include <boost/thread.hpp>

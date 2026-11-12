@@ -10,7 +10,6 @@
  */
 // ======================================================================
 
-#include "../geonames/AutoCompleteIndex.h"
 #include "AutoCompleteIndex.h"
 #include <macgyver/TernarySearchTree.h>
 #include <regression/tframe.h>

@@ -1,8 +1,16 @@
 #pragma once
 
-#include <spine/Location.h>
-#include <libconfig.h++>
 #include <map>
+#include <string>
+
+namespace SmartMet::Spine
+{
+class Location;
+}  // namespace SmartMet::Spine
+namespace libconfig
+{
+class Config;
+}  // namespace libconfig
 
 namespace SmartMet
 {

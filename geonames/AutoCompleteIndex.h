@@ -39,6 +39,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <iterator>
 #include <list>
 #include <memory>
 #include <mutex>

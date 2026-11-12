@@ -1,6 +1,9 @@
 #include "LocationPriorities.h"
 #include <macgyver/Exception.h>
+#include <spine/Location.h>
 #include <cmath>
+#include <libconfig.h++>
+#include <utility>
 
 using namespace SmartMet::Engine::Geonames;
 using namespace SmartMet::Spine;

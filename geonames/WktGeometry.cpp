@@ -1,8 +1,11 @@
 #include "WktGeometry.h"
 #include "Engine.h"
 #include <gis/Box.h>
+#include <gis/OGR.h>
 #include <macgyver/Exception.h>
 #include <ogr_geometry.h>
+#include <sstream>
+#include <utility>
 
 namespace SmartMet
 {

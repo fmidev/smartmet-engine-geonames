@@ -10,15 +10,21 @@
  */
 // ======================================================================
 
+#include "../geonames/AutoCompleteIndex.h"
 #include "AutoCompleteIndex.h"
 #include <macgyver/TernarySearchTree.h>
 #include <regression/tframe.h>
-
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <initializer_list>
+#include <iostream>
+#include <iterator>
 #include <list>
 #include <memory>
 #include <random>
 #include <string>
+#include <utility>
 #include <vector>
 
 using SmartMet::Engine::Geonames::AutoCompleteIndex;

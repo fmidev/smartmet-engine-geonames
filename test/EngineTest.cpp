@@ -1,15 +1,31 @@
+#include "../geonames/Engine.h"
+#include "../geonames/WktGeometry.h"
 #include "Engine.h"
 #include "WktGeometry.h"
+#include <boost/thread.hpp>
+#include <gis/LandCover.h>
 #include <locus/Query.h>
+#include <locus/QueryOptions.h>
+#include <macgyver/CacheStats.h>
+#include <macgyver/Exception.h>
 #include <macgyver/StringConversion.h>
 #include <regression/tframe.h>
 #include <spine/Location.h>
 #include <spine/Options.h>
 #include <spine/Reactor.h>
+#include <spine/SmartMetEngine.h>
 #include <cmath>
+#include <cstddef>
+#include <functional>
+#include <iostream>
 #include <iterator>
 #include <libconfig.h++>
+#include <list>
+#include <memory>
+#include <string>
 #include <unistd.h>
+#include <utility>
+#include <vector>
 
 using namespace std;
 

@@ -19,9 +19,14 @@
 
 #pragma once
 
-#include <gis/OGR.h>
 #include <newbase/NFmiSvgPath.h>
 #include <spine/Location.h>
+#include <list>
+#include <map>
+#include <memory>
+#include <string>
+
+class OGRGeometry;
 
 namespace SmartMet
 {

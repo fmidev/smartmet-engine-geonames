@@ -6,34 +6,52 @@
 
 #pragma once
 
+#include "AutoCompleteIndex.h"
 #include "Engine.h"
-#include "LanguageScript.h"
 #include "LocationPriorities.h"
 #include <boost/atomic.hpp>
 #include <boost/locale.hpp>
-#include <boost/locale/collator.hpp>
 #include <boost/regex.hpp>
-#include <boost/thread.hpp>
 #include <gis/LandCover.h>
+#include <gis/TimeZoneFinder.h>
+#include <locus/Query.h>
 #include <macgyver/AsyncTaskGroup.h>
 #include <macgyver/Cache.h>
-#include <macgyver/CharsetConverter.h>
-#include "AutoCompleteIndex.h"
+#include <macgyver/CacheStats.h>
+#include <macgyver/DateTime.h>
 #include <macgyver/Geometry.h>
 #include <macgyver/NearTree.h>
 #include <macgyver/PostgreSQLConnection.h>
-#include <macgyver/WorkerPool.h>
-#include <cmath>
-#include <iconv.h>
+#include <spine/Location.h>
+#include <spine/Table.h>
+#include <unicode/uscript.h>
+#include <cstddef>
+#include <functional>
+#include <iterator>
 #include <libconfig.h++>
+#include <locale>
 #include <map>
 #include <memory>
+#include <optional>
+#include <pqxx/pqxx>
+#include <set>
 #include <string>
+#include <utility>
+#include <vector>
+
+namespace Locus
+{
+class QueryOptions;
+}  // namespace Locus
 
 namespace Fmi
 {
+class AsyncTask;
+class CharsetConverter;
 class DEM;
-}
+template <typename ObjectType>
+class WorkerPool;
+}  // namespace Fmi
 
 namespace SmartMet
 {

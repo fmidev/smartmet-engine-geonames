@@ -12,14 +12,24 @@
 #include <macgyver/AtomicSharedPtr.h>
 #include <macgyver/CacheStats.h>
 #include <macgyver/DateTime.h>
+#include <macgyver/LocalDateTime.h>
 #include <macgyver/TimeZones.h>
 #include <spine/Location.h>
 #include <spine/SmartMetEngine.h>
 #include <spine/Table.h>
 #include <atomic>
+#include <cstddef>
 #include <functional>
+#include <iterator>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
+
+namespace Locus
+{
+class QueryOptions;
+}  // namespace Locus
 
 #define FMINAMES_DEFAULT_KEYWORD "all"
 
@@ -68,6 +78,7 @@ class Engine : public Spine::SmartMetEngine
 {
  private:
   class Impl;
+
   Fmi::AtomicSharedPtr<Impl> impl;
   std::shared_ptr<Impl> tmpImpl;
   Fmi::TimeZones itsTimeZones;
@@ -290,6 +301,7 @@ class Engine : public Spine::SmartMetEngine
 
   // Auto-reload timer and the thread running its event loop
   struct IoService;
+
   std::unique_ptr<IoService> itsIo;
 };  // class Geo
 

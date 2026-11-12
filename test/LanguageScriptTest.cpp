@@ -1,6 +1,10 @@
+#include "../geonames/LanguageScript.h"
 #include "LanguageScript.h"
 #include <macgyver/Exception.h>
 #include <regression/tframe.h>
+#include <unicode/uscript.h>
+#include <initializer_list>
+#include <iostream>
 #include <string>
 
 using namespace SmartMet::Engine::Geonames;

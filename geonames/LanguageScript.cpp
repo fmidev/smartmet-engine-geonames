@@ -5,13 +5,12 @@
 // ======================================================================
 
 #include "LanguageScript.h"
-
 #include <macgyver/Exception.h>
-
 #include <algorithm>
+#include <cstdint>
 #include <map>
 #include <optional>
-#include <unicode/utf8.h>
+#include <utility>
 
 namespace SmartMet
 {

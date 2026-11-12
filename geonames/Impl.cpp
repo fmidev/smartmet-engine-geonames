@@ -6,12 +6,10 @@
 
 #include "Impl.h"
 #include "Engine.h"
+#include "LanguageScript.h"
 #include "PageFilter.h"
-#include <spine/TableFormatter.h>
-#include <macgyver/AsyncTask.h>
-#include <boost/algorithm/string/erase.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/asio/ip/host_name.hpp>
-#include <boost/bind/bind.hpp>
 #include <boost/locale.hpp>
 #include <boost/thread.hpp>
 #include <fmt/format.h>
@@ -19,22 +17,31 @@
 #include <gis/Host.h>
 #include <gis/LandCover.h>
 #include <gis/TimeZoneFinder.h>
+#include <locus/QueryOptions.h>
+#include <locus/SimpleLocation.h>
+#include <macgyver/AsyncTask.h>
+#include <macgyver/CharsetConverter.h>
 #include <macgyver/CharsetTools.h>
 #include <macgyver/Exception.h>
 #include <macgyver/Hash.h>
 #include <macgyver/StringConversion.h>
+#include <macgyver/WorkerPool.h>
 #include <spine/ConfigTools.h>
 #include <spine/Exceptions.h>
 #include <spine/Location.h>
-#include <sys/types.h>
+#include <spine/TableFormatter.h>
 #include <algorithm>
 #include <cassert>
-#include <cerrno>  // iconv uses errno
+#include <cctype>
 #include <cmath>
 #include <csignal>
 #include <filesystem>
+#include <iostream>
+#include <limits>
+#include <list>
 #include <ogrsf_frmts.h>
 #include <string>
+#include <unistd.h>
 #include <vector>
 
 namespace SmartMet

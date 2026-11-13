@@ -8,6 +8,7 @@
 #include "Impl.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/asio/basic_waitable_timer.hpp>
+#include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/thread/thread_only.hpp>
 #include <fmt/printf.h>
